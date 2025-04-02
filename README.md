@@ -1,1 +1,0 @@
-# propabanda-financial-tracker
