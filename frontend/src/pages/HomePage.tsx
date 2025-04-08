@@ -1,4 +1,4 @@
-import Client from "../components/Client";
+import FloatingButton from "../components/AddButton";
 
 type HomePageProps = {
   title: string;
@@ -7,7 +7,7 @@ type HomePageProps = {
 export default function HomePage({ title }: HomePageProps) {
   return (
     <div className="">
-      <Client client={"Empresa"} rep={"Representante"} link={"#"} />
+      <FloatingButton/>
     </div>
   );
 }
