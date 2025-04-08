@@ -1,5 +1,3 @@
-import Client from "../components/Client";
-
 type HomePageProps = {
   title: string;
 };
@@ -7,7 +5,7 @@ type HomePageProps = {
 export default function HomePage({ title }: HomePageProps) {
   return (
     <div className="">
-      <Client client={"Empresa"} rep={"Representante"} link={"#"} />
+      
     </div>
   );
 }
