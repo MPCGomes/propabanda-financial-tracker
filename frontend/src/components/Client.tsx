@@ -1,17 +1,17 @@
 import { FaShop } from "react-icons/fa6";
 import { IoIosArrowForward } from "react-icons/io";
 
-type PlaceholderComponent = {
+type Client = {
   client: string;
   rep: string;
-  link: React.ReactNode;
+  link: string;
 };
 
-export default function PlaceholderComponent({
+export default function Client({
   client,
   rep,
   link,
-}: PlaceholderComponent) {
+}: Client) {
   return (
     <a href={link} className="flex items-center justify-between">
       <div className="flex items-center gap-5">
@@ -19,7 +19,7 @@ export default function PlaceholderComponent({
           <FaShop />
         </p>
         <div>
-          <p className="text-base text-[#282828]">{client}</p>
+          <p className="text-base text-[#282828] font-medium">{client}</p>
           <p className="text-xs text-[#787878]">{rep}</p>
         </div>
       </div>

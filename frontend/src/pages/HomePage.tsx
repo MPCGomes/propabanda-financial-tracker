@@ -1,5 +1,3 @@
-import FloatingButton from "../components/AddButton";
-
 type HomePageProps = {
   title: string;
 };
@@ -7,7 +5,6 @@ type HomePageProps = {
 export default function HomePage({ title }: HomePageProps) {
   return (
     <div className="">
-      <FloatingButton/>
     </div>
   );
 }
