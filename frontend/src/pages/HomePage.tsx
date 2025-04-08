@@ -1,4 +1,4 @@
-import Button from "../components/Button";
+import Client from "../components/Client";
 
 type HomePageProps = {
   title: string;
@@ -7,7 +7,7 @@ type HomePageProps = {
 export default function HomePage({ title }: HomePageProps) {
   return (
     <div className="">
-      <Button text="Bom dia" variant="outlined"/>
+      <Client client={"Empresa"} rep={"Representante"} link={"#"} />
     </div>
   );
 }
