@@ -1,0 +1,43 @@
+import { IoPeopleSharp } from "react-icons/io5";
+import { FaChartSimple, FaClipboardCheck } from "react-icons/fa6";
+
+type Header = {
+  clients?: "active";
+  dashboard?: "active";
+  orders?: "active";
+};
+
+export default function Header({ clients, dashboard, orders }: Header) {
+  const baseClasses =
+    "text-sm text-[#D9D9D9] font-medium flex flex-col items-center max-w-[130px] w-full py-3 px-4 rounded-lg xl:flex-row xl:gap-3 xl:max-w-[125px]";
+
+  const variants = {
+    active: "bg-[#ffa32233] text-[#FFA322]",
+  };
+
+  const getVariant = (state?: "active") =>
+    state === "active" ? variants.active : "";
+
+  return (
+    <div className="flex xl:flex-col">
+      <a href="#" className={`${baseClasses} ${getVariant(clients)}`}>
+        <p className="w-5 h-5 text-xl">
+          <IoPeopleSharp />
+        </p>
+        <p>Clientes</p>
+      </a>
+      <a href="#" className={`${baseClasses} ${getVariant(dashboard)}`}>
+        <p className="w-5 h-5 text-xl">
+          <FaChartSimple />
+        </p>
+        <p>Relatórios</p>
+      </a>
+      <a href="#" className={`${baseClasses} ${getVariant(orders)}`}>
+        <p className="w-5 h-5 text-xl">
+          <FaClipboardCheck />
+        </p>
+        <p>Pedidos</p>
+      </a>
+    </div>
+  );
+}

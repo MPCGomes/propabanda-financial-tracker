@@ -1,4 +1,4 @@
-import DashboardHeader from "../components/DashboardHeader";
+import Header from "../components/Header";
 
 type HomePageProps = {
   title: string;
@@ -7,7 +7,7 @@ type HomePageProps = {
 export default function HomePage({ title }: HomePageProps) {
   return (
     <div className="">
-      <DashboardHeader evolution='Dash'/>
+      <Header clients="active"  dashboard="active" />
     </div>
   );
 }
