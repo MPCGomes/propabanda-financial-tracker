@@ -9,7 +9,7 @@ type Header = {
 
 export default function Header({ clients, dashboard, orders }: Header) {
   const baseClasses =
-    "text-sm text-[#D9D9D9] font-medium flex flex-col items-center max-w-[130px] w-full py-3 px-4 rounded-lg xl:flex-row xl:gap-3 xl:max-w-[125px]";
+    "text-sm text-[#D9D9D9] font-medium flex flex-col items-center max-w-[130px] w-full py-3 px-6 rounded-lg lg:flex-row lg:gap-3 lg:max-w-[125px] lg:px-3";
 
   const variants = {
     active: "bg-[#ffa32233] text-[#FFA322]",
@@ -19,7 +19,7 @@ export default function Header({ clients, dashboard, orders }: Header) {
     state === "active" ? variants.active : "";
 
   return (
-    <div className="flex xl:flex-col">
+    <div className="flex gap-1 lg:flex-col">
       <a href="#" className={`${baseClasses} ${getVariant(clients)}`}>
         <p className="w-5 h-5 text-xl">
           <IoPeopleSharp />

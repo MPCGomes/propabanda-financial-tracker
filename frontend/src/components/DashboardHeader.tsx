@@ -16,8 +16,15 @@ export default function DashboardHeader({
 
   return (
     <div className="flex gap-7">
-      <a href="#" className={`${baseClasses} ${variants[evolution]}`}>Evolução</a>
-      <a href="#" className={`${baseClasses} ${variants[performance]}`}>Performance</a>
+      <a
+        href="/dashboard-evolution"
+        className={`${baseClasses} ${variants[evolution]}`}
+      >
+        Evolução
+      </a>
+      <a href="/dashboard-performance" className={`${baseClasses} ${variants[performance]}`}>
+        Performance
+      </a>
     </div>
   );
 }
