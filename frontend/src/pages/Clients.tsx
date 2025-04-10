@@ -44,9 +44,9 @@ export default function Clients({ title }: ClientsProps) {
           </div>
         </div>
       </div>
-      <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5">
+      <a href="/client-register" className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5">
         <FloatingButton icon={<FaPlus />} background={"#FFA322"} />
-      </div>
+      </a>
     </section>
   );
 }
