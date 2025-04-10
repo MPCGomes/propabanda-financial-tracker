@@ -10,6 +10,7 @@ import ClientEdit from "./pages/ClientEdit";
 import Orders from "./pages/Orders";
 import OrdersDetails from "./pages/OrdersDetails";
 import OrderRegister from "./pages/OrderRegister";
+import OrderEdit from "./pages/OrderEdit";
 
 function App() {
   return (
@@ -45,7 +46,11 @@ function App() {
         />
         <Route
           path="/orders/register"
-          element={<OrderRegister title="Pedidos" />}
+          element={<OrderRegister title="Registrar Pedido" />}
+        />
+        <Route
+          path="/orders/edit/:id"
+          element={<OrderEdit title="Editar Pedido" />}
         />
       </Routes>
     </Router>
