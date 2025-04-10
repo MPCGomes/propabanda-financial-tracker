@@ -9,6 +9,7 @@ import ClientDetails from "./pages/ClientDetails";
 import ClientRegister from "./pages/ClientRegister";
 import ClientEdit from "./pages/ClientEdit";
 import Orders from "./pages/Orders";
+import OrdersDetails from "./pages/OrdersDetails";
 
 function App() {
   return (
@@ -38,6 +39,10 @@ function App() {
           element={<ClientEdit title="Editar Cliente" />}
         />
         <Route path="/orders" element={<Orders title="Pedidos" />} />
+        <Route
+          path="/orders/:id"
+          element={<OrdersDetails title="Pedidos" />}
+        />
       </Routes>
     </Router>
   );
