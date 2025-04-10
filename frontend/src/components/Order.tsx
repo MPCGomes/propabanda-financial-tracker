@@ -20,7 +20,7 @@ export default function Order({ product, date, value, color, link, icon }: Order
         </div>
       </div>
       <p style={{ color }} className="text-xs font-medium">
-        {value} •
+        R$ {value} •
       </p>
     </a>
   );
