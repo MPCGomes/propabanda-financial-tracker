@@ -18,12 +18,14 @@ public class User {
 
     @NotBlank
     @Size(min = 11, max = 11)
-    @Column(name = "document_number", unique = true)
+    @Column(name = "document_number", unique = true, nullable = false)
     private String documentNumber;
 
     @NotBlank
+    @Column(name = "password", nullable = false)
     private String password;
 
     @NotBlank
+    @Column(name = "role", nullable = false)
     private String role;
 }

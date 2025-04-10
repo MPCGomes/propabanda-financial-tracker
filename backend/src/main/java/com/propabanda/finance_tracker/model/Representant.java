@@ -18,14 +18,17 @@ public class Representant {
 
     @NotBlank
     @Size(max = 100)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @NotBlank
     @Email
     @Size(max = 100)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @NotBlank
     @Size(min = 10, max = 11)
+    @Column(name = "phone", nullable = false)
     private String phone;
 }

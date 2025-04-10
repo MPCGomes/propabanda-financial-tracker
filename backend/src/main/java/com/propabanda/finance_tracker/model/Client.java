@@ -17,11 +17,12 @@ public class Client {
 
     @NotBlank
     @Size(max = 100)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @NotBlank
     @Size(min = 14, max = 14)
-    @Column(unique = true)
+    @Column(name = "document_number", unique = true, nullable = false)
     private String documentNumber;
 
     @OneToOne(cascade = CascadeType.ALL)
