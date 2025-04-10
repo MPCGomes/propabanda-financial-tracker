@@ -7,16 +7,14 @@ import DashboardPerformance from "./pages/DashboardPerformance";
 import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
 import ClientRegister from "./pages/ClientRegister";
+import ClientEdit from "./pages/ClientEdit";
+import Orders from "./pages/Orders";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<HomePage title="Home Page" />} />
-        <Route
-          path="/placeholder1"
-          element={<PlaceholderPage title="Placeholder Page" />}
-        />
         <Route path="/login" element={<Login title="Login" />} />
         <Route
           path="/dashboard"
@@ -35,6 +33,11 @@ function App() {
           path="/client/register"
           element={<ClientRegister title="Cadastrar Cliente" />}
         />
+        <Route
+          path="/client/edit/:id"
+          element={<ClientEdit title="Editar Cliente" />}
+        />
+        <Route path="/orders" element={<Orders title="Pedidos" />} />
       </Routes>
     </Router>
   );
