@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import DashboardPerformance from "./pages/DashboardPerformance";
 import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
+import ClientRegister from "./pages/ClientRegister";
 
 function App() {
   return (
@@ -16,10 +17,7 @@ function App() {
           path="/placeholder1"
           element={<PlaceholderPage title="Placeholder Page" />}
         />
-        <Route
-          path="/login"
-          element={<Login title="Login" />}
-        />
+        <Route path="/login" element={<Login title="Login" />} />
         <Route
           path="/dashboard"
           element={<Dashboard title="Relatórios de Evolução" />}
@@ -32,16 +30,11 @@ function App() {
           path="/clients"
           element={<Clients title="Lista dos Clientes" />}
         />
+        <Route path="/client/:id" element={<ClientDetails title="Cliente" />} />
         <Route
-<<<<<<< Updated upstream
-          path="/clientsdetails"
-          element={<ClientDetails title="Cliente" />}
-=======
           path="/client/register"
           element={<ClientRegister title="Cadastrar Cliente" />}
->>>>>>> Stashed changes
         />
-
       </Routes>
     </Router>
   );
