@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import PlaceholderPage from "./pages/PlaceholderPage";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import DashboardPerformance from "./pages/DashboardPerformance";
@@ -10,6 +9,7 @@ import ClientRegister from "./pages/ClientRegister";
 import ClientEdit from "./pages/ClientEdit";
 import Orders from "./pages/Orders";
 import OrdersDetails from "./pages/OrdersDetails";
+import OrderRegister from "./pages/OrderRegister";
 
 function App() {
   return (
@@ -42,6 +42,10 @@ function App() {
         <Route
           path="/orders/:id"
           element={<OrdersDetails title="Pedidos" />}
+        />
+        <Route
+          path="/orders/register"
+          element={<OrderRegister title="Pedidos" />}
         />
       </Routes>
     </Router>
