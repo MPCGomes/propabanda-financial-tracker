@@ -20,19 +20,19 @@ export default function Header({ clients, dashboard, orders }: Header) {
 
   return (
     <div className="flex gap-1 lg:flex-col">
-      <a href="#" className={`${baseClasses} ${getVariant(clients)}`}>
+      <a href="/clients" className={`${baseClasses} ${getVariant(clients)}`}>
         <p className="w-5 h-5 text-xl">
           <IoPeopleSharp />
         </p>
         <p>Clientes</p>
       </a>
-      <a href="#" className={`${baseClasses} ${getVariant(dashboard)}`}>
+      <a href="/dashboard" className={`${baseClasses} ${getVariant(dashboard)}`}>
         <p className="w-5 h-5 text-xl">
           <FaChartSimple />
         </p>
         <p>Relatórios</p>
       </a>
-      <a href="#" className={`${baseClasses} ${getVariant(orders)}`}>
+      <a href="/orders" className={`${baseClasses} ${getVariant(orders)}`}>
         <p className="w-5 h-5 text-xl">
           <FaClipboardCheck />
         </p>
