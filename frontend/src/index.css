@@ -21,9 +21,13 @@ background: #F6F6F6
 
 green: #32C058
 red: #EE3A4B
+blue: #2696FF
+orange: #ffa322
 
 padding - p-3
 radius - rounded-lg
+
+ className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]" - containers brancos
 
 Responsive
 lg:

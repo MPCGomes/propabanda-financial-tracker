@@ -4,6 +4,8 @@ import PlaceholderPage from "./pages/PlaceholderPage";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import DashboardPerformance from "./pages/DashboardPerformance";
+import Clients from "./pages/Clients";
+import ClientDetails from "./pages/ClientDetails";
 
 function App() {
   return (
@@ -19,13 +21,22 @@ function App() {
           element={<Login title="Login" />}
         />
         <Route
-          path="/dashboard-evolution"
-          element={<Dashboard title="Relatórios" />}
+          path="/dashboard"
+          element={<Dashboard title="Relatórios de Evolução" />}
         />
         <Route
           path="/dashboard-performance"
-          element={<DashboardPerformance title="Relatórios" />}
+          element={<DashboardPerformance title="Relatórios de Performance" />}
         />
+        <Route
+          path="/clients"
+          element={<Clients title="Lista dos Clientes" />}
+        />
+        <Route
+          path="/clientsdetails"
+          element={<ClientDetails title="Cliente" />}
+        />
+
       </Routes>
     </Router>
   );

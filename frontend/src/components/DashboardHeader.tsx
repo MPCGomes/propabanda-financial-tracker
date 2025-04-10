@@ -17,7 +17,7 @@ export default function DashboardHeader({
   return (
     <div className="flex gap-7">
       <a
-        href="/dashboard-evolution"
+        href="/dashboard"
         className={`${baseClasses} ${variants[evolution]}`}
       >
         Evolução
