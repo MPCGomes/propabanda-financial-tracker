@@ -1,4 +1,5 @@
 import Button from "../components/Button";
+import GoBack from "../components/GoBack";
 import Header from "../components/Header";
 
 type ClientRegisterProps = {
@@ -20,6 +21,7 @@ export default function ClientRegister({ title }: ClientRegisterProps) {
 
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0">
+          <GoBack link={"/clients"} />
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
             <p className="text-base font-medium">Cadastar Cliente</p>
             <div className="flex flex-col gap-5">
