@@ -33,8 +33,13 @@ function App() {
           element={<Clients title="Lista dos Clientes" />}
         />
         <Route
+<<<<<<< Updated upstream
           path="/clientsdetails"
           element={<ClientDetails title="Cliente" />}
+=======
+          path="/client/register"
+          element={<ClientRegister title="Cadastrar Cliente" />}
+>>>>>>> Stashed changes
         />
 
       </Routes>
