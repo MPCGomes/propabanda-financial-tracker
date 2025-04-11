@@ -1,7 +1,8 @@
 import { IoSearchSharp } from "react-icons/io5";
 import Header from "../components/Header";
 import Order from "../components/Order";
-import PlaceholderBox from "../components/PlaceholderComponent";
+import { FaPlus } from "react-icons/fa6";
+import FloatingButton from "../components/FloatingButton";
 
 type PlaceholderPageProps = {
   title: string;
@@ -33,7 +34,7 @@ export default function PlaceholderPage({ title }: PlaceholderPageProps) {
             </div>
             Filtros aqui
           </div>
-          <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
+          <div className="flex flex-col gap-3 p-2 bg-white rounded-lg">
             <Order
               product={"Produto"}
               date={"01/01/01"}
@@ -93,6 +94,12 @@ export default function PlaceholderPage({ title }: PlaceholderPageProps) {
           </div>
         </div>
       </div>
+      <a
+        href="/order/register"
+        className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5"
+      >
+        <FloatingButton icon={<FaPlus />} background={"#FFA322"} />
+      </a>
     </section>
   );
 }

@@ -24,7 +24,7 @@ export default function OrderRegister({ title }: OrderRegisterProps) {
 
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0">
-          <GoBack link={"/clients"} />
+          <GoBack link={"/orders"} />
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
             <p className="text-base font-medium">Cadastar Pedido</p>
             <div className="flex flex-col gap-5">

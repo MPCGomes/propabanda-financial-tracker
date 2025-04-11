@@ -26,7 +26,7 @@ export default function ClientDetails({ title }: ClientDetailsProps) {
 
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0">
-          <GoBack link={"/clients"} />
+          <GoBack link={"/orders"} />
           {/* Pedido Info */}
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
             <Info label={"Cliente"} value={"Valor"} />
