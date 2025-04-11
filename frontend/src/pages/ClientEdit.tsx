@@ -1,6 +1,7 @@
 import Button from "../components/Button";
 import GoBack from "../components/GoBack";
 import Header from "../components/Header";
+import InputText from "../components/InputText";
 
 type ClientEditProps = {
   title: string;
@@ -21,40 +22,46 @@ export default function ClientEdit({ title }: ClientEditProps) {
 
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0">
-            {/* Adicionar o ID do cliente */}
-          <GoBack link={"#"} /> 
+          {/* Adicionar o ID do cliente */}
+          <GoBack link={"/clients"} />
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
-            <p className="text-base font-medium">Editar Cliente</p>
+            <p className="text-base font-medium">Cadastar Cliente</p>
             <div className="flex flex-col gap-5">
               <p className="text-sm font-medium">Empresa</p>
               <div className="flex flex-col gap-3">
-                <input type="text" placeholder="Placeholder..." />
-                <input type="text" placeholder="Placeholder..." />
+                <InputText label={"Nome"} placeholder={"Nome da empresa"} />
+                <InputText label={"CNPJ"} placeholder={"CNPJ"} />
               </div>
             </div>
           </div>
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
             <p className="text-sm font-medium">Representante</p>
             <div className="flex flex-col gap-3">
-              <input type="text" placeholder="Placeholder..." />
-              <input type="text" placeholder="Placeholder..." />
-              <input type="text" placeholder="Placeholder..." />
+              <InputText label={"Nome"} placeholder={"Nome do representante"} />
+              <InputText
+                label={"Telefone"}
+                placeholder={"Telefone do representante"}
+              />
+              <InputText
+                label={"E-mail"}
+                placeholder={"E-mail do representante"}
+              />
             </div>
           </div>
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
             <p className="text-sm font-medium">Endereço</p>
             <div className="flex flex-col gap-3">
-              <input type="text" placeholder="Placeholder..." />
+              <InputText label={"CEP"} placeholder={"CEP"} />
               <div className="flex gap-3">
-                <input type="text" placeholder="Placeholder..." />
-                <input type="text" placeholder="Placeholder..." />
+                <InputText label={"CNPJ"} placeholder={"CNPJ"} />
+                <InputText label={"CNPJ"} placeholder={"CNPJ"} />
               </div>
-              <input type="text" placeholder="Placeholder..." />
+              <InputText label={"Rua/Avenida"} placeholder={"Rua/Avenida"} />
               <div className="flex gap-3">
-                <input type="text" placeholder="Placeholder..." />
-                <input type="text" placeholder="Placeholder..." />
+                <InputText label={"Número"} placeholder={"Número"} />
+                <InputText label={"Complemento"} placeholder={"Complemento"} />
               </div>
-              <input type="text" placeholder="Placeholder..." />
+              <InputText label={"Referência"} placeholder={"Referência"} />
             </div>
 
             {/* Botões */}

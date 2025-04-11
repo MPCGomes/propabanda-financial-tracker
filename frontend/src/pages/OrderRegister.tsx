@@ -5,10 +5,16 @@ import Info from "../components/Info";
 
 import { FaUpload } from "react-icons/fa";
 import InputText from "../components/InputText";
+import InputSelect from "../components/InputSelect";
 
 type OrderRegisterProps = {
   title: string;
 };
+
+const opcoes = [
+  { value: "valor1", label: "01" },
+  { value: "valor2", label: "02" },
+];
 
 export default function OrderRegister({ title }: OrderRegisterProps) {
   return (
@@ -20,26 +26,43 @@ export default function OrderRegister({ title }: OrderRegisterProps) {
             flex justify-center p-1
             lg:static lg:w-40 lg:flex lg:flex-col lg:justify-start lg:p-2"
         >
-          <Header clients="active" />
+          <Header orders="active" />
         </div>
 
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0">
           <GoBack link={"/orders"} />
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
-            <p className="text-base font-medium">Cadastar Pedido</p>
+            <p className="text-base font-medium">Cadastrar Pedido</p>
             <div className="flex flex-col gap-5">
               <p className="text-sm font-medium">Empresa</p>
               <div className="flex flex-col gap-3">
-                <InputText label={"Label"} placeholder={"Placeholder"} />
+                <InputText label={"Cliente"} placeholder={"Nome da empresa"} />
+                  <InputSelect label={"Itens"} id={""} options={opcoes} />
                 <div className="flex gap-3">
-                  <input type="text" placeholder="Placeholder..." />
-                  <input type="text" placeholder="Placeholder..." />
+                  <InputSelect label={"Início"} id={""} options={opcoes} />
+                  <InputSelect label={"Fim"} id={""} options={opcoes} />
                 </div>
                 <div className="flex gap-3">
-                  <input type="text" placeholder="Placeholder..." />
-                  <input type="text" placeholder="Placeholder..." />
+                  <InputText label={"Valor Total"} placeholder={"Valor"} />
+                  <InputSelect label={"Parcelas"} id={""} options={opcoes} />
                 </div>
+                <div className="flex gap-3">
+                  <InputSelect
+                    label={"Venc. parcelas"}
+                    id={""}
+                    options={opcoes}
+                  />
+                  <InputSelect
+                    label={"Parcelas pagas"}
+                    id={""}
+                    options={opcoes}
+                  />
+                </div>
+                <InputText
+                  label={"Desconto"}
+                  placeholder={"Valor do Desconto"}
+                />
               </div>
             </div>
           </div>
@@ -54,6 +77,7 @@ export default function OrderRegister({ title }: OrderRegisterProps) {
           </div>
 
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
+            <p className="text-sm font-medium">Contrato</p>
             <button className="flex flex-col items-center gap-2 p-8 border-dashed border border-[#28282833] rounded-lg bg-[#fafafa] cursor-pointer">
               <p className="text-2xl">
                 <FaUpload />
