@@ -28,7 +28,7 @@ export default function SelectInput({ label, id, options }: SelectInputProps) {
       </select>
       <label
         htmlFor={id}
-        className="absolute left-2 top-2 text-[#282828] text-sm transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-[#282828] peer-focus:top-2 peer-focus:text-xs peer-focus:text-blue-500"
+        className="absolute left-2 top-2 text-[#282828] text-xs transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-xs peer-placeholder-shown:text-[#282828] peer-focus:top-2 peer-focus:text-xs peer-focus:text-blue-500"
       >
         {label}
       </label>
