@@ -35,7 +35,7 @@ export default function Clients({ title }: ClientsProps) {
             </div>
             Filtros aqui
           </div>
-          <div className="flex flex-col gap-5 p-2 bg-white rounded-lg">
+          <div className="flex flex-col gap-3 p-2 bg-white rounded-lg">
             <Client client={"Empresa"} rep={"Representante"} link={"#"} />
             <Client client={"Empresa"} rep={"Representante"} link={"#"} />
             <Client client={"Empresa"} rep={"Representante"} link={"#"} />
@@ -44,7 +44,7 @@ export default function Clients({ title }: ClientsProps) {
           </div>
         </div>
       </div>
-      <a href="/client-register" className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5">
+      <a href="/client/register" className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5">
         <FloatingButton icon={<FaPlus />} background={"#FFA322"} />
       </a>
     </section>
