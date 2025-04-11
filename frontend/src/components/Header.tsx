@@ -9,7 +9,7 @@ type Header = {
 
 export default function Header({ clients, dashboard, orders }: Header) {
   const baseClasses =
-    "text-sm text-[#D9D9D9] font-medium flex flex-col items-center hover:bg-[#fafafa] duration-300 max-w-[130px] w-full py-3 px-6 rounded-lg lg:flex-row lg:gap-3 lg:max-w-[125px] lg:px-3";
+    "text-sm text-[#D9D9D9] font-medium flex flex-col items-center hover:bg-[#fafafa] duration-300 max-w-[130px] w-full py-3 px-6 rounded-lg lg:flex-row lg:gap-3 lg:max-w-[125px] lg:px-3 lg:max-h-[1024px]";
 
   const variants = {
     active: "bg-[#ffa32233] text-[#FFA322] hover:bg-[#ffa32233]",
@@ -19,14 +19,17 @@ export default function Header({ clients, dashboard, orders }: Header) {
     state === "active" ? variants.active : "";
 
   return (
-    <div className="flex gap-1 lg:flex-col">
+    <div className="flex gap-1 lg:flex-col z-10">
       <a href="/clients" className={`${baseClasses} ${getVariant(clients)}`}>
         <p className="w-5 h-5 text-xl">
           <IoPeopleSharp />
         </p>
         <p>Clientes</p>
       </a>
-      <a href="/dashboard" className={`${baseClasses} ${getVariant(dashboard)}`}>
+      <a
+        href="/dashboard"
+        className={`${baseClasses} ${getVariant(dashboard)}`}
+      >
         <p className="w-5 h-5 text-xl">
           <FaChartSimple />
         </p>
