@@ -21,7 +21,7 @@ export default function ClientDetails({ title }: ClientDetailsProps) {
             flex justify-center p-1
             lg:static lg:w-40 lg:flex lg:flex-col lg:justify-start lg:p-2"
         >
-          <Header clients="active" />
+          <Header orders="active" />
         </div>
 
         {/* Content */}

@@ -10,6 +10,7 @@ import ClientEdit from "./pages/ClientEdit";
 import Orders from "./pages/Orders";
 import OrdersDetails from "./pages/OrdersDetails";
 import OrderRegister from "./pages/OrderRegister";
+import OrderEdit from "./pages/OrderEdit";
 
 function App() {
   return (
