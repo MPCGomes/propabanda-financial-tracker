@@ -40,11 +40,11 @@ function App() {
         />
         <Route path="/orders" element={<Orders title="Pedidos" />} />
         <Route
-          path="/orders/:id"
+          path="/order/:id"
           element={<OrdersDetails title="Pedidos" />}
         />
         <Route
-          path="/orders/register"
+          path="/order/register"
           element={<OrderRegister title="Pedidos" />}
         />
       </Routes>
