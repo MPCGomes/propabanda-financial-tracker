@@ -35,7 +35,7 @@ export default function Clients({ title }: ClientsProps) {
             </div>
             Filtros aqui
           </div>
-          <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
+          <div className="flex flex-col gap-5 p-2 bg-white rounded-lg">
             <Client client={"Empresa"} rep={"Representante"} link={"#"} />
             <Client client={"Empresa"} rep={"Representante"} link={"#"} />
             <Client client={"Empresa"} rep={"Representante"} link={"#"} />
