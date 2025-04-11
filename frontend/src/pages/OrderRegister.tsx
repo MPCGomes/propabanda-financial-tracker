@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Info from "../components/Info";
 
 import { FaUpload } from "react-icons/fa";
+import InputText from "../components/InputText";
 
 type OrderRegisterProps = {
   title: string;
@@ -30,8 +31,7 @@ export default function OrderRegister({ title }: OrderRegisterProps) {
             <div className="flex flex-col gap-5">
               <p className="text-sm font-medium">Empresa</p>
               <div className="flex flex-col gap-3">
-                <input type="text" placeholder="Placeholder..." />
-                <input type="text" placeholder="Placeholder..." />
+                <InputText label={"Label"} placeholder={"Placeholder"} />
                 <div className="flex gap-3">
                   <input type="text" placeholder="Placeholder..." />
                   <input type="text" placeholder="Placeholder..." />
