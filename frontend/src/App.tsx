@@ -39,14 +39,15 @@ function App() {
           path="/client/edit/:id"
           element={<ClientEdit title="Editar Cliente" />}
         />
-        <Route path="/orders" element={<Orders title="Pedidos" />} />
-        <Route
-          path="/order/:id"
-          element={<OrdersDetails title="Pedidos" />}
-        />
+        <Route path="/orders" element={<Orders title="Lista dos Pedidos" />} />
+        <Route path="/order/:id" element={<OrdersDetails title="Pedidos" />} />
         <Route
           path="/order/register"
-          element={<OrderRegister title="Pedidos" />}
+          element={<OrderRegister title="Cadastrar Pedido" />}
+        />
+        <Route
+          path="/order/edit/:id"
+          element={<OrderEdit title="Editar Pedido" />}
         />
       </Routes>
     </Router>

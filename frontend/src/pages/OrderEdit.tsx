@@ -4,10 +4,17 @@ import GoBack from "../components/GoBack";
 import Header from "../components/Header";
 
 import { FaDownload, FaRegEye, FaUpload } from "react-icons/fa";
+import InputSelect from "../components/InputSelect";
+import InputText from "../components/InputText";
 
 type OrderEditProps = {
   title: string;
 };
+
+const opcoes = [
+  { value: "valor1", label: "01" },
+  { value: "valor2", label: "02" },
+];
 
 export default function OrderEdit({ title }: OrderEditProps) {
   return (
@@ -24,23 +31,39 @@ export default function OrderEdit({ title }: OrderEditProps) {
 
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0">
-            {/* Voltar para o Pedido ID */}
+          {/* Voltar para o Pedido ID */}
           <GoBack link={"/"} />
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
-            <p className="text-base font-medium">Cadastar Pedido</p>
+            <p className="text-base font-medium">Editar Pedido</p>
             <div className="flex flex-col gap-5">
               <p className="text-sm font-medium">Empresa</p>
               <div className="flex flex-col gap-3">
-                <input type="text" placeholder="Placeholder..." />
-                <input type="text" placeholder="Placeholder..." />
+                <InputText label={"Cliente"} placeholder={"Nome da empresa"} />
+                <InputSelect label={"Itens"} id={""} options={opcoes} />
                 <div className="flex gap-3">
-                  <input type="text" placeholder="Placeholder..." />
-                  <input type="text" placeholder="Placeholder..." />
+                  <InputSelect label={"Início"} id={""} options={opcoes} />
+                  <InputSelect label={"Fim"} id={""} options={opcoes} />
                 </div>
                 <div className="flex gap-3">
-                  <input type="text" placeholder="Placeholder..." />
-                  <input type="text" placeholder="Placeholder..." />
+                  <InputText label={"Valor Total"} placeholder={"Valor"} />
+                  <InputSelect label={"Parcelas"} id={""} options={opcoes} />
                 </div>
+                <div className="flex gap-3">
+                  <InputSelect
+                    label={"Venc. parcelas"}
+                    id={""}
+                    options={opcoes}
+                  />
+                  <InputSelect
+                    label={"Parcelas pagas"}
+                    id={""}
+                    options={opcoes}
+                  />
+                </div>
+                <InputText
+                  label={"Desconto"}
+                  placeholder={"Valor do Desconto"}
+                />
               </div>
             </div>
           </div>
