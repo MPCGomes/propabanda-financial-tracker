@@ -2,7 +2,6 @@ import { FaTrash } from "react-icons/fa6";
 import Button from "../components/Button";
 import GoBack from "../components/GoBack";
 import Header from "../components/Header";
-import Info from "../components/Info";
 
 import { FaDownload, FaRegEye, FaUpload } from "react-icons/fa";
 
