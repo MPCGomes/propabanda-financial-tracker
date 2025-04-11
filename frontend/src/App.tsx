@@ -41,16 +41,12 @@ function App() {
         />
         <Route path="/orders" element={<Orders title="Pedidos" />} />
         <Route
-          path="/orders/:id"
+          path="/order/:id"
           element={<OrdersDetails title="Pedidos" />}
         />
         <Route
-          path="/orders/register"
-          element={<OrderRegister title="Registrar Pedido" />}
-        />
-        <Route
-          path="/orders/edit/:id"
-          element={<OrderEdit title="Editar Pedido" />}
+          path="/order/register"
+          element={<OrderRegister title="Pedidos" />}
         />
       </Routes>
     </Router>

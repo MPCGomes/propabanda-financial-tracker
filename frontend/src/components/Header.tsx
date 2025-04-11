@@ -9,10 +9,10 @@ type Header = {
 
 export default function Header({ clients, dashboard, orders }: Header) {
   const baseClasses =
-    "text-sm text-[#D9D9D9] font-medium flex flex-col items-center max-w-[130px] w-full py-3 px-6 rounded-lg lg:flex-row lg:gap-3 lg:max-w-[125px] lg:px-3";
+    "text-sm text-[#D9D9D9] font-medium flex flex-col items-center hover:bg-[#fafafa] duration-300 max-w-[130px] w-full py-3 px-6 rounded-lg lg:flex-row lg:gap-3 lg:max-w-[125px] lg:px-3";
 
   const variants = {
-    active: "bg-[#ffa32233] text-[#FFA322]",
+    active: "bg-[#ffa32233] text-[#FFA322] hover:bg-[#ffa32233]",
   };
 
   const getVariant = (state?: "active") =>

@@ -7,9 +7,19 @@ type Order = {
   icon: React.ReactNode;
 };
 
-export default function Order({ product, date, value, color, link, icon }: Order) {
+export default function Order({
+  product,
+  date,
+  value,
+  color,
+  link,
+  icon,
+}: Order) {
   return (
-    <a href={link} className="flex items-center justify-between">
+    <a
+      href={link}
+      className="flex items-center justify-between hover:bg-[#fafafa] p-3 duration-300 rounded-lg"
+    >
       <div className="flex items-center gap-5">
         <p className="bg-[#ffa32233] text-[#FFA322] text-3xl w-12 h-12 flex items-center justify-center rounded-full">
           {icon}
