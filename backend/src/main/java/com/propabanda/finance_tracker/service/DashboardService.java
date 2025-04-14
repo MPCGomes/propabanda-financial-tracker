@@ -2,6 +2,8 @@ package com.propabanda.finance_tracker.service;
 
 import com.propabanda.finance_tracker.dto.DashboardEvolutionDTO;
 import com.propabanda.finance_tracker.dto.DashboardFilterDTO;
+import com.propabanda.finance_tracker.dto.DashboardPerformanceDTO;
+import com.propabanda.finance_tracker.dto.ItemPerformanceDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
 import com.propabanda.finance_tracker.model.Order;
 import com.propabanda.finance_tracker.repository.OrderRepository;
@@ -10,7 +12,10 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,10 +31,10 @@ public class DashboardService {
 
     public DashboardEvolutionDTO getEvolution(DashboardFilterDTO dashboardFilterDTO) {
         // Use full range if no dates are provided
-        LocalDate startDate = dashboardFilterDTO.getStartDate() != null ?
-                dashboardFilterDTO.getStartDate() : LocalDate.MIN;
-        LocalDate endDate = dashboardFilterDTO.getEndDate() != null ?
-                dashboardFilterDTO.getEndDate() : LocalDate.MAX;
+        LocalDate startDate = dashboardFilterDTO.getStartDate() != null
+                ? dashboardFilterDTO.getStartDate() : LocalDate.MIN;
+        LocalDate endDate = dashboardFilterDTO.getEndDate() != null
+                ? dashboardFilterDTO.getEndDate() : LocalDate.MAX;
 
         List<Order> allOrders = orderRepository.findAll();
 
@@ -65,8 +70,8 @@ public class DashboardService {
 
         BigDecimal variationPercent = initialBalance.compareTo(BigDecimal.ZERO) > 0
                 ? finalBalance.subtract(initialBalance)
-                .multiply(BigDecimal.valueOf(100))
-                .divide(initialBalance, 2, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(initialBalance, 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
         DashboardEvolutionDTO dashboardEvolutionDTO = new DashboardEvolutionDTO();
@@ -76,7 +81,72 @@ public class DashboardService {
         dashboardEvolutionDTO.setVariationPercent(variationPercent);
         dashboardEvolutionDTO.setTotalOrders(periodOrderDTOs.size());
         dashboardEvolutionDTO.setOrders(periodOrderDTOs);
-        
+
         return dashboardEvolutionDTO;
+    }
+
+    public DashboardPerformanceDTO getPerformance(DashboardFilterDTO dashboardFilterDTO) {
+        LocalDate startDate = dashboardFilterDTO.getStartDate() != null
+                ? dashboardFilterDTO.getStartDate() : LocalDate.MIN;
+        LocalDate endDate = dashboardFilterDTO.getEndDate() != null
+                ? dashboardFilterDTO.getEndDate() : LocalDate.MAX;
+
+        List<Order> allOrders = orderRepository.findAll();
+
+        if (dashboardFilterDTO.getItemIds() != null && !dashboardFilterDTO.getItemIds().isEmpty()) {
+            allOrders = allOrders.stream()
+                    .filter(order -> order.getItems().stream()
+                            .anyMatch(item -> dashboardFilterDTO.getItemIds().contains(item.getId())))
+                    .toList();
+        }
+
+        List<OrderResponseDTO> periodOrderDTOs = allOrders.stream()
+                .filter(order -> !order.getEmissionDate().isBefore(startDate)
+                    && !order.getEmissionDate().isAfter(endDate))
+                .map(orderService::toOrderResponseDTO)
+                .toList();
+
+        Map<Long, ItemPerformanceDTO> itemPerformanceDTOMap = new HashMap<>();
+
+        for (OrderResponseDTO orderResponseDTO : periodOrderDTOs) {
+            if (orderResponseDTO.getItems() == null || orderResponseDTO.getItems().isEmpty()) continue;
+
+            BigDecimal valuePerItem = orderResponseDTO.getDiscountedValue()
+                    .divide(BigDecimal.valueOf(orderResponseDTO.getItems().size()), 2, RoundingMode.HALF_UP);
+
+            orderResponseDTO.getItems().forEach(item -> {
+                itemPerformanceDTOMap.putIfAbsent(item.getId(), new ItemPerformanceDTO());
+                ItemPerformanceDTO itemPerformanceDTO = itemPerformanceDTOMap.get(item.getId());
+                itemPerformanceDTO.setItemId(item.getId());
+                itemPerformanceDTO.setItemName(item.getName());
+
+                BigDecimal currentTotal = itemPerformanceDTO.getTotalRevenue() != null
+                        ? itemPerformanceDTO.getTotalRevenue()
+                        : BigDecimal.ZERO;
+
+                itemPerformanceDTO.setTotalRevenue(currentTotal.add(valuePerItem));
+            });
+        }
+
+        BigDecimal finalBalance = itemPerformanceDTOMap.values().stream()
+                .map(ItemPerformanceDTO::getTotalRevenue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        itemPerformanceDTOMap.values().forEach(itemPerformanceDTO -> {
+            BigDecimal percentage = finalBalance.compareTo(BigDecimal.ZERO) > 0
+                    ? itemPerformanceDTO.getTotalRevenue()
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(finalBalance, 2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+
+            itemPerformanceDTO.setPercentageOfTotal(percentage);
+            itemPerformanceDTO.setVariation(BigDecimal.ZERO);
+        });
+
+        DashboardPerformanceDTO dashboardPerformanceDTO = new DashboardPerformanceDTO();
+        dashboardPerformanceDTO.setFinalBalance(finalBalance);
+        dashboardPerformanceDTO.setItemPerformances(new ArrayList<>(itemPerformanceDTOMap.values()));
+
+        return dashboardPerformanceDTO;
     }
 }
