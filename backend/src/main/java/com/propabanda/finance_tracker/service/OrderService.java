@@ -84,7 +84,7 @@ public class OrderService {
         return order;
     }
 
-    private OrderResponseDTO toOrderResponseDTO(Order order) {
+    public OrderResponseDTO toOrderResponseDTO(Order order) {
         BigDecimal totalValue = order.getItems().stream()
                 .map(Item::getValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
