@@ -1,10 +1,9 @@
 import Client from "../components/Client";
 import FloatingButton from "../components/FloatingButton";
 import Header from "../components/Header";
-
-import { IoSearchSharp } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 import Filter from "../components/Filter";
+import SearchBar from "../components/SearchBar";
 
 type ClientsProps = {
   title: string;
@@ -26,16 +25,7 @@ export default function Clients({ title }: ClientsProps) {
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0 lg:ml-40">
           <div className="flex gap-5 flex-col lg:flex-row lg:justify-between lg:items-center">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Pesquisar"
-                className="w-full pl-4 pr-10 py-2 border text-sm text-[#282828] border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer">
-                <IoSearchSharp />
-              </button>
-            </div>
+            <SearchBar />
             <div className="flex gap-3">
               <Filter text={"Ordem"} />
               <Filter text={"Data"} />
