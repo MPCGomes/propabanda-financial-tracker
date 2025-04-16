@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import Order from "../components/Order";
 import { FaPlus } from "react-icons/fa6";
 import FloatingButton from "../components/FloatingButton";
+import Filter from "../components/Filter";
 
 type PlaceholderPageProps = {
   title: string;
@@ -32,7 +33,12 @@ export default function PlaceholderPage({ title }: PlaceholderPageProps) {
               />
               <IoSearchSharp className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             </div>
-            Filtros aqui
+            <div className="flex gap-3 flex-wrap lg:flex-nowrap">
+              <Filter text={"Ordem"} />
+              <Filter text={"Data"} />
+              <Filter text={"Status"} />
+              <Filter text={"Item"} />
+            </div>
           </div>
           <div className="flex flex-col gap-3 p-2 bg-white rounded-lg">
             <Order

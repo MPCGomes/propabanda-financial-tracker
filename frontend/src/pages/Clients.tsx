@@ -4,6 +4,7 @@ import Header from "../components/Header";
 
 import { IoSearchSharp } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
+import Filter from "../components/Filter";
 
 type ClientsProps = {
   title: string;
@@ -33,7 +34,10 @@ export default function Clients({ title }: ClientsProps) {
               />
               <IoSearchSharp className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             </div>
-            Filtros aqui
+            <div className="flex gap-3">
+              <Filter text={"Ordem"} />
+              <Filter text={"Data"} />
+            </div>
           </div>
           <div className="flex flex-col gap-3 p-2 bg-white rounded-lg">
             <Client client={"Empresa"} rep={"Representante"} link={"#"} />

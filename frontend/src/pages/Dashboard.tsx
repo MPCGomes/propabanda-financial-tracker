@@ -39,7 +39,7 @@ export default function Dashboard({ title }: DashboardProps) {
             </div>
             <div className="flex gap-3">
               <Filter text={"Período"} />
-              <Filter text={"Itens"}/>
+              <Filter text={"Item"}/>
             </div>
           </div>
 
