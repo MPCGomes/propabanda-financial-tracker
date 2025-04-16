@@ -32,7 +32,9 @@ export default function Clients({ title }: ClientsProps) {
                 placeholder="Pesquisar"
                 className="w-full pl-4 pr-10 py-2 border text-sm text-[#282828] border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               />
-              <IoSearchSharp className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer">
+                <IoSearchSharp />
+              </button>
             </div>
             <div className="flex gap-3">
               <Filter text={"Ordem"} />
