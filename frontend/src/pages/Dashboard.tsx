@@ -4,6 +4,7 @@ import UserHeader from "../components/UserHeader";
 import { FaArrowUp } from "react-icons/fa6";
 import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
 import Header from "../components/Header";
+import Filter from "../components/Filter";
 
 type DashboardProps = {
   title: string;
@@ -36,7 +37,10 @@ export default function Dashboard({ title }: DashboardProps) {
             <div className="flex justify-center">
               <DashboardHeader evolution="Dash" />
             </div>
-            Filtro aqui
+            <div className="flex gap-3">
+              <Filter text={"Período"} />
+              <Filter text={"Itens"}/>
+            </div>
           </div>
 
           <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
