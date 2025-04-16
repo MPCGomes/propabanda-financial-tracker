@@ -2,7 +2,7 @@ type ButtonProps = {
   text: string;
   variant?: "filled" | "outlined";
   className?: string;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>; // <- isso permite passar onClick, type, etc.
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export default function Button({
   text,
