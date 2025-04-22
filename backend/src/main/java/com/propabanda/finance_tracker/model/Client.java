@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "client")
@@ -32,4 +35,8 @@ public class Client {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", referencedColumnName = "id", nullable = false, unique = true)
     private Address address;
+
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private LocalDate createdAt;
 }

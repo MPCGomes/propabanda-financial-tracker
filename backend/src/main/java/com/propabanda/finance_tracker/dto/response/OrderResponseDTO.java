@@ -30,4 +30,6 @@ public class OrderResponseDTO {
     private BigDecimal discountedValue;
     private BigDecimal paidValue;
     private BigDecimal remainingValue;
+
+    private LocalDate createdAt;
 }

@@ -21,10 +21,9 @@ CREATE TABLE client (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     document_number VARCHAR(14) UNIQUE NOT NULL,
-
     representant_id INTEGER NOT NULL UNIQUE,
     address_id INTEGER NOT NULL UNIQUE,
-
+    created_at DATE DEFAULT CURRENT_DATE,
     FOREIGN KEY (representant_id) REFERENCES representant(id),
     FOREIGN KEY (address_id) REFERENCES address(id)
 );
@@ -53,7 +52,7 @@ CREATE TABLE app_order (
     emission_date DATE NOT NULL,
     paid_installments_count INTEGER DEFAULT 0,
     contract_file_path VARCHAR(255),
-
+    created_at DATE DEFAULT CURRENT_DATE,
     FOREIGN KEY (client_id) REFERENCES client(id)
 );
 

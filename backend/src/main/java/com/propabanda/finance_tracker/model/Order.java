@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -67,4 +68,8 @@ public class Order {
             inverseJoinColumns = @JoinColumn(name = "item_id")
     )
     private Set<Item> items;
+
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private LocalDate createdAt;
 }

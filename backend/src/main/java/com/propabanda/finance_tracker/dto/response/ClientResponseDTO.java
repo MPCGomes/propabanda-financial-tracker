@@ -3,6 +3,8 @@ package com.propabanda.finance_tracker.dto.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 public class ClientResponseDTO {
@@ -12,4 +14,5 @@ public class ClientResponseDTO {
     private String documentNumber;
     private RepresentantResponseDTO representantResponseDTO;
     private AddressResponseDTO addressResponseDTO;
+    private LocalDate createdAt;
 }
