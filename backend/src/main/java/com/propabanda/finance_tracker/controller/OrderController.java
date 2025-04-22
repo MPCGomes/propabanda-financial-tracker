@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.controller;
 
+import com.propabanda.finance_tracker.dto.OrderFilterDTO;
 import com.propabanda.finance_tracker.dto.request.OrderRequestDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
 import com.propabanda.finance_tracker.service.OrderService;
@@ -52,4 +53,11 @@ public class OrderController {
         orderService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/filter")
+    public ResponseEntity<List<OrderResponseDTO>> filterOrders(@RequestBody OrderFilterDTO orderFilterDTO) {
+        List<OrderResponseDTO> filtered = orderService.findAllFiltered(orderFilterDTO);
+        return ResponseEntity.ok(filtered);
+    }
+
 }

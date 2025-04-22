@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.service;
 
+import com.propabanda.finance_tracker.dto.OrderFilterDTO;
 import com.propabanda.finance_tracker.dto.request.OrderRequestDTO;
 import com.propabanda.finance_tracker.dto.response.ItemResponseDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
@@ -13,10 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,6 +59,35 @@ public class OrderService {
 
     public void delete(Long id) {
         orderRepository.deleteById(id);
+    }
+
+    public List<OrderResponseDTO> findAllFiltered(OrderFilterDTO orderFilterDTO) {
+        List<Order> orders = orderRepository.findAll();
+
+        if (orderFilterDTO.getSearch() != null && !orderFilterDTO.getSearch().isBlank()) {
+            String term = orderFilterDTO.getSearch().toLowerCase();
+            orders = orders.stream()
+                    .filter(order -> order.getClient().getName().toLowerCase().contains(term))
+                    .toList();
+        }
+
+        Comparator<Order> comparator;
+
+        if ("emissionDate".equalsIgnoreCase(orderFilterDTO.getSortBy())) {
+            comparator = Comparator.comparing(Order::getEmissionDate);
+        } else {
+            comparator = Comparator.comparing(order -> order.getClient().getName(), String.CASE_INSENSITIVE_ORDER);
+        }
+
+        if ("desc".equalsIgnoreCase(orderFilterDTO.getDirection())) {
+            comparator = comparator.reversed();
+        }
+
+        orders = orders.stream().sorted(comparator).toList();
+
+        return orders.stream()
+                .map(this::toOrderResponseDTO)
+                .toList();
     }
 
     private Order toOrderModel(OrderRequestDTO orderRequestDTO) {
