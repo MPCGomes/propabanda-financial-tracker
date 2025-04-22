@@ -58,7 +58,7 @@ public class ItemService {
     private Item toItemModel(ItemRequestDTO itemRequestDTO) {
         Item item = new Item();
         item.setName(itemRequestDTO.getName());
-        item.setValue(itemRequestDTO.getValue());
+        item.setPrice(itemRequestDTO.getPrice());
         return item;
     }
 
@@ -66,7 +66,7 @@ public class ItemService {
         ItemResponseDTO itemResponseDTO = new ItemResponseDTO();
         itemResponseDTO.setId(item.getId());
         itemResponseDTO.setName(item.getName());
-        itemResponseDTO.setValue(item.getValue());
+        itemResponseDTO.setPrice(item.getPrice());
         return itemResponseDTO;
     }
 }

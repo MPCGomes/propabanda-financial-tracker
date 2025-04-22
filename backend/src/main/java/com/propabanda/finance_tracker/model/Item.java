@@ -27,6 +27,6 @@ public class Item {
 
     @NotNull
     @DecimalMin("0.00")
-    @Column(name = "value", nullable = false)
-    private BigDecimal value;
+    @Column(name = "price", nullable = false)
+    private BigDecimal price;
 }

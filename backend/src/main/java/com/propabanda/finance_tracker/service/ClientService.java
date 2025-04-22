@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.service;
 
+import com.propabanda.finance_tracker.dto.ClientFilterDTO;
 import com.propabanda.finance_tracker.dto.request.AddressRequestDTO;
 import com.propabanda.finance_tracker.dto.request.ClientRequestDTO;
 import com.propabanda.finance_tracker.dto.request.RepresentantRequestDTO;
@@ -12,6 +13,7 @@ import com.propabanda.finance_tracker.model.Representant;
 import com.propabanda.finance_tracker.repository.ClientRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -61,17 +63,37 @@ public class ClientService {
         return clientRepository.existsByDocumentNumber(documentNumber);
     }
 
-    private Client toClientModel(ClientRequestDTO clientRequestDTO) {
-        Client client = new Client();
-        client.setName(clientRequestDTO.getName());
-        client.setDocumentNumber(clientRequestDTO.getDocumentNumber());
+    public List<ClientResponseDTO> findAllFiltered(ClientFilterDTO clientFilterDTO) {
+        List <Client> clients = clientRepository.findAll();
 
-        Representant representant = new Representant();
-        RepresentantRequestDTO representantRequestDTO = clientRequestDTO.getRepresentantRequestDTO();
-        representant.setName(representantRequestDTO.getName());
-        representant.setEmail(representantRequestDTO.getEmail());
-        representant.setPhone(representantRequestDTO.getPhone());
-        client.setRepresentant(representant);
+        if (clientFilterDTO.getSearch() != null & !clientFilterDTO.getSearch().isBlank()) {
+            String term = clientFilterDTO.getSearch().toLowerCase();
+            clients = clients.stream()
+                    .filter(client -> client.getName().toLowerCase().contains(term))
+                    .toList();
+        }
+
+        Comparator<Client> comparator;
+
+        if ("createdAt".equalsIgnoreCase(clientFilterDTO.getSortBy())) {
+            comparator = Comparator.comparing(Client::getCreatedAt);
+        } else {
+            comparator = Comparator.comparing(Client::getName, String.CASE_INSENSITIVE_ORDER);
+        }
+
+        if ("desc".equalsIgnoreCase(clientFilterDTO.getDirection())) {
+            comparator = comparator.reversed();
+        }
+
+        clients = clients.stream().sorted(comparator).toList();
+
+        return clients.stream()
+                .map(this::toClientResponseDTO)
+                .toList();
+    }
+
+    private Client toClientModel(ClientRequestDTO clientRequestDTO) {
+        Client client = getClient(clientRequestDTO);
 
         Address address = new Address();
         AddressRequestDTO addressRequestDTO = clientRequestDTO.getAddressRequestDTO();
@@ -86,7 +108,21 @@ public class ClientService {
         return client;
     }
 
-   private  ClientResponseDTO toClientResponseDTO(Client client) {
+    private static Client getClient(ClientRequestDTO clientRequestDTO) {
+        Client client = new Client();
+        client.setName(clientRequestDTO.getName());
+        client.setDocumentNumber(clientRequestDTO.getDocumentNumber());
+
+        Representant representant = new Representant();
+        RepresentantRequestDTO representantRequestDTO = clientRequestDTO.getRepresentantRequestDTO();
+        representant.setName(representantRequestDTO.getName());
+        representant.setEmail(representantRequestDTO.getEmail());
+        representant.setPhone(representantRequestDTO.getPhone());
+        client.setRepresentant(representant);
+        return client;
+    }
+
+    private  ClientResponseDTO toClientResponseDTO(Client client) {
         ClientResponseDTO clientResponseDTO = new ClientResponseDTO();
         clientResponseDTO.setId(client.getId());
         clientResponseDTO.setName(client.getName());

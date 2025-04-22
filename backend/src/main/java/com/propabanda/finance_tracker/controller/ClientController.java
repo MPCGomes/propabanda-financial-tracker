@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.controller;
 
+import com.propabanda.finance_tracker.dto.ClientFilterDTO;
 import com.propabanda.finance_tracker.dto.request.ClientRequestDTO;
 import com.propabanda.finance_tracker.dto.response.ClientResponseDTO;
 import com.propabanda.finance_tracker.service.ClientService;
@@ -59,5 +60,11 @@ public class ClientController {
 
         clientService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/filter")
+    public ResponseEntity<List<ClientResponseDTO>> filterClients(@RequestBody ClientFilterDTO clientFilterDTO) {
+        List<ClientResponseDTO> filtered = clientService.findAllFiltered(clientFilterDTO);
+        return ResponseEntity.ok(filtered);
     }
 }

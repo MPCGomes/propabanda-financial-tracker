@@ -16,5 +16,5 @@ public class ItemRequestDTO {
     private String name;
 
     @NotBlank
-    private BigDecimal value;
+    private BigDecimal price;
 }
