@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.service;
 
+import com.propabanda.finance_tracker.dto.ClientOrderFilterDTO;
 import com.propabanda.finance_tracker.dto.OrderFilterDTO;
 import com.propabanda.finance_tracker.dto.request.OrderRequestDTO;
 import com.propabanda.finance_tracker.dto.response.ItemResponseDTO;
@@ -89,6 +90,41 @@ public class OrderService {
                 .map(this::toOrderResponseDTO)
                 .toList();
     }
+
+    public List<OrderResponseDTO> findByClientFiltered(Long clientId, ClientOrderFilterDTO clientOrderFilterDTO) {
+        List<Order> orders = orderRepository.findAll().stream()
+                .filter(order -> order.getClient().getId().equals(clientId))
+                .toList();
+
+        if (clientOrderFilterDTO.getItemSearch() != null && !clientOrderFilterDTO.getItemSearch().isBlank()) {
+            String term = clientOrderFilterDTO.getItemSearch().toLowerCase();
+            orders = orders.stream()
+                    .filter(order -> order.getItems().stream()
+                            .anyMatch(item -> item.getName().toLowerCase().contains(term)))
+                    .toList();
+        }
+
+        Comparator<Order> comparator;
+
+        switch (clientOrderFilterDTO.getSortBy()) {
+            case "emissionDate" -> comparator = Comparator.comparing(Order::getEmissionDate);
+            case "id" -> comparator = Comparator.comparing(Order::getId);
+            case "itemName" -> comparator = Comparator.comparing(o ->
+                    o.getItems().stream().findFirst().map(item -> item.getName().toLowerCase()).orElse(""));
+            default -> comparator = Comparator.comparing(Order::getEmissionDate);
+        }
+
+        if ("desc".equalsIgnoreCase(clientOrderFilterDTO.getDirection())) {
+            comparator = comparator.reversed();
+        }
+
+        orders = orders.stream().sorted(comparator).toList();
+
+        return orders.stream()
+                .map(this::toOrderResponseDTO)
+                .toList();
+    }
+
 
     private Order toOrderModel(OrderRequestDTO orderRequestDTO) {
         Client client = clientRepository.findById(orderRequestDTO.getClientId())

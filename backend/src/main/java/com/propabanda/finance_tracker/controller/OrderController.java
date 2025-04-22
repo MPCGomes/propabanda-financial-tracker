@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.controller;
 
+import com.propabanda.finance_tracker.dto.ClientOrderFilterDTO;
 import com.propabanda.finance_tracker.dto.OrderFilterDTO;
 import com.propabanda.finance_tracker.dto.request.OrderRequestDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
@@ -59,5 +60,15 @@ public class OrderController {
         List<OrderResponseDTO> filtered = orderService.findAllFiltered(orderFilterDTO);
         return ResponseEntity.ok(filtered);
     }
+
+    @PostMapping("/client/{clientId}/filter")
+    public ResponseEntity<List<OrderResponseDTO>> filterOrdersByClient(
+            @PathVariable Long clientId,
+            @RequestBody ClientOrderFilterDTO clientOrderFilterDTO
+    ) {
+        List<OrderResponseDTO> filtered = orderService.findByClientFiltered(clientId, clientOrderFilterDTO);
+        return ResponseEntity.ok(filtered);
+    }
+
 
 }
