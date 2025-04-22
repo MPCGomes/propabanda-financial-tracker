@@ -11,8 +11,12 @@ import com.propabanda.finance_tracker.model.Order;
 import com.propabanda.finance_tracker.repository.ClientRepository;
 import com.propabanda.finance_tracker.repository.ItemRepository;
 import com.propabanda.finance_tracker.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -24,6 +28,9 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ClientRepository clientRepository;
     private final ItemRepository itemRepository;
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     public OrderService (OrderRepository orderRepository, ClientRepository clientRepository, ItemRepository itemRepository) {
         this.orderRepository = orderRepository;
@@ -123,6 +130,63 @@ public class OrderService {
         return orders.stream()
                 .map(this::toOrderResponseDTO)
                 .toList();
+    }
+
+    public void uploadContract(Long orderId, MultipartFile file) throws IOException {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        String fileName = file.getOriginalFilename();
+        if (fileName == null || !fileName.matches(".*\\.(pdf|doc|docx)$")) {
+            throw new IllegalArgumentException("Invalid file format. Only PDF, DOC, DOCX allowed.");
+        }
+
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File too large. Max 10MB.");
+        }
+
+        File dir = new File(uploadDir);
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new IOException("Failed to create directory: " + uploadDir);
+        }
+
+        String finalPath = uploadDir + "/order_" + orderId + "_" + System.currentTimeMillis() + "_" + fileName;
+        file.transferTo(new File(finalPath));
+
+        order.setContractFilePath(finalPath);
+        orderRepository.save(order);
+    }
+
+    public File getContractFile(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        if (order.getContractFilePath() == null) {
+            throw new IllegalStateException("No contract uploaded for this order.");
+        }
+
+        File file = new File(order.getContractFilePath());
+        if (!file.exists()) {
+            throw new IllegalStateException("Contract file not found on server.");
+        }
+
+        return file;
+    }
+
+    public void deleteContract(Long orderId) throws IOException {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        if (order.getContractFilePath() != null) {
+            File file = new File(order.getContractFilePath());
+
+            if (file.exists() && !file.delete()) {
+                throw new IOException("Failed to delete contract file: " + file.getAbsolutePath());
+            }
+
+            order.setContractFilePath(null);
+            orderRepository.save(order);
+        }
     }
 
 
