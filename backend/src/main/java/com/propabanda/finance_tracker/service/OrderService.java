@@ -86,7 +86,7 @@ public class OrderService {
 
     public OrderResponseDTO toOrderResponseDTO(Order order) {
         BigDecimal totalValue = order.getItems().stream()
-                .map(Item::getValue)
+                .map(Item::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal discountPercent = order.getDiscount().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
@@ -117,7 +117,7 @@ public class OrderService {
             ItemResponseDTO itemResponseDTO = new ItemResponseDTO();
             itemResponseDTO.setId(item.getId());
             itemResponseDTO.setName(item.getName());
-            itemResponseDTO.setValue(item.getValue());
+            itemResponseDTO.setPrice(item.getPrice());
             return itemResponseDTO;
         }).collect(Collectors.toSet()));
 

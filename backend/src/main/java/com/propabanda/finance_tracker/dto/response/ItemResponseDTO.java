@@ -11,5 +11,5 @@ public class ItemResponseDTO {
 
     private Long id;
     private String name;
-    private BigDecimal value;
+    private BigDecimal price;
 }

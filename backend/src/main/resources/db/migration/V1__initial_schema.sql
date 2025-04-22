@@ -31,7 +31,7 @@ CREATE TABLE client (
 CREATE TABLE item (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    value NUMERIC(10, 2) NOT NULL
+    price NUMERIC(10, 2) NOT NULL
 );
 
 CREATE TABLE app_user (
