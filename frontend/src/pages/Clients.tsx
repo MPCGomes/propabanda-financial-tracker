@@ -7,10 +7,16 @@ import SearchBar from "../components/SearchBar";
 import Button from "../components/Button";
 import Modal from "../components/Modal";
 import { useState } from "react";
+import FilterSelect from "../components/FilterSelect";
 
 type ClientsProps = {
   title: string;
 };
+
+const options = [
+  { value: "order", label: "A - Z" },
+  { value: "order", label: "Z - A" },
+];
 
 export default function Clients({ title }: ClientsProps) {
   const [openModal, setOpenModal] = useState<
@@ -33,8 +39,15 @@ export default function Clients({ title }: ClientsProps) {
           <div className="flex gap-5 flex-col lg:flex-row lg:justify-between lg:items-center">
             <SearchBar />
             {/* Filter */}
-            <div className="flex gap-3">
-              <Filter text={"Ordem"} onClick={() => setOpenModal("order")} />
+            <div className="flex gap-3 align-start">
+              <div className="hidden lg:block">
+                <FilterSelect options={options} placeholder={`Ordem`} />
+              </div>
+              <Filter
+                text={"Ordem"}
+                onClick={() => setOpenModal("order")}
+                className="lg:hidden"
+              />
               <Filter text={"Data"} onClick={() => setOpenModal("date")} />
             </div>
             {/* Modal: Alphabetical Order */}
@@ -43,6 +56,7 @@ export default function Clients({ title }: ClientsProps) {
               onClose={() => setOpenModal(null)}
               title="Ordem Alfabética"
             >
+              {/* Modal Content */}
               <div className="flex flex-col gap-2">
                 <label htmlFor="a-z">
                   <input type="radio" id="a-z" name="order" /> Ascendente (A-Z)
@@ -60,6 +74,7 @@ export default function Clients({ title }: ClientsProps) {
               onClose={() => setOpenModal(null)}
               title="Período"
             >
+              {/* Modal Content */}
               <div className="flex gap-2">
                 <div className="relative w-full">
                   <input
@@ -94,6 +109,8 @@ export default function Clients({ title }: ClientsProps) {
               <Button text={"Aplicar filtro"} />
             </Modal>
           </div>
+
+          {/* List of Clients */}
           <div className="flex flex-col gap-3 p-2 bg-white rounded-lg">
             <Client client={"Empresa"} rep={"Representante"} link={"#"} />
             <Client client={"Empresa"} rep={"Representante"} link={"#"} />

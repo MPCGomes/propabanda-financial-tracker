@@ -8,12 +8,31 @@ import FloatingButton from "../components/FloatingButton";
 
 import { FaTrash } from "react-icons/fa";
 import { RiPencilFill } from "react-icons/ri";
+import Filter from "../components/Filter";
+import FilterSelect from "../components/FilterSelect";
+import Modal from "../components/Modal";
+import { useState } from "react";
+import SearchBar from "../components/SearchBar";
 
 type ClientDetailsProps = {
   title: string;
 };
 
+const orderOptions = [
+  { value: "order", label: "A - Z" },
+  { value: "order", label: "Z - A" },
+];
+
+const statusOptions = [
+  { value: "status", label: "Pago" },
+  { value: "status", label: "Pendente" },
+  { value: "status", label: "Não pago" },
+];
+
 export default function ClientDetails({ title }: ClientDetailsProps) {
+  const [openModal, setOpenModal] = useState<
+    null | "order" | "date" | "status" | "item"
+  >(null);
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-center min-h-screen lg:p-3 lg:items-start">
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
@@ -63,18 +82,87 @@ export default function ClientDetails({ title }: ClientDetailsProps) {
               </div>
             </div>
           </div>
-          {/* Pedidos */}
+          {/* Client purchase list */}
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
             <p className="text-base font-bold">Pedidos</p>
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Pesquisar"
-                className="w-full pl-4 pr-10 py-2 border text-sm text-[#282828] border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            <SearchBar />
+            <div className="flex gap-3 flex-wrap lg:flex-nowrap">
+              <div className="hidden lg:block">
+                <FilterSelect options={orderOptions} placeholder={`Ordem`} />
+              </div>
+              <Filter
+                text={"Ordem"}
+                onClick={() => setOpenModal("order")}
+                className="lg:hidden"
               />
-              <IoSearchSharp className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <Filter text={"Data"} onClick={() => setOpenModal("date")} />
+              <div className="hidden lg:block">
+                <FilterSelect options={statusOptions} placeholder={`Status`} />
+              </div>
+              <Filter
+                text={"Status"}
+                onClick={() => setOpenModal("status")}
+                className="lg:hidden"
+              />
             </div>
-            Filtro aqui
+
+            {/* Modal: Alphabetical Order */}
+            <Modal
+              isOpen={openModal === "order"}
+              onClose={() => setOpenModal(null)}
+              title="Ordem Alfabética"
+            >
+              <div className="flex flex-col gap-2">
+                <label htmlFor="a-z">
+                  <input type="radio" id="a-z" name="order" /> Ascendente (A-Z)
+                </label>
+                <label htmlFor="z-a">
+                  <input type="radio" id="z-a" name="order" /> Descentente (Z-A)
+                </label>
+              </div>
+              <Button text={"Aplicar filtro"} />
+            </Modal>
+
+            {/* Modal: Date */}
+            <Modal
+              isOpen={openModal === "date"}
+              onClose={() => setOpenModal(null)}
+              title="Período"
+            >
+              {/* Modal Content */}
+              <div className="flex gap-2">
+                <div className="relative w-full">
+                  <input
+                    type="date"
+                    id="start-date"
+                    className="peer w-full border border-gray-300 rounded-md p-2 pt-7 text-sm text-gray-700 bg-white appearance-none focus:outline-none focus:border-blue-500s"
+                    placeholder=" "
+                  />
+                  <label
+                    htmlFor="start-date"
+                    className="absolute left-2 top-2 text-[#282828] text-xs transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-xs peer-placeholder-shown:text-[#282828] peer-focus:top-2 peer-focus:text-xs peer-focus:text-blue-500"
+                  >
+                    Início
+                  </label>
+                </div>
+                <div className="relative w-full">
+                  <input
+                    type="date"
+                    id="start-date"
+                    className="peer w-full border border-gray-300 rounded-md p-2 pt-7 text-sm text-gray-700 bg-white appearance-none focus:outline-none focus:border-blue-500s"
+                    placeholder=" "
+                  />
+                  <label
+                    htmlFor="start-date"
+                    className="absolute left-2 top-2 text-[#282828] text-xs transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-xs peer-placeholder-shown:text-[#282828] peer-focus:top-2 peer-focus:text-xs peer-focus:text-blue-500"
+                  >
+                    Início
+                  </label>
+                </div>
+              </div>
+
+              <Button text={"Aplicar filtro"} />
+            </Modal>
             <div className="flex flex-col gap-3">
               <Order
                 product={"Site"}
@@ -104,6 +192,7 @@ export default function ClientDetails({ title }: ClientDetailsProps) {
           </div>
         </div>
       </div>
+      {/* Floating Buttons */}
       <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2">
         <FloatingButton icon={<RiPencilFill />} background={"#2696FF"} />
         <FloatingButton icon={<FaTrash />} background={"#EE3A4B"} />

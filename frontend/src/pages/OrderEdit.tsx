@@ -33,6 +33,7 @@ export default function OrderEdit({ title }: OrderEditProps) {
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0 lg:ml-40">
           {/* Voltar para o Pedido ID */}
           <GoBack link={"/"} />
+          {/* Inputs */}
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
             <p className="text-base font-medium">Editar Pedido</p>
             <div className="flex flex-col gap-5">
