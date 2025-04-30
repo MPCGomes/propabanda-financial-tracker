@@ -41,8 +41,8 @@ public class DashboardService {
         // Filter by item IDs if provided
         if (dashboardFilterDTO.getItemIds() != null && !dashboardFilterDTO.getItemIds().isEmpty()) {
             allOrders = allOrders.stream()
-                    .filter(order -> order.getItems().stream()
-                            .anyMatch(item -> dashboardFilterDTO.getItemIds().contains(item.getId())))
+                    .filter(order -> order.getOrderItems().stream().anyMatch(orderItem ->
+                            dashboardFilterDTO.getItemIds().contains(orderItem.getItem().getId())))
                     .toList();
         }
 
@@ -95,36 +95,34 @@ public class DashboardService {
 
         if (dashboardFilterDTO.getItemIds() != null && !dashboardFilterDTO.getItemIds().isEmpty()) {
             allOrders = allOrders.stream()
-                    .filter(order -> order.getItems().stream()
-                            .anyMatch(item -> dashboardFilterDTO.getItemIds().contains(item.getId())))
+                    .filter(order -> order.getOrderItems().stream().anyMatch(orderItem ->
+                            dashboardFilterDTO.getItemIds().contains(orderItem.getItem().getId())))
                     .toList();
         }
 
         List<OrderResponseDTO> periodOrderDTOs = allOrders.stream()
                 .filter(order -> !order.getEmissionDate().isBefore(startDate)
-                    && !order.getEmissionDate().isAfter(endDate))
+                        && !order.getEmissionDate().isAfter(endDate))
                 .map(orderService::toOrderResponseDTO)
                 .toList();
 
         Map<Long, ItemPerformanceDTO> itemPerformanceDTOMap = new HashMap<>();
 
         for (OrderResponseDTO orderResponseDTO : periodOrderDTOs) {
-            if (orderResponseDTO.getItems() == null || orderResponseDTO.getItems().isEmpty()) continue;
+            if (orderResponseDTO.getOrderItems() == null || orderResponseDTO.getOrderItems().isEmpty()) continue;
 
             BigDecimal valuePerItem = orderResponseDTO.getDiscountedValue()
-                    .divide(BigDecimal.valueOf(orderResponseDTO.getItems().size()), 2, RoundingMode.HALF_UP);
+                    .divide(BigDecimal.valueOf(orderResponseDTO.getOrderItems().size()), 2, RoundingMode.HALF_UP);
 
-            orderResponseDTO.getItems().forEach(item -> {
-                itemPerformanceDTOMap.putIfAbsent(item.getId(), new ItemPerformanceDTO());
-                ItemPerformanceDTO itemPerformanceDTO = itemPerformanceDTOMap.get(item.getId());
-                itemPerformanceDTO.setItemId(item.getId());
-                itemPerformanceDTO.setItemName(item.getName());
+            orderResponseDTO.getOrderItems().forEach(orderItem -> {
+                Long itemId = orderItem.getItemId();
+                itemPerformanceDTOMap.putIfAbsent(itemId, new ItemPerformanceDTO());
+                ItemPerformanceDTO dto = itemPerformanceDTOMap.get(itemId);
+                dto.setItemId(itemId);
+                dto.setItemName(orderItem.getItemName());
 
-                BigDecimal currentTotal = itemPerformanceDTO.getTotalRevenue() != null
-                        ? itemPerformanceDTO.getTotalRevenue()
-                        : BigDecimal.ZERO;
-
-                itemPerformanceDTO.setTotalRevenue(currentTotal.add(valuePerItem));
+                BigDecimal current = dto.getTotalRevenue() != null ? dto.getTotalRevenue() : BigDecimal.ZERO;
+                dto.setTotalRevenue(current.add(valuePerItem));
             });
         }
 

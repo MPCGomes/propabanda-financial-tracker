@@ -57,9 +57,12 @@ CREATE TABLE app_order (
 );
 
 CREATE TABLE order_item (
+    id SERIAL PRIMARY KEY,
     order_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
-    PRIMARY KEY (order_id, item_id),
+    item_name VARCHAR(100) NOT NULL,
+    price_at_order NUMERIC(10,2) NOT NULL,
+
     FOREIGN KEY (order_id) REFERENCES app_order(id),
     FOREIGN KEY (item_id) REFERENCES item(id)
 );

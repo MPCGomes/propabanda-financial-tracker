@@ -4,10 +4,12 @@ import com.propabanda.finance_tracker.dto.ClientOrderFilterDTO;
 import com.propabanda.finance_tracker.dto.OrderFilterDTO;
 import com.propabanda.finance_tracker.dto.request.OrderRequestDTO;
 import com.propabanda.finance_tracker.dto.response.ItemResponseDTO;
+import com.propabanda.finance_tracker.dto.response.OrderItemResponseDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
 import com.propabanda.finance_tracker.model.Client;
 import com.propabanda.finance_tracker.model.Item;
 import com.propabanda.finance_tracker.model.Order;
+import com.propabanda.finance_tracker.model.OrderItem;
 import com.propabanda.finance_tracker.repository.ClientRepository;
 import com.propabanda.finance_tracker.repository.ItemRepository;
 import com.propabanda.finance_tracker.repository.OrderRepository;
@@ -106,24 +108,12 @@ public class OrderService {
         if (clientOrderFilterDTO.getItemSearch() != null && !clientOrderFilterDTO.getItemSearch().isBlank()) {
             String term = clientOrderFilterDTO.getItemSearch().toLowerCase();
             orders = orders.stream()
-                    .filter(order -> order.getItems().stream()
-                            .anyMatch(item -> item.getName().toLowerCase().contains(term)))
+                    .filter(order -> order.getOrderItems().stream()
+                            .anyMatch(orderItem -> orderItem.getItemName().toLowerCase().contains(term)))
                     .toList();
         }
 
-        Comparator<Order> comparator;
-
-        switch (clientOrderFilterDTO.getSortBy()) {
-            case "emissionDate" -> comparator = Comparator.comparing(Order::getEmissionDate);
-            case "id" -> comparator = Comparator.comparing(Order::getId);
-            case "itemName" -> comparator = Comparator.comparing(o ->
-                    o.getItems().stream().findFirst().map(item -> item.getName().toLowerCase()).orElse(""));
-            default -> comparator = Comparator.comparing(Order::getEmissionDate);
-        }
-
-        if ("desc".equalsIgnoreCase(clientOrderFilterDTO.getDirection())) {
-            comparator = comparator.reversed();
-        }
+        Comparator<Order> comparator = getOrderComparator(clientOrderFilterDTO);
 
         orders = orders.stream().sorted(comparator).toList();
 
@@ -131,6 +121,27 @@ public class OrderService {
                 .map(this::toOrderResponseDTO)
                 .toList();
     }
+
+    private static Comparator<Order> getOrderComparator(ClientOrderFilterDTO clientOrderFilterDTO) {
+        Comparator<Order> comparator;
+
+        switch (clientOrderFilterDTO.getSortBy()) {
+            case "emissionDate" -> comparator = Comparator.comparing(Order::getEmissionDate);
+            case "id" -> comparator = Comparator.comparing(Order::getId);
+            case "itemName" -> comparator = Comparator.comparing(order ->
+                    order.getOrderItems().stream()
+                            .findFirst()
+                            .map(orderItem -> orderItem.getItemName().toLowerCase())
+                            .orElse(""));
+            default -> comparator = Comparator.comparing(Order::getEmissionDate);
+        }
+
+        if ("desc".equalsIgnoreCase(clientOrderFilterDTO.getDirection())) {
+            comparator = comparator.reversed();
+        }
+        return comparator;
+    }
+
 
     public void uploadContract(Long orderId, MultipartFile file) throws IOException {
         Order order = orderRepository.findById(orderId)
@@ -206,18 +217,29 @@ public class OrderService {
         order.setEmissionDate(orderRequestDTO.getEmissionDate());
         order.setPaidInstallmentsCount(orderRequestDTO.getPaidInstallmentsCount());
         order.setContractFilePath(orderRequestDTO.getContractFilePath());
-        order.setItems(items);
+
+        List<OrderItem> orderItems = items.stream().map(item -> {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setItem(item);
+            orderItem.setItemName(item.getName());
+            orderItem.setPriceAtOrder(item.getPrice());
+            return orderItem;
+        }).toList();
+
+        order.setOrderItems(orderItems);
 
         return order;
     }
 
-    public OrderResponseDTO toOrderResponseDTO(Order order) {
-        BigDecimal totalValue = order.getItems().stream()
-                .map(Item::getPrice)
+
+    OrderResponseDTO toOrderResponseDTO(Order order) {
+        BigDecimal total = order.getOrderItems().stream()
+                .map(OrderItem::getPriceAtOrder)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal discountPercent = order.getDiscount().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        BigDecimal discountedValue = totalValue.subtract(totalValue.multiply(discountPercent));
+        BigDecimal discountedValue = total.subtract(total.multiply(discountPercent));
         BigDecimal installmentValue = discountedValue.divide(BigDecimal.valueOf(order.getInstallmentCount()), 2, RoundingMode.HALF_UP);
         BigDecimal paidValue = installmentValue.multiply(BigDecimal.valueOf(order.getPaidInstallmentsCount()));
         BigDecimal remainingValue = discountedValue.subtract(paidValue);
@@ -235,20 +257,19 @@ public class OrderService {
         orderResponseDTO.setPaidInstallmentsCount(order.getPaidInstallmentsCount());
         orderResponseDTO.setContractFilePath(order.getContractFilePath());
 
-        orderResponseDTO.setTotalValue(totalValue);
+        orderResponseDTO.setTotalValue(total);
         orderResponseDTO.setDiscountedValue(discountedValue);
         orderResponseDTO.setPaidValue(paidValue);
         orderResponseDTO.setRemainingValue(remainingValue);
 
-        orderResponseDTO.setItems(order.getItems().stream().map(item -> {
-            ItemResponseDTO itemResponseDTO = new ItemResponseDTO();
-            itemResponseDTO.setId(item.getId());
-            itemResponseDTO.setName(item.getName());
-            itemResponseDTO.setPrice(item.getPrice());
-            return itemResponseDTO;
-        }).collect(Collectors.toSet()));
+        orderResponseDTO.setOrderItems(order.getOrderItems().stream().map(orderItem -> {
+            OrderItemResponseDTO orderItemResponseDTO = new OrderItemResponseDTO();
+            orderItemResponseDTO.setItemId(orderItem.getItem().getId());
+            orderItemResponseDTO.setItemName(orderItem.getItemName());
+            orderItemResponseDTO.setPriceAtOrder(orderItem.getPriceAtOrder());
+            return orderItemResponseDTO;
+        }).toList());
 
         return orderResponseDTO;
-
     }
 }

@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -24,7 +25,7 @@ public class OrderResponseDTO {
     private Integer paidInstallmentsCount;
     private String contractFilePath;
 
-    private Set<ItemResponseDTO> items;
+    private List<OrderItemResponseDTO> orderItems;
 
     private BigDecimal totalValue;
     private BigDecimal discountedValue;
