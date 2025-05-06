@@ -42,7 +42,7 @@ public class DashboardService {
         if (dashboardFilterDTO.getItemIds() != null && !dashboardFilterDTO.getItemIds().isEmpty()) {
             allOrders = allOrders.stream()
                     .filter(order -> order.getItems().stream()
-                            .anyMatch(item -> dashboardFilterDTO.getItemIds().contains(item.getId())))
+                            .anyMatch(orderItem -> dashboardFilterDTO.getItemIds().contains(orderItem.getItem().getId())))
                     .toList();
         }
 
@@ -96,7 +96,7 @@ public class DashboardService {
         if (dashboardFilterDTO.getItemIds() != null && !dashboardFilterDTO.getItemIds().isEmpty()) {
             allOrders = allOrders.stream()
                     .filter(order -> order.getItems().stream()
-                            .anyMatch(item -> dashboardFilterDTO.getItemIds().contains(item.getId())))
+                            .anyMatch(orderItem -> dashboardFilterDTO.getItemIds().contains(orderItem.getItem().getId())))
                     .toList();
         }
 
@@ -114,11 +114,11 @@ public class DashboardService {
             BigDecimal valuePerItem = orderResponseDTO.getDiscountedValue()
                     .divide(BigDecimal.valueOf(orderResponseDTO.getItems().size()), 2, RoundingMode.HALF_UP);
 
-            orderResponseDTO.getItems().forEach(item -> {
-                itemPerformanceDTOMap.putIfAbsent(item.getId(), new ItemPerformanceDTO());
-                ItemPerformanceDTO itemPerformanceDTO = itemPerformanceDTOMap.get(item.getId());
-                itemPerformanceDTO.setItemId(item.getId());
-                itemPerformanceDTO.setItemName(item.getName());
+            orderResponseDTO.getItems().forEach(orderItemResponseDTO -> {
+                itemPerformanceDTOMap.putIfAbsent(orderItemResponseDTO.getItemId(), new ItemPerformanceDTO());
+                ItemPerformanceDTO itemPerformanceDTO = itemPerformanceDTOMap.get(orderItemResponseDTO.getItemId());
+                itemPerformanceDTO.setItemId(orderItemResponseDTO.getItemId());
+                itemPerformanceDTO.setItemName(orderItemResponseDTO.getItemName());
 
                 BigDecimal currentTotal = itemPerformanceDTO.getTotalRevenue() != null
                         ? itemPerformanceDTO.getTotalRevenue()

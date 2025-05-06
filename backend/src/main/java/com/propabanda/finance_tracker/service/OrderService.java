@@ -2,12 +2,15 @@ package com.propabanda.finance_tracker.service;
 
 import com.propabanda.finance_tracker.dto.ClientOrderFilterDTO;
 import com.propabanda.finance_tracker.dto.OrderFilterDTO;
+import com.propabanda.finance_tracker.dto.request.OrderItemEntryDTO;
 import com.propabanda.finance_tracker.dto.request.OrderRequestDTO;
 import com.propabanda.finance_tracker.dto.response.ItemResponseDTO;
+import com.propabanda.finance_tracker.dto.response.OrderItemResponseDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
 import com.propabanda.finance_tracker.model.Client;
 import com.propabanda.finance_tracker.model.Item;
 import com.propabanda.finance_tracker.model.Order;
+import com.propabanda.finance_tracker.model.OrderItem;
 import com.propabanda.finance_tracker.repository.ClientRepository;
 import com.propabanda.finance_tracker.repository.ItemRepository;
 import com.propabanda.finance_tracker.repository.OrderRepository;
@@ -32,7 +35,7 @@ public class OrderService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    public OrderService (OrderRepository orderRepository, ClientRepository clientRepository, ItemRepository itemRepository) {
+    public OrderService(OrderRepository orderRepository, ClientRepository clientRepository, ItemRepository itemRepository) {
         this.orderRepository = orderRepository;
         this.clientRepository = clientRepository;
         this.itemRepository = itemRepository;
@@ -107,7 +110,7 @@ public class OrderService {
             String term = clientOrderFilterDTO.getItemSearch().toLowerCase();
             orders = orders.stream()
                     .filter(order -> order.getItems().stream()
-                            .anyMatch(item -> item.getName().toLowerCase().contains(term)))
+                            .anyMatch(orderItem -> orderItem.getItem().getName().toLowerCase().contains(term)))
                     .toList();
         }
 
@@ -117,7 +120,7 @@ public class OrderService {
             case "emissionDate" -> comparator = Comparator.comparing(Order::getEmissionDate);
             case "id" -> comparator = Comparator.comparing(Order::getId);
             case "itemName" -> comparator = Comparator.comparing(o ->
-                    o.getItems().stream().findFirst().map(item -> item.getName().toLowerCase()).orElse(""));
+                    o.getItems().stream().findFirst().map(orderItem -> orderItem.getItem().getName().toLowerCase()).orElse(""));
             default -> comparator = Comparator.comparing(Order::getEmissionDate);
         }
 
@@ -191,10 +194,9 @@ public class OrderService {
 
 
     private Order toOrderModel(OrderRequestDTO orderRequestDTO) {
+
         Client client = clientRepository.findById(orderRequestDTO.getClientId())
                 .orElseThrow(() -> new IllegalArgumentException("Client not found"));
-
-        Set<Item> items = new HashSet<>(itemRepository.findAllById(orderRequestDTO.getItemIds()));
 
         Order order = new Order();
         order.setClient(client);
@@ -206,20 +208,42 @@ public class OrderService {
         order.setEmissionDate(orderRequestDTO.getEmissionDate());
         order.setPaidInstallmentsCount(orderRequestDTO.getPaidInstallmentsCount());
         order.setContractFilePath(orderRequestDTO.getContractFilePath());
-        order.setItems(items);
+
+        Set<OrderItem> orderItems = new HashSet<>();
+
+        for (OrderItemEntryDTO orderItemEntryDTO : orderRequestDTO.getItems()) {
+            Item item = itemRepository.findById(orderItemEntryDTO.getItemId())
+                    .orElseThrow(() -> new IllegalArgumentException("Item id " + orderItemEntryDTO.getItemId() + " not found"));
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setItem(item);
+            orderItem.setQuantity(orderItemEntryDTO.getQuantity());
+            orderItem.setPriceSnapshot(item.getPrice());
+            orderItems.add(orderItem);
+        }
+        order.setItems(orderItems);
 
         return order;
     }
 
+
     public OrderResponseDTO toOrderResponseDTO(Order order) {
+
         BigDecimal totalValue = order.getItems().stream()
-                .map(Item::getPrice)
+                .map(orderItem -> orderItem.getPriceSnapshot().multiply(BigDecimal.valueOf(orderItem.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal discountPercent = order.getDiscount().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal discountPercent = order.getDiscount()
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
         BigDecimal discountedValue = totalValue.subtract(totalValue.multiply(discountPercent));
-        BigDecimal installmentValue = discountedValue.divide(BigDecimal.valueOf(order.getInstallmentCount()), 2, RoundingMode.HALF_UP);
-        BigDecimal paidValue = installmentValue.multiply(BigDecimal.valueOf(order.getPaidInstallmentsCount()));
+        BigDecimal installmentValue = discountedValue
+                .divide(BigDecimal.valueOf(order.getInstallmentCount()), 2, RoundingMode.HALF_UP);
+
+        BigDecimal paidValue = installmentValue
+                .multiply(BigDecimal.valueOf(order.getPaidInstallmentsCount()));
+
         BigDecimal remainingValue = discountedValue.subtract(paidValue);
 
         OrderResponseDTO orderResponseDTO = new OrderResponseDTO();
@@ -240,15 +264,16 @@ public class OrderService {
         orderResponseDTO.setPaidValue(paidValue);
         orderResponseDTO.setRemainingValue(remainingValue);
 
-        orderResponseDTO.setItems(order.getItems().stream().map(item -> {
-            ItemResponseDTO itemResponseDTO = new ItemResponseDTO();
-            itemResponseDTO.setId(item.getId());
-            itemResponseDTO.setName(item.getName());
-            itemResponseDTO.setPrice(item.getPrice());
-            return itemResponseDTO;
+        orderResponseDTO.setItems(order.getItems().stream().map(orderItem -> {
+            OrderItemResponseDTO orderItemResponseDTO = new OrderItemResponseDTO();
+            orderItemResponseDTO.setItemId(orderItem.getItem().getId());
+            orderItemResponseDTO.setItemName(orderItem.getItem().getName());
+            orderItemResponseDTO.setQuantity(orderItem.getQuantity());
+            orderItemResponseDTO.setUnitPriceSnapshot(orderItem.getPriceSnapshot());
+            orderItemResponseDTO.setTotal(orderItem.getPriceSnapshot().multiply(BigDecimal.valueOf(orderItem.getQuantity())));
+            return orderItemResponseDTO;
         }).collect(Collectors.toSet()));
 
         return orderResponseDTO;
-
     }
 }

@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,7 +33,6 @@ public class OrderRequestDTO {
 
     @NotNull
     @DecimalMin("0.00")
-    @DecimalMax("0.00")
     private BigDecimal discount;
 
     @NotNull
@@ -44,6 +44,6 @@ public class OrderRequestDTO {
 
     private String contractFilePath;
 
-    @NotNull
-    private Set<Long> itemIds;
+    @NotNull @Valid
+    private Set<OrderItemEntryDTO> items;
 }
