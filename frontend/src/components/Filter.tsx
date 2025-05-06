@@ -1,4 +1,4 @@
-import { IoIosArrowDown } from "react-icons/io";
+import { MdKeyboardArrowDown } from "react-icons/md";
 
 type Filter = {
   text: string;
@@ -25,7 +25,7 @@ export default function Filter({
       {...props}
     >
       {text}
-      <IoIosArrowDown />
+      <MdKeyboardArrowDown className="text-2xl" />
     </button>
   );
 }

@@ -53,6 +53,7 @@ export default function Dashboard({ title }: DashboardProps) {
             onClose={() => setOpenModal(null)}
             title="Período"
           >
+            {/* Modal Content */}
             <div className="flex gap-2">
               <div className="relative w-full">
                 <input
@@ -92,6 +93,7 @@ export default function Dashboard({ title }: DashboardProps) {
             onClose={() => setOpenModal(null)}
             title="Itens"
           >
+            {/* Modal Content */}
             <div className="flex flex-col gap-2">
               <label>
                 <input type="checkbox" /> OUTDOOR 1
@@ -124,6 +126,7 @@ export default function Dashboard({ title }: DashboardProps) {
                 de entradas no período
               </p>
             </div>
+            {/* Dashboard */}
             Dashboard aqui
           </div>
 

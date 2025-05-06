@@ -39,7 +39,7 @@ export default function ClientDetails({ title }: ClientDetailsProps) {
             <Info label={"Valor Restante"} value={"Valor"} />
             <Info label={"Vencimento Parcelas"} value={"Valor"} />
           </div>
-          {/* Pedidos */}
+          {/* Order */}
           <div className="flex p-5 gap-5 rounded-lg bg-white text-[#282828] justify-between">
             <div className="flex flex-col">
               <p className="text-base font-bold">Contrato</p>

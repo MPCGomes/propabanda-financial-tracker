@@ -8,10 +8,22 @@ import SearchBar from "../components/SearchBar";
 import Modal from "../components/Modal";
 import { useState } from "react";
 import Button from "../components/Button";
+import FilterSelect from "../components/FilterSelect";
 
 type PlaceholderPageProps = {
   title: string;
 };
+
+const orderOptions = [
+  { value: "order", label: "A - Z" },
+  { value: "order", label: "Z - A" },
+];
+
+const statusOptions = [
+  { value: "status", label: "Pago" },
+  { value: "status", label: "Pendente" },
+  { value: "status", label: "Não pago" },
+];
 
 export default function PlaceholderPage({ title }: PlaceholderPageProps) {
   const [openModal, setOpenModal] = useState<
@@ -37,9 +49,23 @@ export default function PlaceholderPage({ title }: PlaceholderPageProps) {
 
             {/* Filters */}
             <div className="flex gap-3 flex-wrap lg:flex-nowrap">
-              <Filter text={"Ordem"} onClick={() => setOpenModal("order")} />
+              <div className="hidden lg:block">
+                <FilterSelect options={orderOptions} placeholder={`Ordem`} />
+              </div>
+              <Filter
+                text={"Ordem"}
+                onClick={() => setOpenModal("order")}
+                className="lg:hidden"
+              />
               <Filter text={"Data"} onClick={() => setOpenModal("date")} />
-              <Filter text={"Status"} onClick={() => setOpenModal("status")} />
+              <div className="hidden lg:block">
+                <FilterSelect options={statusOptions} placeholder={`Status`} />
+              </div>
+              <Filter
+                text={"Status"}
+                onClick={() => setOpenModal("status")}
+                className="lg:hidden"
+              />
               <Filter text={"Item"} onClick={() => setOpenModal("item")} />
             </div>
           </div>
@@ -67,6 +93,7 @@ export default function PlaceholderPage({ title }: PlaceholderPageProps) {
             onClose={() => setOpenModal(null)}
             title="Período"
           >
+            {/* Modal Content */}
             <div className="flex gap-2">
               <div className="relative w-full">
                 <input
@@ -107,6 +134,7 @@ export default function PlaceholderPage({ title }: PlaceholderPageProps) {
             onClose={() => setOpenModal(null)}
             title="Status"
           >
+            {/* Modal Content */}
             <div className="flex flex-col gap-2">
               <label htmlFor="paid">
                 <input type="radio" id="paid" name="order" /> Pago
