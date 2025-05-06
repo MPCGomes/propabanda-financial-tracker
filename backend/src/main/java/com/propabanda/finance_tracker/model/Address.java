@@ -2,6 +2,7 @@ package com.propabanda.finance_tracker.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -18,11 +19,13 @@ public class Address {
     @NotBlank
     @Size(min = 8, max = 8)
     @Column(name = "zip_code", nullable = false)
+    @Pattern(regexp="\\d{8}")
     private String zipCode;
 
     @NotBlank
     @Size(min = 2, max = 2)
     @Column(name = "state", nullable = false)
+    @Pattern(regexp = "[A-Z]{2}")
     private String state;
 
     @NotBlank
