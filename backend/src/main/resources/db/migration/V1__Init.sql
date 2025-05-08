@@ -57,9 +57,12 @@ CREATE TABLE app_order (
 );
 
 CREATE TABLE order_item (
-    order_id INTEGER NOT NULL,
-    item_id INTEGER NOT NULL,
+    order_id        INTEGER NOT NULL,
+    item_id         INTEGER NOT NULL,
+    price_snapshot  NUMERIC(10,2) NOT NULL,
+    quantity        INTEGER       NOT NULL DEFAULT 1,
     PRIMARY KEY (order_id, item_id),
     FOREIGN KEY (order_id) REFERENCES app_order(id),
-    FOREIGN KEY (item_id) REFERENCES item(id)
+    FOREIGN KEY (item_id)  REFERENCES item(id)
 );
+
