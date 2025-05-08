@@ -1,16 +1,20 @@
 import Select from "react-select";
 
-type Option = {
-  value: string;
-  label: string;
-};
+type Option = { value: string; label: string };
 
-type FilterSelectProps = {
+interface FilterSelectProps {
   options: Option[];
   placeholder: React.ReactNode;
-};
+  value?: string;
+  onChange?: (value: string) => void;
+}
 
-const FilterSelect = ({ options, placeholder }: FilterSelectProps) => {
+export default function FilterSelect({
+  options,
+  placeholder,
+  value,
+  onChange,
+}: FilterSelectProps) {
   const customStyles = {
     control: (base: any, state: any) => {
       const hasValue = state.hasValue;
@@ -22,7 +26,7 @@ const FilterSelect = ({ options, placeholder }: FilterSelectProps) => {
         color: hasValue ? "#ffa322" : "#fff",
         fontSize: "1rem",
         border: "none",
-        minWidth: '115px',
+        minWidth: "115px",
         width: "100%",
         padding: "2px 7px",
         cursor: "pointer",
@@ -82,9 +86,10 @@ const FilterSelect = ({ options, placeholder }: FilterSelectProps) => {
         styles={customStyles}
         placeholder={placeholder}
         classNamePrefix="custom"
+        value={options.find((o) => o.value === value) || null}
+        onChange={(opt) => onChange?.(opt?.value as string)}
+        isSearchable={false}
       />
     </div>
   );
-};
-
-export default FilterSelect;
+}

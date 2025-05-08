@@ -7,7 +7,7 @@ import ClientDetails from "../pages/ClientDetails";
 import ClientRegister from "../pages/ClientRegister";
 import ClientEdit from "../pages/ClientEdit";
 import Orders from "../pages/Orders";
-import OrderDetails from "../pages/OrderDetails";
+import OrdersDetails from "../pages/OrdersDetails";
 import OrderRegister from "../pages/OrderRegister";
 import PrivateRoute from "./PrivateRoute";
 
@@ -23,7 +23,7 @@ export default function AppRouter() {
           path="/"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <Dashboard title={""} />
             </PrivateRoute>
           }
         />
@@ -39,7 +39,7 @@ export default function AppRouter() {
           path="/dashboard/performance"
           element={
             <PrivateRoute>
-              <DashboardPerformance />
+              <DashboardPerformance title={""} />
             </PrivateRoute>
           }
         />
@@ -57,7 +57,7 @@ export default function AppRouter() {
           path="/clients/register"
           element={
             <PrivateRoute>
-              <ClientRegister />
+              <ClientRegister title={""} />
             </PrivateRoute>
           }
         />
@@ -65,7 +65,7 @@ export default function AppRouter() {
           path="/clients/:id"
           element={
             <PrivateRoute>
-              <ClientDetails />
+              <ClientDetails title={""} />
             </PrivateRoute>
           }
         />
@@ -73,7 +73,7 @@ export default function AppRouter() {
           path="/clients/:id/edit"
           element={
             <PrivateRoute>
-              <ClientEdit />
+              <ClientEdit title={""} />
             </PrivateRoute>
           }
         />
@@ -83,7 +83,7 @@ export default function AppRouter() {
           path="/orders"
           element={
             <PrivateRoute>
-              <Orders />
+              <Orders title={""} />
             </PrivateRoute>
           }
         />
@@ -91,7 +91,7 @@ export default function AppRouter() {
           path="/orders/register"
           element={
             <PrivateRoute>
-              <OrderRegister />
+              <OrderRegister title={""} />
             </PrivateRoute>
           }
         />
@@ -99,7 +99,7 @@ export default function AppRouter() {
           path="/orders/:id"
           element={
             <PrivateRoute>
-              <OrderDetails />
+              <OrdersDetails title={""} />
             </PrivateRoute>
           }
         />
