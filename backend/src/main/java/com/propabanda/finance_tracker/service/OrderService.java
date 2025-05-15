@@ -20,8 +20,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -72,34 +77,62 @@ public class OrderService {
         orderRepository.deleteById(id);
     }
 
-    public List<OrderResponseDTO> findAllFiltered(OrderFilterDTO orderFilterDTO) {
+    /* método que atende POST /api/orders/filter -------------------------- */
+    public List<OrderResponseDTO> findAllFiltered(OrderFilterDTO dto) {
+
         List<Order> orders = orderRepository.findAll();
 
-        if (orderFilterDTO.getSearch() != null && !orderFilterDTO.getSearch().isBlank()) {
-            String term = orderFilterDTO.getSearch().toLowerCase();
+        /* --- filtro: texto livre no nome do cliente -------------------- */
+        if (dto.getSearch() != null && !dto.getSearch().isBlank()) {
+            String term = dto.getSearch().toLowerCase();
             orders = orders.stream()
-                    .filter(order -> order.getClient().getName().toLowerCase().contains(term))
+                    .filter(o -> o.getClient().getName()
+                            .toLowerCase()
+                            .contains(term))
                     .toList();
         }
 
-        Comparator<Order> comparator;
-
-        if ("emissionDate".equalsIgnoreCase(orderFilterDTO.getSortBy())) {
-            comparator = Comparator.comparing(Order::getEmissionDate);
-        } else {
-            comparator = Comparator.comparing(order -> order.getClient().getName(), String.CASE_INSENSITIVE_ORDER);
+        /* --- filtro: intervalo de datas (emissionDate) ---------------- */
+        if (dto.getStartDate() != null) {
+            orders = orders.stream()
+                    .filter(o -> !o.getEmissionDate()
+                            .isBefore(dto.getStartDate()))
+                    .toList();
+        }
+        if (dto.getEndDate() != null) {
+            orders = orders.stream()
+                    .filter(o -> !o.getEmissionDate()
+                            .isAfter(dto.getEndDate()))
+                    .toList();
         }
 
-        if ("desc".equalsIgnoreCase(orderFilterDTO.getDirection())) {
-            comparator = comparator.reversed();
+        /* --- filtro: itens específicos -------------------------------- */
+        if (dto.getItemIds() != null && !dto.getItemIds().isEmpty()) {
+            orders = orders.stream()
+                    .filter(o -> o.getItems().stream()
+                            .anyMatch(oi -> dto.getItemIds()
+                                    .contains(oi.getItem()
+                                            .getId())))
+                    .toList();
         }
 
-        orders = orders.stream().sorted(comparator).toList();
+        /* --- ordenação ------------------------------------------------ */
+        Comparator<Order> comp =
+                "emissionDate".equalsIgnoreCase(dto.getSortBy())
+                        ? Comparator.comparing(Order::getEmissionDate)
+                        : Comparator.comparing(o -> o.getClient()
+                                .getName(),
+                        String.CASE_INSENSITIVE_ORDER);
+
+        if ("desc".equalsIgnoreCase(dto.getDirection())) comp = comp.reversed();
+
+        orders = orders.stream().sorted(comp).toList();
 
         return orders.stream()
                 .map(this::toOrderResponseDTO)
                 .toList();
     }
+
 
     public List<OrderResponseDTO> findByClientFiltered(Long clientId, ClientOrderFilterDTO clientOrderFilterDTO) {
         List<Order> orders = orderRepository.findAll().stream()
@@ -136,27 +169,38 @@ public class OrderService {
     }
 
     public void uploadContract(Long orderId, MultipartFile file) throws IOException {
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
-        String fileName = file.getOriginalFilename();
-        if (fileName == null || !fileName.matches(".*\\.(pdf|doc|docx)$")) {
+        // ----- validações -----
+        String originalName = Optional.ofNullable(file.getOriginalFilename())
+                .orElseThrow(() -> new IllegalArgumentException("Missing file name"));
+
+        if (!originalName.toLowerCase().matches(".*\\.(pdf|doc|docx)$")) {
             throw new IllegalArgumentException("Invalid file format. Only PDF, DOC, DOCX allowed.");
         }
 
-        if (file.getSize() > 10 * 1024 * 1024) {
+        final long MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+        if (file.getSize() > MAX_SIZE) {
             throw new IllegalArgumentException("File too large. Max 10MB.");
         }
 
-        File dir = new File(uploadDir);
-        if (!dir.exists() && !dir.mkdirs()) {
-            throw new IOException("Failed to create directory: " + uploadDir);
+        // ----- path seguro -----
+        String safeName = originalName.replaceAll("[^a-zA-Z0-9.\\- _]", "_");
+        Path uploadPath = Paths.get(uploadDir);          // ex.: C:/finance-tracker/uploads/contracts
+        Files.createDirectories(uploadPath);             // cria se não existir
+
+        Path dest = uploadPath.resolve(
+                "order_" + orderId + "_" + System.currentTimeMillis() + "_" + safeName);
+
+        // ----- gravação -----
+        try (InputStream in = file.getInputStream()) {
+            Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
         }
 
-        String finalPath = uploadDir + "/order_" + orderId + "_" + System.currentTimeMillis() + "_" + fileName;
-        file.transferTo(new File(finalPath));
-
-        order.setContractFilePath(finalPath);
+        // ----- persiste no banco -----
+        order.setContractFilePath(dest.toString());
         orderRepository.save(order);
     }
 
