@@ -219,12 +219,14 @@ export default function DashboardPerformance() {
           <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
             {perf ? (
               <>
-                <p className="text-xs text-[#282828]">
-                  Receita total no período
-                </p>
-                <p className="text-2xl font-bold text-[#282828]">
-                  R$ <Money value={perf.finalBalance} />
-                </p>
+                <div>
+                  <p className="text-xs text-[#282828]">
+                    Receita total no período
+                  </p>
+                  <p className="text-2xl font-bold text-[#282828]">
+                    R$ <Money value={perf.finalBalance} />
+                  </p>
+                </div>
 
                 <div style={{ height: 260 }}>
                   <Suspense
