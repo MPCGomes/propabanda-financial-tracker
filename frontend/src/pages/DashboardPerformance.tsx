@@ -9,11 +9,16 @@ import Button from "../components/Button";
 import DialogModal from "../components/DialogModal";
 import Money from "../components/Money";
 import { useShowValues } from "../contexts/ShowValuesContext";
-import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
+import {
+  MdKeyboardArrowUp,
+  MdKeyboardArrowDown,
+  MdFileUpload,
+} from "react-icons/md";
 import api from "../lib/api";
 
 // Chart
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
+import { IoMdDownload } from "react-icons/io";
 Chart.register(ArcElement, Tooltip, Legend);
 
 const Doughnut = lazy(() =>
@@ -162,22 +167,32 @@ export default function DashboardPerformance() {
             title="Período"
           >
             <div className="flex gap-2">
-              <input
-                type="date"
-                value={period.start}
-                onChange={(e) =>
-                  setPeriod((p) => ({ ...p, start: e.target.value }))
-                }
-                className="w-full border rounded p-2 text-sm"
-              />
-              <input
-                type="date"
-                value={period.end}
-                onChange={(e) =>
-                  setPeriod((p) => ({ ...p, end: e.target.value }))
-                }
-                className="w-full border rounded p-2 text-sm"
-              />
+              <div className="w-full">
+                <label htmlFor="" className="text-sm text-[#282828]">
+                  Início
+                </label>
+                <input
+                  type="date"
+                  value={period.start}
+                  onChange={(e) =>
+                    setPeriod((p) => ({ ...p, start: e.target.value }))
+                  }
+                  className="w-full border rounded p-2 text-sm"
+                />
+              </div>
+              <div className="w-full">
+                <label htmlFor="" className="text-sm text-[#282828]">
+                  Fim
+                </label>
+                <input
+                  type="date"
+                  value={period.end}
+                  onChange={(e) =>
+                    setPeriod((p) => ({ ...p, end: e.target.value }))
+                  }
+                  className="w-full border rounded p-2 text-sm"
+                />
+              </div>
             </div>
             <Button
               text="Aplicar"
@@ -294,6 +309,15 @@ export default function DashboardPerformance() {
                 Nenhum dado no período.
               </p>
             )}
+            {/* Export + Import Buttons */}
+            <div className="flex gap-3 justify-end mt-4">
+              <Button
+                text="Importar"
+                variant="outlined"
+                icon={<MdFileUpload />}
+              />
+              <Button text="Exportar" icon={<IoMdDownload />} />
+            </div>
           </div>
         </div>
       </div>

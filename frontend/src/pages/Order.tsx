@@ -130,18 +130,18 @@ export default function Order() {
         onClose={() => setConfirmDelete(false)}
         title="Excluir pedido?"
       >
-        <p className="text-sm mb-4">
+        <p className="text-sm text-[#282828]">
           Essa ação removerá o pedido <b>#{order?.id}</b>. Continuar?
         </p>
         <div className="flex gap-3">
           <button
-            className="flex-1 py-2 rounded bg-gray-200"
+            className="flex-1 py-2 rounded-full bg-gray-100 text-[#282828] cursor-pointer"
             onClick={() => setConfirmDelete(false)}
           >
             Cancelar
           </button>
           <button
-            className="flex-1 py-2 rounded bg-[#EE3A4B] text-white"
+            className="flex-1 py-2 rounded-full bg-[#EE3A4B] text-white cursor-pointer"
             onClick={deleteOrder}
           >
             Excluir

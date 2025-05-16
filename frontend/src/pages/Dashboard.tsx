@@ -10,7 +10,7 @@ import Button from "../components/Button";
 import DialogModal from "../components/DialogModal";
 import Money from "../components/Money";
 
-import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
+import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdFileUpload } from "react-icons/md";
 import { FaArrowUp } from "react-icons/fa6";
 
 import api from "../lib/api";
@@ -26,6 +26,7 @@ import {
   TimeScale,
 } from "chart.js";
 import { useShowValues } from "../contexts/ShowValuesContext";
+import { IoMdDownload } from "react-icons/io";
 Chart.register(
   CategoryScale,
   LinearScale,
@@ -169,7 +170,7 @@ export default function Dashboard() {
         onClose={() => setErr(null)}
       />
 
-      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
+      <div className="p-4 lg:p-0 w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
         {/* Menu */}
         <div
           className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1
@@ -207,7 +208,9 @@ export default function Dashboard() {
           >
             <div className="flex gap-2">
               <div className="w-full">
-                <label htmlFor="" className="text-sm text-[#282828]">Início</label>
+                <label htmlFor="" className="text-sm text-[#282828]">
+                  Início
+                </label>
                 <input
                   type="date"
                   value={period.start}
@@ -218,7 +221,9 @@ export default function Dashboard() {
                 />
               </div>
               <div className="w-full">
-                <label htmlFor="" className="text-sm text-[#282828]">Fim</label>
+                <label htmlFor="" className="text-sm text-[#282828]">
+                  Fim
+                </label>
                 <input
                   type="date"
                   value={period.end}
@@ -363,6 +368,12 @@ export default function Dashboard() {
 
             <Row label="Variação em %" value={summary.variation} />
             <Row label="Saldo Final" value={summary.endBal} gray />
+
+            {/* Export + Import Buttons */}
+            <div className="flex gap-3 justify-end mt-4">
+              <Button text="Importar" variant="outlined" icon={<MdFileUpload />} />
+              <Button text="Exportar" icon={<IoMdDownload />} />
+            </div>
           </div>
         </div>
       </div>

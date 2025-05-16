@@ -15,7 +15,7 @@ export default function FloatingButton({
     <button
       style={{ background }}
       onClick={onClick}
-      className=" px-3 py-2 text-sm text-white flex items-center justify-center rounded-full cursor-pointer gap-2"
+      className=" px-4 py-2 text-sm text-white flex items-center justify-center rounded-full cursor-pointer gap-2"
     >
       {children}
     </button>

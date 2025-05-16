@@ -7,7 +7,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault(); // evita recarregar a página
     setError("");
     try {
       const { data } = await api.post("/auth", { documentNumber, password });
@@ -24,7 +25,10 @@ export default function Login() {
 
   return (
     <section className="bg-[#ffa322] h-screen flex items-center justify-center px-5">
-      <div className="bg-white flex flex-col items-center p-10 rounded-lg gap-10 max-w-sm w-full">
+      <form
+        onSubmit={handleLogin}
+        className="bg-white flex flex-col items-center p-10 rounded-lg gap-10 max-w-sm w-full"
+      >
         <h1 className="text-[#282828] font-medium text-xl">Entrar</h1>
 
         {error && <p className="text-red-600 text-sm font-semibold">{error}</p>}
@@ -55,7 +59,7 @@ export default function Login() {
             Esqueci minha senha
           </a>
         </div>
-      </div>
+      </form>
     </section>
   );
 }

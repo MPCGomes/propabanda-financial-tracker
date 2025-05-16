@@ -291,9 +291,19 @@ export default function Client() {
         <p className="text-sm text-[#282828]">
           Essa ação removerá o cliente <b>{client?.name}</b>. Continuar?
         </p>
-        <div className="flex gap-3 mt-4">
-          <Button text="Cancelar" onClick={() => setOpenModal(null)} />
-          <Button text="Excluir" onClick={deleteClient} />
+        <div className="flex gap-3">
+          <button
+            className="flex-1 py-2 rounded-full bg-gray-100 text-[#282828] cursor-pointer"
+            onClick={() => setOpenModal(null)}
+          >
+            Cancelar
+          </button>
+          <button
+            className="flex-1 py-2 rounded-full bg-[#EE3A4B] text-white cursor-pointer"
+            onClick={deleteClient}
+          >
+            Excluir
+          </button>
         </div>
       </Modal>
 
