@@ -1,207 +1,417 @@
-import { useState } from "react";
-import DashboardHeader from "../components/DashboardHeader";
-import UserHeader from "../components/UserHeader";
-import { FaArrowUp } from "react-icons/fa6";
-import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
+import { useEffect, useMemo, useState, lazy, Suspense, JSX } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Header from "../components/Header";
+import UserHeader from "../components/UserHeader";
+import DashboardHeader from "../components/DashboardHeader";
 import Filter from "../components/Filter";
 import Modal from "../components/Modal";
 import Button from "../components/Button";
+import DialogModal from "../components/DialogModal";
+import Money from "../components/Money";
 
-type DashboardProps = {
-  title: string;
+import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
+import { FaArrowUp } from "react-icons/fa6";
+
+import api from "../lib/api";
+
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  TimeScale,
+} from "chart.js";
+import { useShowValues } from "../contexts/ShowValuesContext";
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  TimeScale
+);
+const Line = lazy(() =>
+  import("react-chartjs-2").then((m) => ({ default: m.Line }))
+);
+
+// Types
+type ItemOption = { id: number; name: string };
+type OrderResume = {
+  id: number;
+  emissionDate: string; // yyyy-MM-dd
+  discountedValue: number;
+  items: { itemId: number; itemName: string }[];
 };
 
-export default function Dashboard({ title }: DashboardProps) {
-  const [showEntryList, setShowEntryList] = useState(false);
+// Helpers
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+const firstDayYear = () => iso(new Date(new Date().getFullYear(), 0, 1));
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const { show } = useShowValues();
+
+  // Filters
+  const [period, setPeriod] = useState<{ start: string; end: string }>({
+    start: firstDayYear(),
+    end: iso(new Date()),
+  });
+  const [items, setItems] = useState<ItemOption[]>([]);
+  const [selectedItems, setSelItems] = useState<number[]>([]);
   const [openModal, setOpenModal] = useState<null | "period" | "item">(null);
 
-  const toggleEntryList = () => {
-    setShowEntryList((prev) => !prev);
+  // Data Errors
+  const [orders, setOrders] = useState<OrderResume[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+
+  const [showEntryList, setShowEntryList] = useState(false);
+
+  // Fetch Items
+  useEffect(() => {
+    api
+      .get("/api/items")
+      .then(({ data }) =>
+        setItems(data.map((i: any) => ({ id: i.id, name: i.name })))
+      )
+      .catch(() => setErr("Falha ao carregar itens."));
+  }, []);
+
+  // Fetch Orders
+  const fetchOrders = async () => {
+    try {
+      const body = {
+        search: "",
+        sortBy: "emissionDate",
+        direction: "asc",
+        startDate: period.start,
+        endDate: period.end,
+        itemIds: selectedItems,
+      };
+      const { data } = await api.post("/api/orders/filter", body);
+      setOrders(
+        data.map((o: any) => ({
+          id: o.id,
+          emissionDate: o.emissionDate,
+          discountedValue: +o.discountedValue,
+          items: Array.from(o.items).map((it: any) => ({
+            itemId: it.itemId,
+            itemName: it.itemName,
+          })),
+        }))
+      );
+    } catch {
+      setErr("Falha ao carregar dados do dashboard.");
+    }
   };
 
+  // Initial Load + Refresh Load
+  useEffect(() => {
+    fetchOrders();
+  }, [period, selectedItems]);
+
+  // Summary
+  const summary = useMemo(() => {
+    const totalIn = orders.reduce((s, o) => s + o.discountedValue, 0);
+    const startBal = 0;
+    const endBal = startBal + totalIn;
+    const variation =
+      startBal === 0
+        ? totalIn === 0
+          ? 0
+          : 100
+        : ((endBal - startBal) / startBal) * 100;
+
+    return { count: orders.length, totalIn, startBal, endBal, variation };
+  }, [orders]);
+
+  // Chart
+  const chartData = useMemo(() => {
+    const map = new Map<string, number>();
+    orders.forEach((o) => {
+      const key = o.emissionDate.slice(0, 7);
+      map.set(key, (map.get(key) || 0) + o.discountedValue);
+    });
+    const labels = [...map.keys()].sort();
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Entradas",
+          data: labels.map((l) => map.get(l)),
+          tension: 0.3,
+          fill: false,
+        },
+      ],
+    };
+  }, [orders]);
+
+  // Helpers
+  const toggleItem = (id: number) =>
+    setSelItems((p) =>
+      p.includes(id) ? p.filter((n) => n !== id) : [...p, id]
+    );
+
+  const periodActive =
+    period.start !== firstDayYear() || period.end !== iso(new Date());
+  const itemActive = selectedItems.length > 0;
+
+  // UI
   return (
-    <section className="bg-[#f6f6f6] lg:flex justify-center items-center min-h-screen lg:p-3 lg:items-start">
-      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22 ">
-        {/* Header */}
+    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
+      <DialogModal
+        isOpen={!!err}
+        message={err ?? ""}
+        onClose={() => setErr(null)}
+      />
+
+      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
+        {/* Menu */}
         <div
-          className="fixed bottom-0 w-full bg-white rounded-lg 
-        flex justify-center p-1
-        lg:w-35 lg:flex lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10"
+          className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1
+                        lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10"
         >
           <Header dashboard="active" />
         </div>
 
         {/* Content */}
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0 lg:ml-40">
+        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
           <UserHeader user="Johnny" />
 
-          {/* Dashboard Header and Filters */}
+          {/* Header + Filters */}
           <div className="flex flex-col gap-5 lg:flex-row lg:justify-between">
-            <div className="flex justify-center">
-              <DashboardHeader evolution="Dash" />
-            </div>
+            <DashboardHeader evolution="Dash" />
             <div className="flex gap-3">
-              <Filter text={"Período"} onClick={() => setOpenModal("period")} />
-              <Filter text={"Item"} onClick={() => setOpenModal("item")} />
+              <Filter
+                text="Período"
+                variant={periodActive ? "filtered" : "default"}
+                onClick={() => setOpenModal("period")}
+              />
+              <Filter
+                text="Item"
+                variant={itemActive ? "filtered" : "default"}
+                onClick={() => setOpenModal("item")}
+              />
             </div>
           </div>
 
-          {/* Modal: Date */}
+          {/* Period Modal */}
           <Modal
             isOpen={openModal === "period"}
             onClose={() => setOpenModal(null)}
             title="Período"
           >
-            {/* Modal Content */}
             <div className="flex gap-2">
-              <div className="relative w-full">
-                <input
-                  type="date"
-                  id="start-date"
-                  className="peer w-full border border-gray-300 rounded-md p-2 pt-7 text-sm text-gray-700 bg-white appearance-none focus:outline-none focus:border-blue-500s"
-                  placeholder=" "
-                />
-                <label
-                  htmlFor="start-date"
-                  className="absolute left-2 top-2 text-[#282828] text-xs transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-xs peer-placeholder-shown:text-[#282828] peer-focus:top-2 peer-focus:text-xs peer-focus:text-blue-500"
-                >
-                  Início
-                </label>
-              </div>
-              <div className="relative w-full">
-                <input
-                  type="date"
-                  id="start-date"
-                  className="peer w-full border border-gray-300 rounded-md p-2 pt-7 text-sm text-gray-700 bg-white appearance-none focus:outline-none focus:border-blue-500s"
-                  placeholder=" "
-                />
-                <label
-                  htmlFor="start-date"
-                  className="absolute left-2 top-2 text-[#282828] text-xs transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-xs peer-placeholder-shown:text-[#282828] peer-focus:top-2 peer-focus:text-xs peer-focus:text-blue-500"
-                >
-                  Início
-                </label>
-              </div>
+              <input
+                type="date"
+                value={period.start}
+                onChange={(e) =>
+                  setPeriod((p) => ({ ...p, start: e.target.value }))
+                }
+                className="w-full border rounded p-2 text-sm"
+              />
+              <input
+                type="date"
+                value={period.end}
+                onChange={(e) =>
+                  setPeriod((p) => ({ ...p, end: e.target.value }))
+                }
+                className="w-full border rounded p-2 text-sm"
+              />
             </div>
-            <Button text={"Aplicar filtro"} />
+            <Button
+              text="Aplicar filtro"
+              onClick={() => {
+                setOpenModal(null);
+                fetchOrders();
+              }}
+            />
           </Modal>
 
-          {/* Modal: Items */}
+          {/* Item Modal */}
           <Modal
             isOpen={openModal === "item"}
             onClose={() => setOpenModal(null)}
             title="Itens"
           >
-            {/* Modal Content */}
-            <div className="flex flex-col gap-2">
-              <label>
-                <input type="checkbox" /> OUTDOOR 1
-              </label>
-              <label>
-                <input type="checkbox" /> OUTDOOR 2
-              </label>
-              <label>
-                <input type="checkbox" /> PAINEL
-              </label>
-              <label>
-                <input type="checkbox" /> REDES SOCIAIS
-              </label>
-              <label>
-                <input type="checkbox" /> SITES
-              </label>
+            <div className="flex flex-col gap-2 max-h-52 overflow-y-auto">
+              {items.map((it) => (
+                <label key={it.id} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(it.id)}
+                    onChange={() => toggleItem(it.id)}
+                  />
+                  {it.name}
+                </label>
+              ))}
             </div>
-            <Button text={"Aplicar filtro"} />
+            <Button
+              text="Aplicar filtro"
+              onClick={() => {
+                setOpenModal(null);
+                fetchOrders();
+              }}
+            />
           </Modal>
 
-          {/* Balance */}
+          {/* Balance + Chart */}
           <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
             <div className="text-[#282828]">
               <p className="text-xs">Saldo no período</p>
-              <p className="text-xl font-bold">R$ 2.000,00</p>
+              <p className="text-xl font-bold">
+                R$ <Money value={summary.endBal} />
+              </p>
               <p className="flex gap-1 text-xs">
                 <span className="flex items-center gap-1 text-[#32c058]">
-                  <FaArrowUp /> R$ 1.000,00
+                  <FaArrowUp /> R$ <Money value={summary.totalIn} />
                 </span>{" "}
                 de entradas no período
               </p>
             </div>
-            {/* Dashboard */}
-            Dashboard aqui
+
+            <div style={{ height: 220 }}>
+              <Suspense
+                fallback={<p className="text-sm">Carregando gráfico…</p>}
+              >
+                <Line
+                  data={chartData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        callbacks: {
+                          label: (ctx) =>
+                            show ? `R$ ${ctx.parsed.y.toFixed(2)}` : "***",
+                        },
+                      },
+                    },
+                    scales: {
+                      y: {
+                        ticks: {
+                          callback: (v) =>
+                            show ? `R$ ${(+v).toFixed(0)}` : "***",
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Suspense>
+            </div>
           </div>
 
-          {/* Last Transactions */}
+          {/* History */}
           <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
             <p className="text-base font-medium text-[#282828]">Histórico</p>
-            <div>
-              <div className="flex items-center justify-between p-2 bg-[#fafafa] rounded-md">
-                <p className="text-xs font-medium text-[#28282833]">
-                  Saldo Inicial
-                </p>
-                <p className="text-[#282828] text-base">R$ 1.000,00</p>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-md">
-                <p className="text-xs font-medium text-[#28282833]">
-                  Nº de Pedidos
-                </p>
-                <p className="text-[#282828] text-base">5</p>
-              </div>
-              <div className="flex flex-col bg-[#fafafa] rounded-md">
-                <div className="flex items-center justify-between p-2">
-                  <p className="text-xs font-medium text-[#28282833]">
-                    Entradas
-                  </p>
-                  <button
-                    className="text-[#282828] text-base flex items-center gap-1 cursor-pointer"
-                    onClick={toggleEntryList}
-                  >
-                    + R$ 1.000,00{" "}
-                    {showEntryList ? (
-                      <MdKeyboardArrowUp />
-                    ) : (
-                      <MdKeyboardArrowDown />
-                    )}
-                  </button>
-                </div>
-                {showEntryList && (
-                  <ul className="text-sm text-[#282828] px-2 pb-2 space-y-2">
-                    <li className="flex justify-between items-center">
-                      <p className="text-xs font-medium text-[#28282833]">
-                        Outdoor 1
-                      </p>
-                      <p>R$ 1.000,00</p>
+
+            <Row label="Saldo Inicial" value={summary.startBal} gray />
+            <Row label="Nº de Pedidos" value={summary.count} />
+            <div className="flex flex-col bg-[#fafafa] rounded-md">
+              <Row
+                label="Entradas"
+                value={summary.totalIn}
+                clickable
+                onClick={() => setShowEntryList((p) => !p)}
+                icon={
+                  showEntryList ? (
+                    <MdKeyboardArrowUp />
+                  ) : (
+                    <MdKeyboardArrowDown />
+                  )
+                }
+              />
+              {showEntryList && (
+                <ul className="text-sm text-[#282828] px-2 pb-2 space-y-2">
+                  {orders.map((o) => (
+                    <li
+                      key={o.id}
+                      className="flex justify-between hover:underline cursor-pointer"
+                      onClick={() => navigate(`/orders/${o.id}`)}
+                    >
+                      <span>
+                        {o.items.map((it) => it.itemName).join(", ")}
+                        <span className="text-xs text-[#888]">
+                          {" "}
+                          ({o.emissionDate})
+                        </span>
+                      </span>
+                      <span>
+                        R$ <Money value={o.discountedValue} />
+                      </span>
                     </li>
-                    <li className="flex justify-between items-center">
-                      <p className="text-xs font-medium text-[#28282833]">
-                        Painel 1
-                      </p>
-                      <p>R$ 0</p>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <p className="text-xs font-medium text-[#28282833]">
-                        Sites 1
-                      </p>
-                      <p>R$ 0</p>
-                    </li>
-                  </ul>
-                )}
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-md">
-                <p className="text-xs font-medium text-[#28282833]">
-                  Variação em %
-                </p>
-                <p className="text-[#32C058] text-base">+ 100.00%</p>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-[#fafafa] rounded-md">
-                <p className="text-xs font-medium text-[#28282833]">
-                  Saldo Final
-                </p>
-                <p className="text-[#32C058] text-base">+ R$ 2.000,00</p>
-              </div>
+                  ))}
+                  {!orders.length && (
+                    <li className="text-xs text-[#888]">Nenhum pedido.</li>
+                  )}
+                </ul>
+              )}
             </div>
+
+            <Row label="Variação em %" value={summary.variation} />
+            <Row label="Saldo Final" value={summary.endBal} gray />
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+// Row Helper
+function Row({
+  label,
+  value,
+  gray = false,
+  onClick,
+  clickable = false,
+  icon,
+}: {
+  label: string;
+  value: number | undefined;
+  gray?: boolean;
+  onClick?: () => void;
+  clickable?: boolean;
+  icon?: JSX.Element;
+}) {
+  const { show } = useShowValues();
+
+  let rendered: JSX.Element = <></>;
+  if (label === "Nº de Pedidos") {
+    rendered = <>{show ? value : "***"}</>;
+  } else if (label === "Variação em %") {
+    rendered = <>{show ? `${(value ?? 0).toFixed(2)}%` : "***"}</>;
+  } else {
+    rendered =
+      typeof value === "number" ? (
+        <>
+          R$ <Money value={value} />
+        </>
+      ) : (
+        <>***</>
+      );
+  }
+
+  const color =
+    label === "Variação em %"
+      ? value !== undefined && value < 0
+        ? "#ee3a4b"
+        : "#32c058"
+      : undefined;
+
+  return (
+    <div
+      className={`flex items-center justify-between p-2 ${gray ? "bg-[#fafafa]" : ""} ${clickable ? "cursor-pointer" : ""}`}
+      onClick={onClick}
+    >
+      <p className="text-xs font-medium text-[#28282833]">{label}</p>
+      <p className="text-base flex items-center gap-1" style={{ color }}>
+        {rendered} {icon}
+      </p>
+    </div>
   );
 }
