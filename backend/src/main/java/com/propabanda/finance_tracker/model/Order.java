@@ -11,8 +11,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import static jakarta.persistence.CascadeType.ALL;
-
 @Entity
 @Table(name = "app_order")
 @Getter
@@ -26,6 +24,11 @@ public class Order {
     @ManyToOne(optional = false)
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
+
+    @NotNull
+    @DecimalMin("0.00")
+    @Column(name = "value", nullable = false)
+    private BigDecimal value;
 
     @NotNull
     @Column(name = "contract_start_date", nullable = false)
@@ -64,8 +67,13 @@ public class Order {
     @Column(name = "contract_file_path")
     private String contractFilePath;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<OrderItem> items;
+    @ManyToMany
+    @JoinTable(
+            name = "order_item_link",
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "item_id")
+    )
+    private Set<Item> items;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
