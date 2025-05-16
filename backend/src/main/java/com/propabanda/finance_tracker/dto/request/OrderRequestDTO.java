@@ -13,40 +13,41 @@ import java.util.Set;
 @Setter
 public class OrderRequestDTO {
 
-    @NotNull
+    @NotNull(message = "Informe o cliente.")
     private Long clientId;
 
-    @NotNull @Valid
+    @NotNull(message = "Informe ao menos um item.")
+    @Valid
     private Set<Long> items;
 
-    @NotNull
-    @DecimalMin("0.00")
+    @NotNull(message = "Informe o valor do pedido.")
+    @DecimalMin(value = "0.00", message = "O valor deve ser positivo.")
     private BigDecimal value;
 
-    @NotNull
+    @NotNull(message = "Informe a data de início do contrato.")
     private LocalDate contractStartDate;
 
-    @NotNull
+    @NotNull(message = "Informe a data de término do contrato.")
     private LocalDate contractEndDate;
 
-    @NotNull
-    @Min(1)
-    @Max(31)
+    @NotNull(message = "Informe o dia de vencimento das parcelas.")
+    @Min(value = 1, message = "O dia de vencimento deve ser entre 1 e 31.")
+    @Max(value = 31, message = "O dia de vencimento deve ser entre 1 e 31.")
     private Integer installmentDay;
 
-    @NotNull
-    @Min(1)
+    @NotNull(message = "Informe a quantidade de parcelas.")
+    @Min(value = 1, message = "Deve haver ao menos 1 parcela.")
     private Integer installmentCount;
 
-    @NotNull
-    @DecimalMin("0.00")
+    @NotNull(message = "Informe o desconto.")
+    @DecimalMin(value = "0.00", message = "O desconto deve ser positivo.")
     private BigDecimal discount;
 
-    @NotNull
+    @NotNull(message = "Informe a data de emissão.")
     private LocalDate emissionDate;
 
-    @NotNull
-    @Min(0)
+    @NotNull(message = "Informe quantas parcelas já foram pagas.")
+    @Min(value = 0, message = "O número de parcelas pagas não pode ser negativo.")
     private Integer paidInstallmentsCount;
 
     private String contractFilePath;

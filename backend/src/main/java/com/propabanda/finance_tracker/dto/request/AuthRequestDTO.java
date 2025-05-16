@@ -8,9 +8,9 @@ import lombok.Setter;
 @Setter
 public class AuthRequestDTO {
 
-    @NotBlank
+    @NotBlank(message = "Informe o CPF.")
     private String documentNumber;
 
-    @NotBlank
+    @NotBlank(message = "Informe a senha.")
     private String password;
 }
