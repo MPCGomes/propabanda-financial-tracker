@@ -20,20 +20,20 @@ public class User {
 
     @NotBlank
     @Size(max = 60)
-    @Column(nullable = false, unique = true)
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
 
     @NotBlank
     @Pattern(regexp = "\\d{11}")
-    @Column(nullable = false, unique = true)
+    @Column(name = "document_number", nullable = false, unique = true)
     private String documentNumber;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(name = "role", nullable = false)
     private String role;
 
     @PrePersist
