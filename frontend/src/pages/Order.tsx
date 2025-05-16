@@ -228,17 +228,19 @@ export default function Order() {
       </div>
 
       {/* Floating Buttons */}
-      <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2">
+      <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2 items-end">
         <FloatingButton
-          icon={<RiPencilFill />}
           background="#2696FF"
           onClick={() => navigate(`/orders/${id}/edit`)}
-        />
+        >
+          <RiPencilFill /> Editar
+        </FloatingButton>
         <FloatingButton
-          icon={<FaTrash />}
           background="#EE3A4B"
           onClick={() => setConfirmDelete(true)}
-        />
+        >
+          <FaTrash /> Apagar
+        </FloatingButton>
       </div>
     </section>
   );

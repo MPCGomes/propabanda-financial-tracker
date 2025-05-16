@@ -154,7 +154,9 @@ export default function Orders() {
         href="/orders/register"
         className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5"
       >
-        <FloatingButton icon={<FaPlus />} background="#FFA322" />
+        <FloatingButton background="#FFA322">
+          <FaPlus className="text-lg" /> Adicionar Pedido
+        </FloatingButton>
       </a>
     </section>
   );

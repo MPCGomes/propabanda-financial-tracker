@@ -66,8 +66,8 @@ export default function ClientAutoComplete({
   return (
     <div className="relative w-full" ref={containerRef}>
       <InputText
-        label="Client"
-        placeholder="Search company"
+        label="Cliente"
+        placeholder="Pesquisar Cliente"
         value={query}
         onValueChange={setQuery}
       />

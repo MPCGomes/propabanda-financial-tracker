@@ -1,11 +1,13 @@
+import { ReactNode } from "react";
+
 type FloatingButtonProps = {
-  icon: React.ReactNode;
+  children: ReactNode;
   background: string;
   onClick?: () => void;
 };
 
 export default function FloatingButton({
-  icon,
+  children,
   background,
   onClick,
 }: FloatingButtonProps) {
@@ -13,9 +15,9 @@ export default function FloatingButton({
     <button
       style={{ background }}
       onClick={onClick}
-      className="w-10 h-10 text-xl text-white flex items-center justify-center rounded-full cursor-pointer"
+      className=" px-3 py-2 text-sm text-white flex items-center justify-center rounded-full cursor-pointer gap-2"
     >
-      {icon}
+      {children}
     </button>
   );
 }

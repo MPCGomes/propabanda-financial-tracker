@@ -267,15 +267,18 @@ export default function Client() {
       </div>
 
       {/* Floating Button */}
-      <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2">
+      <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2 items-end">
         <Link to={`/clients/${id}/edit?clientId=${id}`}>
-          <FloatingButton icon={<RiPencilFill />} background="#2696FF" />
+          <FloatingButton background="#2696FF">
+            <RiPencilFill className="text-lg" /> Editar
+          </FloatingButton>
         </Link>
         <FloatingButton
-          icon={<FaTrash />}
           background="#EE3A4B"
           onClick={() => setOpenModal("delete")}
-        />
+        >
+          <FaTrash className="text-lg" /> Apagar
+        </FloatingButton>
       </div>
 
       {/* Action Confirmation Modal */}
