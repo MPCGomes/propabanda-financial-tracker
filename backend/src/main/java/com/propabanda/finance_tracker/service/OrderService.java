@@ -2,15 +2,12 @@ package com.propabanda.finance_tracker.service;
 
 import com.propabanda.finance_tracker.dto.ClientOrderFilterDTO;
 import com.propabanda.finance_tracker.dto.OrderFilterDTO;
-import com.propabanda.finance_tracker.dto.request.OrderItemEntryDTO;
 import com.propabanda.finance_tracker.dto.request.OrderRequestDTO;
 import com.propabanda.finance_tracker.dto.response.ItemResponseDTO;
-import com.propabanda.finance_tracker.dto.response.OrderItemResponseDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
 import com.propabanda.finance_tracker.model.Client;
 import com.propabanda.finance_tracker.model.Item;
 import com.propabanda.finance_tracker.model.Order;
-import com.propabanda.finance_tracker.model.OrderItem;
 import com.propabanda.finance_tracker.repository.ClientRepository;
 import com.propabanda.finance_tracker.repository.ItemRepository;
 import com.propabanda.finance_tracker.repository.OrderRepository;
@@ -19,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -27,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +37,9 @@ public class OrderService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    public OrderService(OrderRepository orderRepository, ClientRepository clientRepository, ItemRepository itemRepository) {
+    public OrderService(OrderRepository orderRepository,
+                        ClientRepository clientRepository,
+                        ItemRepository itemRepository) {
         this.orderRepository = orderRepository;
         this.clientRepository = clientRepository;
         this.itemRepository = itemRepository;
@@ -62,77 +61,56 @@ public class OrderService {
 
     public OrderResponseDTO save(OrderRequestDTO orderRequestDTO) {
         Order order = toOrderModel(orderRequestDTO);
-        order = orderRepository.save(order);
-        return toOrderResponseDTO(order);
+        return toOrderResponseDTO(orderRepository.save(order));
     }
 
     public OrderResponseDTO update(Long id, OrderRequestDTO orderRequestDTO) {
         Order order = toOrderModel(orderRequestDTO);
         order.setId(id);
-        order = orderRepository.save(order);
-        return toOrderResponseDTO(order);
+        return toOrderResponseDTO(orderRepository.save(order));
     }
 
     public void delete(Long id) {
         orderRepository.deleteById(id);
     }
 
-    /* método que atende POST /api/orders/filter -------------------------- */
-    public List<OrderResponseDTO> findAllFiltered(OrderFilterDTO dto) {
-
+    public List<OrderResponseDTO> findAllFiltered(OrderFilterDTO orderFilterDTO) {
         List<Order> orders = orderRepository.findAll();
 
-        /* --- filtro: texto livre no nome do cliente -------------------- */
-        if (dto.getSearch() != null && !dto.getSearch().isBlank()) {
-            String term = dto.getSearch().toLowerCase();
+        if (orderFilterDTO.getSearch() != null && !orderFilterDTO.getSearch().isBlank()) {
+            String term = orderFilterDTO.getSearch().toLowerCase();
             orders = orders.stream()
-                    .filter(o -> o.getClient().getName()
-                            .toLowerCase()
-                            .contains(term))
+                    .filter(order -> order.getClient().getName().toLowerCase().contains(term))
                     .toList();
         }
 
-        /* --- filtro: intervalo de datas (emissionDate) ---------------- */
-        if (dto.getStartDate() != null) {
+        if (orderFilterDTO.getStartDate() != null) {
             orders = orders.stream()
-                    .filter(o -> !o.getEmissionDate()
-                            .isBefore(dto.getStartDate()))
-                    .toList();
-        }
-        if (dto.getEndDate() != null) {
-            orders = orders.stream()
-                    .filter(o -> !o.getEmissionDate()
-                            .isAfter(dto.getEndDate()))
+                    .filter(order -> !order.getEmissionDate().isBefore(orderFilterDTO.getStartDate()))
                     .toList();
         }
 
-        /* --- filtro: itens específicos -------------------------------- */
-        if (dto.getItemIds() != null && !dto.getItemIds().isEmpty()) {
+        if (orderFilterDTO.getEndDate() != null) {
             orders = orders.stream()
-                    .filter(o -> o.getItems().stream()
-                            .anyMatch(oi -> dto.getItemIds()
-                                    .contains(oi.getItem()
-                                            .getId())))
+                    .filter(order -> !order.getEmissionDate().isAfter(orderFilterDTO.getEndDate()))
                     .toList();
         }
 
-        /* --- ordenação ------------------------------------------------ */
-        Comparator<Order> comp =
-                "emissionDate".equalsIgnoreCase(dto.getSortBy())
-                        ? Comparator.comparing(Order::getEmissionDate)
-                        : Comparator.comparing(o -> o.getClient()
-                                .getName(),
-                        String.CASE_INSENSITIVE_ORDER);
+        if (orderFilterDTO.getItemIds() != null && !orderFilterDTO.getItemIds().isEmpty()) {
+            orders = orders.stream()
+                    .filter(order -> order.getItems().stream()
+                            .anyMatch(item -> orderFilterDTO.getItemIds().contains(item.getId())))
+                    .toList();
+        }
 
-        if ("desc".equalsIgnoreCase(dto.getDirection())) comp = comp.reversed();
+        Comparator<Order> comparator = "emissionDate".equalsIgnoreCase(orderFilterDTO.getSortBy())
+                ? Comparator.comparing(Order::getEmissionDate)
+                : Comparator.comparing(order -> order.getClient().getName(), String.CASE_INSENSITIVE_ORDER);
 
-        orders = orders.stream().sorted(comp).toList();
+        if ("desc".equalsIgnoreCase(orderFilterDTO.getDirection())) comparator = comparator.reversed();
 
-        return orders.stream()
-                .map(this::toOrderResponseDTO)
-                .toList();
+        return orders.stream().sorted(comparator).map(this::toOrderResponseDTO).toList();
     }
-
 
     public List<OrderResponseDTO> findByClientFiltered(Long clientId, ClientOrderFilterDTO clientOrderFilterDTO) {
         List<Order> orders = orderRepository.findAll().stream()
@@ -143,152 +121,85 @@ public class OrderService {
             String term = clientOrderFilterDTO.getItemSearch().toLowerCase();
             orders = orders.stream()
                     .filter(order -> order.getItems().stream()
-                            .anyMatch(orderItem -> orderItem.getItem().getName().toLowerCase().contains(term)))
+                            .anyMatch(item -> item.getName().toLowerCase().contains(term)))
                     .toList();
         }
 
-        Comparator<Order> comparator;
+        Comparator<Order> comparator = switch (clientOrderFilterDTO.getSortBy()) {
+            case "emissionDate" -> Comparator.comparing(Order::getEmissionDate);
+            case "id" -> Comparator.comparing(Order::getId);
+            case "itemName" -> Comparator.comparing(order -> order.getItems().stream()
+                    .findFirst().map(Item::getName).orElse(""));
+            default -> Comparator.comparing(Order::getEmissionDate);
+        };
 
-        switch (clientOrderFilterDTO.getSortBy()) {
-            case "emissionDate" -> comparator = Comparator.comparing(Order::getEmissionDate);
-            case "id" -> comparator = Comparator.comparing(Order::getId);
-            case "itemName" -> comparator = Comparator.comparing(o ->
-                    o.getItems().stream().findFirst().map(orderItem -> orderItem.getItem().getName().toLowerCase()).orElse(""));
-            default -> comparator = Comparator.comparing(Order::getEmissionDate);
-        }
+        if ("desc".equalsIgnoreCase(clientOrderFilterDTO.getDirection())) comparator = comparator.reversed();
 
-        if ("desc".equalsIgnoreCase(clientOrderFilterDTO.getDirection())) {
-            comparator = comparator.reversed();
-        }
-
-        orders = orders.stream().sorted(comparator).toList();
-
-        return orders.stream()
-                .map(this::toOrderResponseDTO)
-                .toList();
+        return orders.stream().sorted(comparator).map(this::toOrderResponseDTO).toList();
     }
 
-    public void uploadContract(Long orderId, MultipartFile file) throws IOException {
-
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-
-        // ----- validações -----
-        String originalName = Optional.ofNullable(file.getOriginalFilename())
-                .orElseThrow(() -> new IllegalArgumentException("Missing file name"));
-
+    public void uploadContract(Long orderId, MultipartFile file) throws Exception {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        String originalName = Objects.requireNonNull(file.getOriginalFilename());
         if (!originalName.toLowerCase().matches(".*\\.(pdf|doc|docx)$")) {
-            throw new IllegalArgumentException("Invalid file format. Only PDF, DOC, DOCX allowed.");
+            throw new IllegalArgumentException("Invalid format");
         }
-
-        final long MAX_SIZE = 10 * 1024 * 1024; // 10 MB
-        if (file.getSize() > MAX_SIZE) {
-            throw new IllegalArgumentException("File too large. Max 10MB.");
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("File too large");
         }
-
-        // ----- path seguro -----
-        String safeName = originalName.replaceAll("[^a-zA-Z0-9.\\- _]", "_");
-        Path uploadPath = Paths.get(uploadDir);          // ex.: C:/finance-tracker/uploads/contracts
-        Files.createDirectories(uploadPath);             // cria se não existir
-
-        Path dest = uploadPath.resolve(
-                "order_" + orderId + "_" + System.currentTimeMillis() + "_" + safeName);
-
-        // ----- gravação -----
+        String safeName = originalName.replaceAll("[^a-zA-Z0-9.\\-_]", "_");
+        Path uploadPath = Paths.get(uploadDir);
+        Files.createDirectories(uploadPath);
+        Path dest = uploadPath.resolve("order_" + orderId + "_" + System.currentTimeMillis() + "_" + safeName);
         try (InputStream in = file.getInputStream()) {
             Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
         }
-
-        // ----- persiste no banco -----
         order.setContractFilePath(dest.toString());
         orderRepository.save(order);
     }
 
     public File getContractFile(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-
-        if (order.getContractFilePath() == null) {
-            throw new IllegalStateException("No contract uploaded for this order.");
-        }
-
-        File file = new File(order.getContractFilePath());
-        if (!file.exists()) {
-            throw new IllegalStateException("Contract file not found on server.");
-        }
-
-        return file;
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        return new File(order.getContractFilePath());
     }
 
-    public void deleteContract(Long orderId) throws IOException {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-
+    public void deleteContract(Long orderId) throws Exception {
+        Order order = orderRepository.findById(orderId).orElseThrow();
         if (order.getContractFilePath() != null) {
             File file = new File(order.getContractFilePath());
-
-            if (file.exists() && !file.delete()) {
-                throw new IOException("Failed to delete contract file: " + file.getAbsolutePath());
-            }
-
+            if (file.exists()) Files.delete(file.toPath());
             order.setContractFilePath(null);
             orderRepository.save(order);
         }
     }
 
-
-    private Order toOrderModel(OrderRequestDTO orderRequestDTO) {
-
-        Client client = clientRepository.findById(orderRequestDTO.getClientId())
-                .orElseThrow(() -> new IllegalArgumentException("Client not found"));
-
+    /* ---------- helpers -------------------------------------------- */
+    private Order toOrderModel(OrderRequestDTO dto) {
+        Client client = clientRepository.findById(dto.getClientId()).orElseThrow();
         Order order = new Order();
         order.setClient(client);
-        order.setContractStartDate(orderRequestDTO.getContractStartDate());
-        order.setContractEndDate(orderRequestDTO.getContractEndDate());
-        order.setInstallmentDay(orderRequestDTO.getInstallmentDay());
-        order.setInstallmentCount(orderRequestDTO.getInstallmentCount());
-        order.setDiscount(orderRequestDTO.getDiscount());
-        order.setEmissionDate(orderRequestDTO.getEmissionDate());
-        order.setPaidInstallmentsCount(orderRequestDTO.getPaidInstallmentsCount());
-        order.setContractFilePath(orderRequestDTO.getContractFilePath());
-
-        Set<OrderItem> orderItems = new HashSet<>();
-
-        for (OrderItemEntryDTO orderItemEntryDTO : orderRequestDTO.getItems()) {
-            Item item = itemRepository.findById(orderItemEntryDTO.getItemId())
-                    .orElseThrow(() -> new IllegalArgumentException("Item id " + orderItemEntryDTO.getItemId() + " not found"));
-
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setItem(item);
-            orderItem.setQuantity(orderItemEntryDTO.getQuantity());
-            orderItem.setPriceSnapshot(item.getPrice());
-            orderItems.add(orderItem);
-        }
-        order.setItems(orderItems);
-
+        order.setContractStartDate(dto.getContractStartDate());
+        order.setContractEndDate(dto.getContractEndDate());
+        order.setInstallmentDay(dto.getInstallmentDay());
+        order.setInstallmentCount(dto.getInstallmentCount());
+        order.setDiscount(dto.getDiscount());
+        order.setEmissionDate(dto.getEmissionDate());
+        order.setPaidInstallmentsCount(dto.getPaidInstallmentsCount());
+        order.setContractFilePath(dto.getContractFilePath());
+        order.setValue(dto.getValue());
+        Set<Item> items = dto.getItems().stream()
+                .map(id -> itemRepository.findById(id).orElseThrow())
+                .collect(Collectors.toSet());
+        order.setItems(items);
         return order;
     }
 
-
-    public OrderResponseDTO toOrderResponseDTO(Order order) {
-
-        BigDecimal totalValue = order.getItems().stream()
-                .map(orderItem -> orderItem.getPriceSnapshot().multiply(BigDecimal.valueOf(orderItem.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal discountPercent = order.getDiscount()
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-
-        BigDecimal discountedValue = totalValue.subtract(totalValue.multiply(discountPercent));
-        BigDecimal installmentValue = discountedValue
-                .divide(BigDecimal.valueOf(order.getInstallmentCount()), 2, RoundingMode.HALF_UP);
-
-        BigDecimal paidValue = installmentValue
-                .multiply(BigDecimal.valueOf(order.getPaidInstallmentsCount()));
-
-        BigDecimal remainingValue = discountedValue.subtract(paidValue);
+    OrderResponseDTO toOrderResponseDTO(Order order) {
+        BigDecimal discountPercent = order.getDiscount().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal discounted = order.getValue().subtract(order.getValue().multiply(discountPercent));
+        BigDecimal installmentValue = discounted.divide(BigDecimal.valueOf(order.getInstallmentCount()), 2, RoundingMode.HALF_UP);
+        BigDecimal paid = installmentValue.multiply(BigDecimal.valueOf(order.getPaidInstallmentsCount()));
+        BigDecimal remaining = discounted.subtract(paid);
 
         OrderResponseDTO orderResponseDTO = new OrderResponseDTO();
         orderResponseDTO.setId(order.getId());
@@ -302,22 +213,18 @@ public class OrderService {
         orderResponseDTO.setEmissionDate(order.getEmissionDate());
         orderResponseDTO.setPaidInstallmentsCount(order.getPaidInstallmentsCount());
         orderResponseDTO.setContractFilePath(order.getContractFilePath());
-
-        orderResponseDTO.setTotalValue(totalValue);
-        orderResponseDTO.setDiscountedValue(discountedValue);
-        orderResponseDTO.setPaidValue(paidValue);
-        orderResponseDTO.setRemainingValue(remainingValue);
-
-        orderResponseDTO.setItems(order.getItems().stream().map(orderItem -> {
-            OrderItemResponseDTO orderItemResponseDTO = new OrderItemResponseDTO();
-            orderItemResponseDTO.setItemId(orderItem.getItem().getId());
-            orderItemResponseDTO.setItemName(orderItem.getItem().getName());
-            orderItemResponseDTO.setQuantity(orderItem.getQuantity());
-            orderItemResponseDTO.setUnitPriceSnapshot(orderItem.getPriceSnapshot());
-            orderItemResponseDTO.setTotal(orderItem.getPriceSnapshot().multiply(BigDecimal.valueOf(orderItem.getQuantity())));
-            return orderItemResponseDTO;
-        }).collect(Collectors.toSet()));
-
+        orderResponseDTO.setValue(order.getValue());
+        orderResponseDTO.setDiscountedValue(discounted);
+        orderResponseDTO.setPaidValue(paid);
+        orderResponseDTO.setRemainingValue(remaining);
+        orderResponseDTO.setItems(order.getItems().stream().map(this::toItemDTO).collect(Collectors.toSet()));
         return orderResponseDTO;
+    }
+
+    private ItemResponseDTO toItemDTO(Item item) {
+        ItemResponseDTO itemResponseDTO = new ItemResponseDTO();
+        itemResponseDTO.setId(item.getId());
+        itemResponseDTO.setName(item.getName());
+        return itemResponseDTO;
     }
 }

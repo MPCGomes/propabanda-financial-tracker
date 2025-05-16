@@ -8,6 +8,7 @@ import lombok.Setter;
 public class UserResponseDTO {
 
     private Long id;
+    private String username;
     private String documentNumber;
     private String role;
 }

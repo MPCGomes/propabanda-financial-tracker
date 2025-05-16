@@ -16,6 +16,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
+    private String username;
+
     @NotBlank
     @Size(min = 11, max = 11)
     @Column(name = "document_number", unique = true, nullable = false)
@@ -28,4 +31,9 @@ public class User {
     @NotBlank
     @Column(name = "role", nullable = false)
     private String role;
+
+    @PrePersist @PreUpdate
+    private void sanitize() {
+        this.documentNumber = documentNumber.replaceAll("\\D", "");
+    }
 }
