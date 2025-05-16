@@ -188,11 +188,12 @@ export default function Client() {
 
                   <div className="text-center">
                     <Button
-                      text="Adicionar Pedido"
                       onClick={() =>
                         navigate(`/orders/register?clientId=${id}`)
                       }
-                    />
+                    >
+                      Adicionar Pedido
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -242,7 +243,7 @@ export default function Client() {
                   </label>
                 ))}
               </div>
-              <Button text="Aplicar filtro" />
+              <Button>Aplicar Filtro</Button>
             </Modal>
 
             <div className="flex flex-col gap-3">
@@ -315,7 +316,7 @@ export default function Client() {
       >
         <p className="text-sm text-[#282828]">{errorMsg}</p>
         <div className="text-center mt-4">
-          <Button text="Fechar" onClick={() => setOpenModal(null)} />
+          <Button onClick={() => setOpenModal(null)}>Fechar</Button>
         </div>
       </Modal>
     </section>

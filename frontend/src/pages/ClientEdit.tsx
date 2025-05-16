@@ -173,11 +173,12 @@ export default function ClientEdit() {
           {/* Actions */}
           <div className="flex gap-3 justify-end">
             <Button
-              text="Cancelar"
               variant="outlined"
               onClick={() => navigate(`/clients/${id}`)}
-            />
-            <Button text="Salvar" onClick={save} />
+            >
+              Cancelar
+            </Button>
+            <Button onClick={save}>Salvar</Button>
           </div>
         </div>
       </div>

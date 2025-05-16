@@ -126,7 +126,7 @@ export default function Orders() {
                   </label>
                 ))}
               </div>
-              <Button text="Aplicar filtro" />
+              <Button>Aplicar filtro</Button>
             </Modal>
           </div>
 

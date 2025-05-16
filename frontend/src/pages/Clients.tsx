@@ -109,7 +109,7 @@ export default function Clients() {
                   </label>
                 ))}
               </div>
-              <Button text="Aplicar filtro" onClick={() => {}} />
+              <Button onClick={() => {}} >Aplicar Filtro</Button>
             </Modal>
           </div>
 

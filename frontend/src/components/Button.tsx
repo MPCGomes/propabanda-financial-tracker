@@ -1,19 +1,19 @@
+import { ReactNode } from "react";
+
 type ButtonProps = {
-  text: string;
-  icon?: React.ReactNode;
+  children: ReactNode;
   variant?: "filled" | "outlined";
   className?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export default function Button({
-  text,
-  icon,
+  children,
   variant = "filled",
   className = "",
   ...props
 }: ButtonProps) {
   const baseClasses =
-    "text-base px-4 py-2 rounded-full cursor-pointer font-semibold transition-all";
+    "text-base px-4 py-2 rounded-full cursor-pointer font-semibold transition-all flex gap-2 items-center justify-center";
 
   const variants = {
     filled: "bg-[#FFA322] text-white",
@@ -22,11 +22,10 @@ export default function Button({
 
   return (
     <button
-      className={`${baseClasses} ${variants[variant]} ${className} flex items-center gap-2`}
+      className={`${baseClasses} ${variants[variant]} ${className}`}
       {...props}
     >
-      {icon}
-      {text}
+      {children}
     </button>
   );
 }

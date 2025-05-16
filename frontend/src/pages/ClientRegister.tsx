@@ -171,12 +171,10 @@ export default function ClientRegister() {
 
           {/* Actions */}
           <div className="flex gap-3 justify-end">
-            <Button
-              text="Cancelar"
-              variant="outlined"
-              onClick={() => navigate("/clients")}
-            />
-            <Button text="Cadastrar" onClick={submit} />
+            <Button variant="outlined" onClick={() => navigate("/clients")}>
+              Cancelar
+            </Button>
+            <Button onClick={submit} >Cadastrar</Button>
           </div>
         </div>
       </div>

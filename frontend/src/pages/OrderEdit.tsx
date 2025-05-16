@@ -268,11 +268,12 @@ export default function OrderEdit() {
 
             <div className="flex gap-3 justify-end">
               <Button
-                text="Cancelar"
                 variant="outlined"
                 onClick={() => navigate(`/orders/${id}`)}
-              />
-              <Button text="Salvar" onClick={handleSubmit} />
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleSubmit}>Salvar</Button>
             </div>
           </div>
         </div>

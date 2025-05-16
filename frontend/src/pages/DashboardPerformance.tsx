@@ -140,7 +140,7 @@ export default function DashboardPerformance() {
         </div>
 
         {/* Content */}
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
+        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:ml-40">
           <UserHeader user="Johnny" />
 
           {/* Header + Filters */}
@@ -195,12 +195,13 @@ export default function DashboardPerformance() {
               </div>
             </div>
             <Button
-              text="Aplicar"
               onClick={() => {
                 setOpenModal(null);
                 fetchPerf();
               }}
-            />
+            >
+              Aplicar
+            </Button>
           </Modal>
 
           {/* Item Modal */}
@@ -222,12 +223,13 @@ export default function DashboardPerformance() {
               ))}
             </div>
             <Button
-              text="Aplicar"
               onClick={() => {
                 setOpenModal(null);
                 fetchPerf();
               }}
-            />
+            >
+              Aplicar
+            </Button>
           </Modal>
 
           {/* Charts + Balance */}
@@ -311,12 +313,12 @@ export default function DashboardPerformance() {
             )}
             {/* Export + Import Buttons */}
             <div className="flex gap-3 justify-end mt-4">
-              <Button
-                text="Importar"
-                variant="outlined"
-                icon={<MdFileUpload />}
-              />
-              <Button text="Exportar" icon={<IoMdDownload />} />
+              <Button variant="outlined">
+                <MdFileUpload /> Importar
+              </Button>
+              <Button>
+                <IoMdDownload /> Exportar
+              </Button>
             </div>
           </div>
         </div>

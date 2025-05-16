@@ -10,7 +10,11 @@ import Button from "../components/Button";
 import DialogModal from "../components/DialogModal";
 import Money from "../components/Money";
 
-import { MdKeyboardArrowUp, MdKeyboardArrowDown, MdFileUpload } from "react-icons/md";
+import {
+  MdKeyboardArrowUp,
+  MdKeyboardArrowDown,
+  MdFileUpload,
+} from "react-icons/md";
 import { FaArrowUp } from "react-icons/fa6";
 
 import api from "../lib/api";
@@ -235,12 +239,13 @@ export default function Dashboard() {
               </div>
             </div>
             <Button
-              text="Aplicar filtro"
               onClick={() => {
                 setOpenModal(null);
                 fetchOrders();
               }}
-            />
+            >
+              Aplicar Filtro
+            </Button>
           </Modal>
 
           {/* Item Modal */}
@@ -262,12 +267,13 @@ export default function Dashboard() {
               ))}
             </div>
             <Button
-              text="Aplicar filtro"
               onClick={() => {
                 setOpenModal(null);
                 fetchOrders();
               }}
-            />
+            >
+              Aplicar Filtro
+            </Button>
           </Modal>
 
           {/* Balance + Chart */}
@@ -371,8 +377,12 @@ export default function Dashboard() {
 
             {/* Export + Import Buttons */}
             <div className="flex gap-3 justify-end mt-4">
-              <Button text="Importar" variant="outlined" icon={<MdFileUpload />} />
-              <Button text="Exportar" icon={<IoMdDownload />} />
+              <Button variant="outlined">
+                <MdFileUpload /> Importar
+              </Button>
+              <Button>
+                <IoMdDownload /> Exportar
+              </Button>
             </div>
           </div>
         </div>

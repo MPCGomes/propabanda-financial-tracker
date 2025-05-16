@@ -51,7 +51,7 @@ export default function Login() {
         </div>
 
         <div className="flex flex-col gap-3 w-full">
-          <Button text="Enviar" onClick={handleLogin} />
+          <Button onClick={handleLogin} >Enviar</Button>
           <a
             href="#"
             className="text-xs font-semibold text-[#ffa322] text-center"
