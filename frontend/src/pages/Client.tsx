@@ -203,22 +203,23 @@ export default function Client() {
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
             <p className="text-base font-bold">Pedidos</p>
 
-            <SearchBar onChange={setItemSearch} />
-
-            <div className="flex gap-3 flex-wrap lg:flex-nowrap">
-              <div className="hidden lg:block">
-                <FilterSelect
-                  options={orderOptions}
-                  placeholder="Ordem"
-                  value={`${sortBy}|${direction}`}
-                  onChange={applyOrder}
+            <div className="flex flex-col gap-5 lg:flex-row">
+              <SearchBar onChange={setItemSearch} />
+              <div className="flex gap-3 flex-wrap lg:flex-nowrap">
+                <div className="hidden lg:block">
+                  <FilterSelect
+                    options={orderOptions}
+                    placeholder="Ordem"
+                    value={`${sortBy}|${direction}`}
+                    onChange={applyOrder}
+                  />
+                </div>
+                <Filter
+                  text="Ordem"
+                  onClick={() => setOpenModal("order")}
+                  className="lg:hidden"
                 />
               </div>
-              <Filter
-                text="Ordem"
-                onClick={() => setOpenModal("order")}
-                className="lg:hidden"
-              />
             </div>
 
             {/* Modal - Mobile */}
