@@ -14,7 +14,7 @@ public class OrderFilterDTO {
     private String sortBy;
     private String direction;
 
-    private LocalDate startDate; // data inicial  (inclusive) – opcional
-    private LocalDate  endDate;   // data final    (inclusive) – opcional
-    private List<Long> itemIds;   // ids de itens  – opcional
+    private LocalDate startDate;
+    private LocalDate  endDate;
+    private List<Long> itemIds;
 }

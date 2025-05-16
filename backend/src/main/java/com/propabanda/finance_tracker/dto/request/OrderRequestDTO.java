@@ -16,6 +16,13 @@ public class OrderRequestDTO {
     @NotNull
     private Long clientId;
 
+    @NotNull @Valid
+    private Set<Long> items;
+
+    @NotNull
+    @DecimalMin("0.00")
+    private BigDecimal value;
+
     @NotNull
     private LocalDate contractStartDate;
 
@@ -43,7 +50,4 @@ public class OrderRequestDTO {
     private Integer paidInstallmentsCount;
 
     private String contractFilePath;
-
-    @NotNull @Valid
-    private Set<OrderItemEntryDTO> items;
 }

@@ -15,6 +15,8 @@ public class OrderResponseDTO {
     private Long clientId;
     private String clientName;
 
+    private Set<ItemResponseDTO> items;
+
     private LocalDate contractStartDate;
     private LocalDate contractEndDate;
     private Integer installmentDay;
@@ -24,9 +26,7 @@ public class OrderResponseDTO {
     private Integer paidInstallmentsCount;
     private String contractFilePath;
 
-    private Set<OrderItemResponseDTO> items;
-
-    private BigDecimal totalValue;
+    private BigDecimal value;
     private BigDecimal discountedValue;
     private BigDecimal paidValue;
     private BigDecimal remainingValue;
