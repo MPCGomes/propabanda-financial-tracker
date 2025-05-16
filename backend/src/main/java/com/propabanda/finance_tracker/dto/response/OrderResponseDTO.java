@@ -24,7 +24,7 @@ public class OrderResponseDTO {
     private Integer paidInstallmentsCount;
     private String contractFilePath;
 
-    private Set<ItemResponseDTO> items;
+    private Set<OrderItemResponseDTO> items;
 
     private BigDecimal totalValue;
     private BigDecimal discountedValue;

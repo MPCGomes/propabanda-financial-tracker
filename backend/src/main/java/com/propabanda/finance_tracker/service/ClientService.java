@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ClientService {
@@ -31,7 +30,7 @@ public class ClientService {
         return clientRepository.findAll()
                 .stream()
                 .map(this::toClientResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Optional<ClientResponseDTO> findById(Long id) {
@@ -43,8 +42,7 @@ public class ClientService {
     }
 
     public ClientResponseDTO save(ClientRequestDTO clientRequestDTO) {
-        Client client = toClientModel(clientRequestDTO);
-        client = clientRepository.save(client);
+        Client client = clientRepository.save(toClientModel(clientRequestDTO));
         return toClientResponseDTO(client);
     }
 
@@ -64,65 +62,63 @@ public class ClientService {
     }
 
     public List<ClientResponseDTO> findAllFiltered(ClientFilterDTO clientFilterDTO) {
-        List <Client> clients = clientRepository.findAll();
+        List<Client> clients = clientRepository.findAll();
 
-        if (clientFilterDTO.getSearch() != null & !clientFilterDTO.getSearch().isBlank()) {
+        if (clientFilterDTO.getSearch() != null && !clientFilterDTO.getSearch().isBlank()) {
             String term = clientFilterDTO.getSearch().toLowerCase();
             clients = clients.stream()
                     .filter(client -> client.getName().toLowerCase().contains(term))
                     .toList();
         }
 
-        Comparator<Client> comparator;
-
-        if ("createdAt".equalsIgnoreCase(clientFilterDTO.getSortBy())) {
-            comparator = Comparator.comparing(Client::getCreatedAt);
-        } else {
-            comparator = Comparator.comparing(Client::getName, String.CASE_INSENSITIVE_ORDER);
-        }
+        Comparator<Client> comparator = "createdAt".equalsIgnoreCase(clientFilterDTO.getSortBy())
+                ? Comparator.comparing(Client::getCreatedAt)
+                : Comparator.comparing(Client::getName, String.CASE_INSENSITIVE_ORDER);
 
         if ("desc".equalsIgnoreCase(clientFilterDTO.getDirection())) {
             comparator = comparator.reversed();
         }
 
-        clients = clients.stream().sorted(comparator).toList();
-
         return clients.stream()
+                .sorted(comparator)
                 .map(this::toClientResponseDTO)
                 .toList();
     }
 
     private Client toClientModel(ClientRequestDTO clientRequestDTO) {
-        Client client = getClient(clientRequestDTO);
+        Client client = buildClient(clientRequestDTO);
 
-        Address address = new Address();
         AddressRequestDTO addressRequestDTO = clientRequestDTO.getAddressRequestDTO();
+        Address address = new Address();
         address.setZipCode(addressRequestDTO.getZipCode());
         address.setState(addressRequestDTO.getState());
         address.setCity(addressRequestDTO.getCity());
+        address.setNeighbourhood(addressRequestDTO.getNeighbourhood());
         address.setStreet(addressRequestDTO.getStreet());
         address.setNumber(addressRequestDTO.getNumber());
         address.setComplement(addressRequestDTO.getComplement());
         address.setReference(addressRequestDTO.getReference());
 
+        client.setAddress(address);
         return client;
     }
 
-    private static Client getClient(ClientRequestDTO clientRequestDTO) {
+    private static Client buildClient(ClientRequestDTO clientRequestDTO) {
         Client client = new Client();
         client.setName(clientRequestDTO.getName());
         client.setDocumentNumber(clientRequestDTO.getDocumentNumber());
 
-        Representant representant = new Representant();
         RepresentantRequestDTO representantRequestDTO = clientRequestDTO.getRepresentantRequestDTO();
+        Representant representant = new Representant();
         representant.setName(representantRequestDTO.getName());
         representant.setEmail(representantRequestDTO.getEmail());
         representant.setPhone(representantRequestDTO.getPhone());
+
         client.setRepresentant(representant);
         return client;
     }
 
-    private  ClientResponseDTO toClientResponseDTO(Client client) {
+    private ClientResponseDTO toClientResponseDTO(Client client) {
         ClientResponseDTO clientResponseDTO = new ClientResponseDTO();
         clientResponseDTO.setId(client.getId());
         clientResponseDTO.setName(client.getName());
@@ -134,17 +130,18 @@ public class ClientService {
         representantResponseDTO.setPhone(client.getRepresentant().getPhone());
         clientResponseDTO.setRepresentantResponseDTO(representantResponseDTO);
 
+        Address address = client.getAddress();
         AddressResponseDTO addressResponseDTO = new AddressResponseDTO();
-        addressResponseDTO.setZipCode(client.getAddress().getZipCode());
-        addressResponseDTO.setState(client.getAddress().getState());
-        addressResponseDTO.setCity(client.getAddress().getCity());
-        addressResponseDTO.setNeighbourhood(client.getAddress().getNeighbourhood());
-        addressResponseDTO.setStreet(client.getAddress().getStreet());
-        addressResponseDTO.setNumber(client.getAddress().getNumber());
-        addressResponseDTO.setComplement(client.getAddress().getComplement());
-        addressResponseDTO.setReference(client.getAddress().getReference());
+        addressResponseDTO.setZipCode(address.getZipCode());
+        addressResponseDTO.setState(address.getState());
+        addressResponseDTO.setCity(address.getCity());
+        addressResponseDTO.setNeighbourhood(address.getNeighbourhood());
+        addressResponseDTO.setStreet(address.getStreet());
+        addressResponseDTO.setNumber(address.getNumber());
+        addressResponseDTO.setComplement(address.getComplement());
+        addressResponseDTO.setReference(address.getReference());
         clientResponseDTO.setAddressResponseDTO(addressResponseDTO);
 
         return clientResponseDTO;
-   }
+    }
 }

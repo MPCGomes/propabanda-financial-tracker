@@ -1,11 +1,11 @@
-import React from "react";
+import { ReactNode } from "react";
 import { IoClose } from "react-icons/io5";
 
 type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
-  children: React.ReactNode;
+  title?: string;
+  children: ReactNode;
 };
 
 export default function Modal({
@@ -25,15 +25,18 @@ export default function Modal({
         className="bg-white p-6 rounded-t-2xl lg:rounded-xl shadow-lg w-full lg:max-w-md lg:mb-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-base font-medium text-[#282828]">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-[#282828] text-xl cursor-pointer"
-          >
-            <IoClose />
-          </button>
-        </div>
+        {title && (
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-base font-medium text-[#282828]">{title}</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-[#282828] text-xl cursor-pointer"
+            >
+              <IoClose />
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-col gap-5">{children}</div>
       </div>
     </div>
