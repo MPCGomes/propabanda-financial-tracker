@@ -179,7 +179,7 @@ export default function Dashboard() {
         </div>
 
         {/* Content */}
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
+        <div className="flex flex-col gap-5 w-full pb-[100px] lg:ml-40">
           <UserHeader user="Johnny" />
 
           {/* Header + Filters */}
@@ -307,12 +307,12 @@ export default function Dashboard() {
           </div>
 
           {/* History */}
-          <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
-            <p className="text-base font-medium text-[#282828]">Histórico</p>
+          <div className="flex flex-col p-5 bg-white rounded-lg">
+            <p className="text-base font-medium text-[#282828] mb-5">Histórico</p>
 
             <Row label="Saldo Inicial" value={summary.startBal} gray />
             <Row label="Nº de Pedidos" value={summary.count} />
-            <div className="flex flex-col bg-[#fafafa] rounded-md">
+            <div className="flex flex-col  bg-[#fafafa] rounded-md">
               <Row
                 label="Entradas"
                 value={summary.totalIn}

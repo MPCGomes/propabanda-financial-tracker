@@ -10,6 +10,7 @@ import Button from "../components/Button";
 import FilterSelect from "../components/FilterSelect";
 import { FaPlus } from "react-icons/fa6";
 import api from "../lib/api";
+import UserHeader from "../components/UserHeader";
 
 type OrderDTO = {
   id: number;
@@ -81,6 +82,8 @@ export default function Orders() {
 
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0 lg:ml-40">
+          <UserHeader user="Johnny" />
+
           {/* Search Bar + Filters */}
           <div className="flex gap-5 flex-col lg:flex-row lg:justify-between lg:items-center">
             <SearchBar onChange={setSearch} />
