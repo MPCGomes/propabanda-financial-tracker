@@ -44,7 +44,7 @@ const orderOptions = [
   { value: "itemName|desc", label: "Z - A" },
 ];
 
-export default function ClientDetails() {
+export default function Client() {
   const { id } = useParams();
   const navigate = useNavigate();
 

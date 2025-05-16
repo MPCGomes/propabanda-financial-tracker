@@ -30,7 +30,7 @@ type OrderDTO = {
   contractFilePath: string | null;
 };
 
-export default function OrdersDetails() {
+export default function Order() {
   const { id } = useParams();
   const navigate = useNavigate();
 

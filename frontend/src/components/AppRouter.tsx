@@ -3,11 +3,11 @@ import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import DashboardPerformance from "../pages/DashboardPerformance";
 import Clients from "../pages/Clients";
-import ClientDetails from "../pages/ClientDetails";
+import Client from "../pages/Client";
 import ClientRegister from "../pages/ClientRegister";
 import ClientEdit from "../pages/ClientEdit";
 import Orders from "../pages/Orders";
-import OrdersDetails from "../pages/OrdersDetails";
+import Order from "../pages/Order";
 import OrderRegister from "../pages/OrderRegister";
 import PrivateRoute from "./PrivateRoute";
 import OrderEdit from "../pages/OrderEdit";
@@ -67,7 +67,7 @@ export default function AppRouter() {
           path="/clients/:id"
           element={
             <PrivateRoute>
-              <ClientDetails />
+              <Client />
             </PrivateRoute>
           }
         />
@@ -101,7 +101,7 @@ export default function AppRouter() {
           path="/orders/:id"
           element={
             <PrivateRoute>
-              <OrdersDetails />
+              <Order />
             </PrivateRoute>
           }
         />
