@@ -206,22 +206,28 @@ export default function Dashboard() {
             title="Período"
           >
             <div className="flex gap-2">
-              <input
-                type="date"
-                value={period.start}
-                onChange={(e) =>
-                  setPeriod((p) => ({ ...p, start: e.target.value }))
-                }
-                className="w-full border rounded p-2 text-sm"
-              />
-              <input
-                type="date"
-                value={period.end}
-                onChange={(e) =>
-                  setPeriod((p) => ({ ...p, end: e.target.value }))
-                }
-                className="w-full border rounded p-2 text-sm"
-              />
+              <div className="w-full">
+                <label htmlFor="" className="text-sm text-[#282828]">Início</label>
+                <input
+                  type="date"
+                  value={period.start}
+                  onChange={(e) =>
+                    setPeriod((p) => ({ ...p, start: e.target.value }))
+                  }
+                  className="w-full border rounded p-2 text-sm"
+                />
+              </div>
+              <div className="w-full">
+                <label htmlFor="" className="text-sm text-[#282828]">Fim</label>
+                <input
+                  type="date"
+                  value={period.end}
+                  onChange={(e) =>
+                    setPeriod((p) => ({ ...p, end: e.target.value }))
+                  }
+                  className="w-full border rounded p-2 text-sm"
+                />
+              </div>
             </div>
             <Button
               text="Aplicar filtro"
@@ -308,7 +314,9 @@ export default function Dashboard() {
 
           {/* History */}
           <div className="flex flex-col p-5 bg-white rounded-lg">
-            <p className="text-base font-medium text-[#282828] mb-5">Histórico</p>
+            <p className="text-base font-medium text-[#282828] mb-5">
+              Histórico
+            </p>
 
             <Row label="Saldo Inicial" value={summary.startBal} gray />
             <Row label="Nº de Pedidos" value={summary.count} />
