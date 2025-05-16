@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RepresentantRequestDTO {
+public class RepresentativeRequestDTO {
 
     @NotBlank(message = "Informe o nome do representante.")
     @Size(max = 100, message = "O nome pode ter no máximo 100 caracteres.")

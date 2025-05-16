@@ -12,7 +12,7 @@ public class ClientResponseDTO {
     private Long id;
     private String name;
     private String documentNumber;
-    private RepresentantResponseDTO representantResponseDTO;
+    private RepresentativeResponseDTO representativeResponseDTO;
     private AddressResponseDTO addressResponseDTO;
     private LocalDate createdAt;
 }

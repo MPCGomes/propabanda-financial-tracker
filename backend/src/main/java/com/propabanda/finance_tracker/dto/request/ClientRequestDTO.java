@@ -19,7 +19,7 @@ public class ClientRequestDTO {
     private String documentNumber;
 
     @Valid
-    private RepresentantRequestDTO representantRequestDTO;
+    private RepresentativeRequestDTO representativeRequestDTO;
 
     @Valid
     private AddressRequestDTO addressRequestDTO;

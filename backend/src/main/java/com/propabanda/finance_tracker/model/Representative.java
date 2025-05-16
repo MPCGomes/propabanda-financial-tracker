@@ -10,7 +10,7 @@ import lombok.*;
 @Table(name = "representant")
 @Getter
 @Setter
-public class Representant {
+public class Representative {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
