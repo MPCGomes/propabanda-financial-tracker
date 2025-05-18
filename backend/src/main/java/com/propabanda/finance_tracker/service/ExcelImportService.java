@@ -2,7 +2,7 @@ package com.propabanda.finance_tracker.service;
 
 import com.propabanda.finance_tracker.dto.request.AddressRequestDTO;
 import com.propabanda.finance_tracker.dto.request.ClientRequestDTO;
-import com.propabanda.finance_tracker.dto.request.RepresentantRequestDTO;
+import com.propabanda.finance_tracker.dto.request.RepresentativeRequestDTO;
 import com.propabanda.finance_tracker.dto.response.ClientResponseDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
 import com.propabanda.finance_tracker.model.Client;
@@ -19,10 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class ExcelImportService {
@@ -45,93 +42,86 @@ public class ExcelImportService {
         this.orderService = orderService;
     }
 
-    public List<ClientResponseDTO> importClientsFromExcel(MultipartFile file) {
+    public List<ClientResponseDTO> importClientsFromExcel(MultipartFile multipartFile) {
+        List<ClientResponseDTO> clientResponseDTOList = new ArrayList<>();
+        try (InputStream inputStream = multipartFile.getInputStream();
+             Workbook workbook = new XSSFWorkbook(inputStream)) {
 
-        List<ClientResponseDTO> importedList = new ArrayList<>();
+            Sheet sheet = workbook.getSheet("Clientes");
+            if (sheet == null) throw new RuntimeException("Aba 'Clientes' não encontrada");
 
-        try (InputStream in = file.getInputStream();
-             Workbook wb = new XSSFWorkbook(in)) {
-
-            Sheet sheet = wb.getSheet("Clientes");
-            if (sheet == null) throw new RuntimeException("Aba 'Clientes' não encontrada.");
-
-            boolean header = true;
+            boolean firstRow = true;
             for (Row row : sheet) {
-                if (header) {
-                    header = false;
+                if (firstRow) {
+                    firstRow = false;
                     continue;
                 }
 
                 ClientRequestDTO clientRequestDTO = new ClientRequestDTO();
-                clientRequestDTO.setName(getCell(row, 0));
-                clientRequestDTO.setDocumentNumber(getCell(row, 1));
+                clientRequestDTO.setName(getCellValue(row.getCell(0)));
+                clientRequestDTO.setDocumentNumber(getCellValue(row.getCell(1)));
 
-                RepresentantRequestDTO repDTO = new RepresentantRequestDTO();
-                repDTO.setName(getCell(row, 2));
-                repDTO.setEmail(getCell(row, 3));
-                repDTO.setPhone(getCell(row, 4));
-                clientRequestDTO.setRepresentantRequestDTO(repDTO);
+                RepresentativeRequestDTO representativeRequestDTO = new RepresentativeRequestDTO();
+                representativeRequestDTO.setName(getCellValue(row.getCell(2)));
+                representativeRequestDTO.setEmail(getCellValue(row.getCell(3)));
+                representativeRequestDTO.setPhone(getCellValue(row.getCell(4)));
+                clientRequestDTO.setRepresentativeRequestDTO(representativeRequestDTO);
 
-                AddressRequestDTO addressDTO = new AddressRequestDTO();
-                addressDTO.setZipCode(getCell(row, 5));
-                addressDTO.setState(getCell(row, 6));
-                addressDTO.setCity(getCell(row, 7));
-                addressDTO.setNeighbourhood(getCell(row, 8));
-                addressDTO.setStreet(getCell(row, 9));
-                addressDTO.setNumber(getCell(row, 10));
-                addressDTO.setComplement(getCell(row, 11));
-                addressDTO.setReference(getCell(row, 12));
-                clientRequestDTO.setAddressRequestDTO(addressDTO);
+                AddressRequestDTO addressRequestDTO = new AddressRequestDTO();
+                addressRequestDTO.setZipCode(getCellValue(row.getCell(5)));
+                addressRequestDTO.setState(getCellValue(row.getCell(6)));
+                addressRequestDTO.setCity(getCellValue(row.getCell(7)));
+                addressRequestDTO.setNeighbourhood(getCellValue(row.getCell(8)));
+                addressRequestDTO.setStreet(getCellValue(row.getCell(9)));
+                addressRequestDTO.setNumber(getCellValue(row.getCell(10)));
+                addressRequestDTO.setComplement(getCellValue(row.getCell(11)));
+                addressRequestDTO.setReference(getCellValue(row.getCell(12)));
+                clientRequestDTO.setAddressRequestDTO(addressRequestDTO);
 
                 if (!clientService.existsByDocumentNumber(clientRequestDTO.getDocumentNumber())) {
-                    importedList.add(clientService.save(clientRequestDTO));
+                    clientResponseDTOList.add(clientService.save(clientRequestDTO));
                 }
             }
-
-        } catch (Exception ex) {
-            throw new RuntimeException("Erro ao importar clientes: " + ex.getMessage(), ex);
+        } catch (Exception exception) {
+            throw new RuntimeException("Erro ao importar clientes: " + exception.getMessage(), exception);
         }
-        return importedList;
+        return clientResponseDTOList;
     }
 
-    public List<OrderResponseDTO> importOrdersFromExcel(MultipartFile file) {
+    public List<OrderResponseDTO> importOrdersFromExcel(MultipartFile multipartFile) {
+        List<OrderResponseDTO> orderResponseDTOList = new ArrayList<>();
+        try (InputStream inputStream = multipartFile.getInputStream();
+             Workbook workbook = new XSSFWorkbook(inputStream)) {
 
-        List<OrderResponseDTO> importedList = new ArrayList<>();
+            Sheet sheet = workbook.getSheet("Pedidos");
+            if (sheet == null) throw new RuntimeException("Aba 'Pedidos' não encontrada");
 
-        try (InputStream in = file.getInputStream();
-             Workbook wb = new XSSFWorkbook(in)) {
-
-            Sheet sheet = wb.getSheet("Pedidos");
-            if (sheet == null) throw new RuntimeException("Aba 'Pedidos' não encontrada.");
-
-            boolean header = true;
+            boolean firstRow = true;
             for (Row row : sheet) {
-                if (header) {
-                    header = false;
+                if (firstRow) {
+                    firstRow = false;
                     continue;
                 }
 
-                String clientDoc = getCell(row, 0);
-                Client client = clientRepository.findByDocumentNumber(clientDoc)
-                        .orElseThrow(() -> new RuntimeException("Cliente não encontrado: " + clientDoc));
+                String documentNumber = getCellValue(row.getCell(0));
+                Client client = clientRepository.findByDocumentNumber(documentNumber)
+                        .orElseThrow(() -> new RuntimeException("Cliente não encontrado: " + documentNumber));
 
                 Order order = new Order();
                 order.setClient(client);
                 order.setEmissionDate(parseDate(row.getCell(1)));
                 order.setContractStartDate(parseDate(row.getCell(2)));
                 order.setContractEndDate(parseDate(row.getCell(3)));
-                order.setInstallmentDay(Integer.parseInt(getCell(row, 4)));
-                order.setInstallmentCount(Integer.parseInt(getCell(row, 5)));
-                order.setDiscount(new BigDecimal(getCell(row, 6)));
-                order.setPaidInstallmentsCount(Integer.parseInt(getCell(row, 7)));
-                order.setContractFilePath(getCell(row, 8));
-
-                BigDecimal value = new BigDecimal(getCell(row, 9));
-                order.setValue(value);
+                order.setInstallmentDay(Integer.parseInt(getCellValue(row.getCell(4))));
+                order.setInstallmentCount(Integer.parseInt(getCellValue(row.getCell(5))));
+                order.setDiscount(new BigDecimal(getCellValue(row.getCell(6))));
+                order.setPaidInstallmentsCount(Integer.parseInt(getCellValue(row.getCell(7))));
+                order.setContractFilePath(getCellValue(row.getCell(8)));
+                order.setValue(new BigDecimal(getCellValue(row.getCell(9))));
 
                 Set<Item> itemSet = new HashSet<>();
-                for (int col = 10; col < row.getLastCellNum(); col++) {
-                    String itemName = getCell(row, col);
+                for (int index = 10; index < row.getLastCellNum(); index++) {
+                    String itemName = getCellValue(row.getCell(index));
                     if (itemName.isBlank()) continue;
 
                     Item item = itemRepository.findByNameIgnoreCase(itemName)
@@ -142,23 +132,21 @@ public class ExcelImportService {
                             });
                     itemSet.add(item);
                 }
+
                 order.setItems(itemSet);
-
-                importedList.add(orderService.toOrderResponseDTO(orderRepository.save(order)));
+                orderResponseDTOList.add(orderService.toOrderResponseDTO(orderRepository.save(order)));
             }
-
-        } catch (Exception ex) {
-            throw new RuntimeException("Erro ao importar pedidos: " + ex.getMessage(), ex);
+        } catch (Exception exception) {
+            throw new RuntimeException("Erro ao importar pedidos: " + exception.getMessage(), exception);
         }
-        return importedList;
+        return orderResponseDTOList;
     }
 
-    private String getCell(Row row, int col) {
-        Cell cell = row.getCell(col);
+    private String getCellValue(Cell cell) {
         if (cell == null) return "";
         return switch (cell.getCellType()) {
             case STRING -> cell.getStringCellValue().trim();
-            case NUMERIC -> String.valueOf(cell.getNumericCellValue()).replace(".0", "");
+            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
             default -> "";
         };

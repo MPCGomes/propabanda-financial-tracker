@@ -10,16 +10,16 @@ import lombok.Setter;
 @Setter
 public class ClientRequestDTO {
 
-    @NotBlank
-    @Size(max = 100)
+    @NotBlank(message = "Informe o nome do cliente.")
+    @Size(max = 100, message = "O nome pode ter no máximo 100 caracteres.")
     private String name;
 
-    @NotBlank
-    @Size(min = 14, max = 14)
+    @NotBlank(message = "Informe o CPF/CNPJ.")
+    @Size(min = 14, max = 14, message = "O CPF/CNPJ deve conter 14 dígitos (somente números).")
     private String documentNumber;
 
     @Valid
-    private RepresentantRequestDTO representantRequestDTO;
+    private RepresentativeRequestDTO representativeRequestDTO;
 
     @Valid
     private AddressRequestDTO addressRequestDTO;

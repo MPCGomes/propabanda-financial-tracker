@@ -19,12 +19,10 @@ public class UserDetailServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String documentNumber) throws UsernameNotFoundException {
         User user = userRepository.findByDocumentNumber(documentNumber)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getDocumentNumber())
                 .password(user.getPassword())
                 .roles(user.getRole())
                 .build();
     }
-
 }

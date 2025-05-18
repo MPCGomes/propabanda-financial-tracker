@@ -36,9 +36,7 @@ public class UserController {
         if (userService.findModelByDocumentNumber(userRequestDTO.getDocumentNumber()).isPresent()) {
             return ResponseEntity.badRequest().build();
         }
-
-        UserResponseDTO userResponseDTO = userService.save(userRequestDTO);
-        return ResponseEntity.ok(userResponseDTO);
+        return ResponseEntity.ok(userService.save(userRequestDTO));
     }
 
     @DeleteMapping("/{id}")
@@ -46,7 +44,6 @@ public class UserController {
         if (userService.findById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }

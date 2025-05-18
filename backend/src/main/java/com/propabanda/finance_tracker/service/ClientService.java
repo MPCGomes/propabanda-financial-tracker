@@ -3,13 +3,13 @@ package com.propabanda.finance_tracker.service;
 import com.propabanda.finance_tracker.dto.ClientFilterDTO;
 import com.propabanda.finance_tracker.dto.request.AddressRequestDTO;
 import com.propabanda.finance_tracker.dto.request.ClientRequestDTO;
-import com.propabanda.finance_tracker.dto.request.RepresentantRequestDTO;
+import com.propabanda.finance_tracker.dto.request.RepresentativeRequestDTO;
 import com.propabanda.finance_tracker.dto.response.AddressResponseDTO;
 import com.propabanda.finance_tracker.dto.response.ClientResponseDTO;
-import com.propabanda.finance_tracker.dto.response.RepresentantResponseDTO;
+import com.propabanda.finance_tracker.dto.response.RepresentativeResponseDTO;
 import com.propabanda.finance_tracker.model.Address;
 import com.propabanda.finance_tracker.model.Client;
-import com.propabanda.finance_tracker.model.Representant;
+import com.propabanda.finance_tracker.model.Representative;
 import com.propabanda.finance_tracker.repository.ClientRepository;
 import org.springframework.stereotype.Service;
 
@@ -108,13 +108,13 @@ public class ClientService {
         client.setName(clientRequestDTO.getName());
         client.setDocumentNumber(clientRequestDTO.getDocumentNumber());
 
-        RepresentantRequestDTO representantRequestDTO = clientRequestDTO.getRepresentantRequestDTO();
-        Representant representant = new Representant();
-        representant.setName(representantRequestDTO.getName());
-        representant.setEmail(representantRequestDTO.getEmail());
-        representant.setPhone(representantRequestDTO.getPhone());
+        RepresentativeRequestDTO representativeRequestDTO = clientRequestDTO.getRepresentativeRequestDTO();
+        Representative representative = new Representative();
+        representative.setName(representativeRequestDTO.getName());
+        representative.setEmail(representativeRequestDTO.getEmail());
+        representative.setPhone(representativeRequestDTO.getPhone());
 
-        client.setRepresentant(representant);
+        client.setRepresentative(representative);
         return client;
     }
 
@@ -124,11 +124,11 @@ public class ClientService {
         clientResponseDTO.setName(client.getName());
         clientResponseDTO.setDocumentNumber(client.getDocumentNumber());
 
-        RepresentantResponseDTO representantResponseDTO = new RepresentantResponseDTO();
-        representantResponseDTO.setName(client.getRepresentant().getName());
-        representantResponseDTO.setEmail(client.getRepresentant().getEmail());
-        representantResponseDTO.setPhone(client.getRepresentant().getPhone());
-        clientResponseDTO.setRepresentantResponseDTO(representantResponseDTO);
+        RepresentativeResponseDTO representativeResponseDTO = new RepresentativeResponseDTO();
+        representativeResponseDTO.setName(client.getRepresentative().getName());
+        representativeResponseDTO.setEmail(client.getRepresentative().getEmail());
+        representativeResponseDTO.setPhone(client.getRepresentative().getPhone());
+        clientResponseDTO.setRepresentativeResponseDTO(representativeResponseDTO);
 
         Address address = client.getAddress();
         AddressResponseDTO addressResponseDTO = new AddressResponseDTO();

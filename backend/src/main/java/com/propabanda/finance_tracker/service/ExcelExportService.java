@@ -3,7 +3,7 @@ package com.propabanda.finance_tracker.service;
 import com.propabanda.finance_tracker.dto.DashboardEvolutionDTO;
 import com.propabanda.finance_tracker.dto.ItemPerformanceDTO;
 import com.propabanda.finance_tracker.dto.response.ClientResponseDTO;
-import com.propabanda.finance_tracker.dto.response.OrderItemResponseDTO;
+import com.propabanda.finance_tracker.dto.response.ItemResponseDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -54,9 +54,9 @@ public class ExcelExportService {
             row.createCell(0).setCellValue(clientResponseDTO.getId());
             row.createCell(1).setCellValue(clientResponseDTO.getName());
             row.createCell(2).setCellValue(clientResponseDTO.getDocumentNumber());
-            row.createCell(3).setCellValue(clientResponseDTO.getRepresentantResponseDTO().getName());
-            row.createCell(4).setCellValue(clientResponseDTO.getRepresentantResponseDTO().getEmail());
-            row.createCell(5).setCellValue(clientResponseDTO.getRepresentantResponseDTO().getPhone());
+            row.createCell(3).setCellValue(clientResponseDTO.getRepresentativeResponseDTO().getName());
+            row.createCell(4).setCellValue(clientResponseDTO.getRepresentativeResponseDTO().getEmail());
+            row.createCell(5).setCellValue(clientResponseDTO.getRepresentativeResponseDTO().getPhone());
             row.createCell(6).setCellValue(clientResponseDTO.getAddressResponseDTO().getCity());
             row.createCell(7).setCellValue(clientResponseDTO.getAddressResponseDTO().getState());
         }
@@ -76,7 +76,7 @@ public class ExcelExportService {
         for (OrderResponseDTO orderResponseDTO : orderList) {
 
             String itemNames = orderResponseDTO.getItems().stream()
-                    .map(OrderItemResponseDTO::getItemName)
+                    .map(ItemResponseDTO::getName)
                     .collect(Collectors.joining(", "));
 
             Row row = sheet.createRow(rowIndex++);
@@ -89,7 +89,7 @@ public class ExcelExportService {
             row.createCell(6).setCellValue(orderResponseDTO.getInstallmentCount());
             row.createCell(7).setCellValue(orderResponseDTO.getPaidInstallmentsCount());
             row.createCell(8).setCellValue(orderResponseDTO.getDiscount().toPlainString());
-            row.createCell(9).setCellValue(orderResponseDTO.getTotalValue().toPlainString());
+            row.createCell(9).setCellValue(orderResponseDTO.getValue().toPlainString());
             row.createCell(10).setCellValue(orderResponseDTO.getDiscountedValue().toPlainString());
             row.createCell(11).setCellValue(orderResponseDTO.getPaidValue().toPlainString());
             row.createCell(12).setCellValue(orderResponseDTO.getRemainingValue().toPlainString());

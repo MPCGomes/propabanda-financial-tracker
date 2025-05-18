@@ -26,8 +26,7 @@ public class ItemService {
     }
 
     public Optional<ItemResponseDTO> findById(Long id) {
-        return itemRepository.findById(id)
-                .map(this::toItemResponseDTO);
+        return itemRepository.findById(id).map(this::toItemResponseDTO);
     }
 
     public Optional<Item> findModelById(Long id) {
@@ -35,16 +34,15 @@ public class ItemService {
     }
 
     public ItemResponseDTO save(ItemRequestDTO itemRequestDTO) {
-        Item item = toItemModel(itemRequestDTO);
-        item = itemRepository.save(item);
-        return toItemResponseDTO(item);
+        Item item = new Item();
+        item.setName(itemRequestDTO.getName());
+        return toItemResponseDTO(itemRepository.save(item));
     }
 
     public ItemResponseDTO update(Long id, ItemRequestDTO itemRequestDTO) {
-        Item item = toItemModel(itemRequestDTO);
-        item.setId(id);
-        item = itemRepository.save(item);
-        return toItemResponseDTO(item);
+        Item item = itemRepository.findById(id).orElseThrow();
+        item.setName(itemRequestDTO.getName());
+        return toItemResponseDTO(itemRepository.save(item));
     }
 
     public void delete(Long id) {
@@ -55,18 +53,10 @@ public class ItemService {
         return itemRepository.existsByName(name);
     }
 
-    private Item toItemModel(ItemRequestDTO itemRequestDTO) {
-        Item item = new Item();
-        item.setName(itemRequestDTO.getName());
-        item.setPrice(itemRequestDTO.getPrice());
-        return item;
-    }
-
     private ItemResponseDTO toItemResponseDTO(Item item) {
         ItemResponseDTO itemResponseDTO = new ItemResponseDTO();
         itemResponseDTO.setId(item.getId());
         itemResponseDTO.setName(item.getName());
-        itemResponseDTO.setPrice(item.getPrice());
         return itemResponseDTO;
     }
 }

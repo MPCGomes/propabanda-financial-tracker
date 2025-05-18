@@ -1,6 +1,5 @@
 package com.propabanda.finance_tracker.repository;
 
-
 import com.propabanda.finance_tracker.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

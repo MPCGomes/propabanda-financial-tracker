@@ -12,8 +12,12 @@ import java.util.Set;
 public class OrderResponseDTO {
 
     private Long id;
+    private String identifier;
+
     private Long clientId;
     private String clientName;
+
+    private Set<ItemResponseDTO> items;
 
     private LocalDate contractStartDate;
     private LocalDate contractEndDate;
@@ -24,12 +28,9 @@ public class OrderResponseDTO {
     private Integer paidInstallmentsCount;
     private String contractFilePath;
 
-    private Set<OrderItemResponseDTO> items;
-
-    private BigDecimal totalValue;
+    private BigDecimal value;
     private BigDecimal discountedValue;
     private BigDecimal paidValue;
     private BigDecimal remainingValue;
-
     private LocalDate createdAt;
 }

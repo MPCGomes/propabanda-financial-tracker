@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.model;
 
+import com.propabanda.finance_tracker.util.Sanitizer;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -19,7 +20,7 @@ public class Address {
     @NotBlank
     @Size(min = 8, max = 8)
     @Column(name = "zip_code", nullable = false)
-    @Pattern(regexp="\\d{8}")
+    @Pattern(regexp = "\\d{8}")
     private String zipCode;
 
     @NotBlank
@@ -55,4 +56,11 @@ public class Address {
     @Size(max = 100)
     @Column(name = "reference")
     private String reference;
+
+    @PrePersist
+    @PreUpdate
+    private void sanitize() {
+        this.zipCode = Sanitizer.digitsOnly(zipCode);
+        this.number = Sanitizer.digitsOnly(number);
+    }
 }

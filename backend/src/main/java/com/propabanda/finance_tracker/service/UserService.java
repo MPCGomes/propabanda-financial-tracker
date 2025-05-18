@@ -9,23 +9,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserResponseDTO> findAll() {
         return userRepository.findAll().stream()
                 .map(this::toUserResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Optional<UserResponseDTO> findById(Long id) {
@@ -48,15 +47,17 @@ public class UserService {
 
     private User toUserModel(UserRequestDTO userRequestDTO) {
         User user = new User();
+        user.setName(userRequestDTO.getName().trim());
         user.setDocumentNumber(userRequestDTO.getDocumentNumber());
-        user.setPassword(bCryptPasswordEncoder.encode(userRequestDTO.getPassword()));
-        user.setRole(userRequestDTO.getRole() != null ? userRequestDTO.getRole() : "admin");
+        user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
+        user.setRole(userRequestDTO.getRole());
         return user;
     }
 
     private UserResponseDTO toUserResponseDTO(User user) {
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setId(user.getId());
+        userResponseDTO.setName(user.getName());
         userResponseDTO.setDocumentNumber(user.getDocumentNumber());
         userResponseDTO.setRole(user.getRole());
         return userResponseDTO;
