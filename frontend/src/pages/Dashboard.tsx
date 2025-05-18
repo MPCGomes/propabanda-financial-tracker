@@ -10,7 +10,11 @@ import Button from "../components/Button";
 import DialogModal from "../components/DialogModal";
 import Money from "../components/Money";
 
-import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
+import {
+  MdKeyboardArrowUp,
+  MdKeyboardArrowDown,
+  MdFileUpload,
+} from "react-icons/md";
 import { FaArrowUp } from "react-icons/fa6";
 
 import api from "../lib/api";
@@ -26,6 +30,7 @@ import {
   TimeScale,
 } from "chart.js";
 import { useShowValues } from "../contexts/ShowValuesContext";
+import { IoMdDownload } from "react-icons/io";
 Chart.register(
   CategoryScale,
   LinearScale,
@@ -169,7 +174,7 @@ export default function Dashboard() {
         onClose={() => setErr(null)}
       />
 
-      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
+      <div className="p-4 lg:p-0 w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
         {/* Menu */}
         <div
           className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1
@@ -179,7 +184,7 @@ export default function Dashboard() {
         </div>
 
         {/* Content */}
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
+        <div className="flex flex-col gap-5 w-full pb-[100px] lg:ml-40">
           <UserHeader user="Johnny" />
 
           {/* Header + Filters */}
@@ -206,30 +211,41 @@ export default function Dashboard() {
             title="Período"
           >
             <div className="flex gap-2">
-              <input
-                type="date"
-                value={period.start}
-                onChange={(e) =>
-                  setPeriod((p) => ({ ...p, start: e.target.value }))
-                }
-                className="w-full border rounded p-2 text-sm"
-              />
-              <input
-                type="date"
-                value={period.end}
-                onChange={(e) =>
-                  setPeriod((p) => ({ ...p, end: e.target.value }))
-                }
-                className="w-full border rounded p-2 text-sm"
-              />
+              <div className="w-full">
+                <label htmlFor="" className="text-sm text-[#282828]">
+                  Início
+                </label>
+                <input
+                  type="date"
+                  value={period.start}
+                  onChange={(e) =>
+                    setPeriod((p) => ({ ...p, start: e.target.value }))
+                  }
+                  className="w-full border rounded p-2 text-sm"
+                />
+              </div>
+              <div className="w-full">
+                <label htmlFor="" className="text-sm text-[#282828]">
+                  Fim
+                </label>
+                <input
+                  type="date"
+                  value={period.end}
+                  onChange={(e) =>
+                    setPeriod((p) => ({ ...p, end: e.target.value }))
+                  }
+                  className="w-full border rounded p-2 text-sm"
+                />
+              </div>
             </div>
             <Button
-              text="Aplicar filtro"
               onClick={() => {
                 setOpenModal(null);
                 fetchOrders();
               }}
-            />
+            >
+              Aplicar Filtro
+            </Button>
           </Modal>
 
           {/* Item Modal */}
@@ -251,12 +267,13 @@ export default function Dashboard() {
               ))}
             </div>
             <Button
-              text="Aplicar filtro"
               onClick={() => {
                 setOpenModal(null);
                 fetchOrders();
               }}
-            />
+            >
+              Aplicar Filtro
+            </Button>
           </Modal>
 
           {/* Balance + Chart */}
@@ -307,12 +324,14 @@ export default function Dashboard() {
           </div>
 
           {/* History */}
-          <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
-            <p className="text-base font-medium text-[#282828]">Histórico</p>
+          <div className="flex flex-col p-5 bg-white rounded-lg">
+            <p className="text-base font-medium text-[#282828] mb-5">
+              Histórico
+            </p>
 
             <Row label="Saldo Inicial" value={summary.startBal} gray />
             <Row label="Nº de Pedidos" value={summary.count} />
-            <div className="flex flex-col bg-[#fafafa] rounded-md">
+            <div className="flex flex-col  bg-[#fafafa] rounded-md">
               <Row
                 label="Entradas"
                 value={summary.totalIn}
@@ -355,6 +374,16 @@ export default function Dashboard() {
 
             <Row label="Variação em %" value={summary.variation} />
             <Row label="Saldo Final" value={summary.endBal} gray />
+
+            {/* Export + Import Buttons */}
+            <div className="flex gap-3 justify-end mt-4">
+              <Button variant="outlined">
+                <MdFileUpload /> Importar
+              </Button>
+              <Button>
+                <IoMdDownload /> Exportar
+              </Button>
+            </div>
           </div>
         </div>
       </div>

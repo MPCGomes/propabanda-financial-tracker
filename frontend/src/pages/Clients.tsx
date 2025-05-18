@@ -9,6 +9,7 @@ import Button from "../components/Button";
 import Modal from "../components/Modal";
 import FilterSelect from "../components/FilterSelect";
 import api from "../lib/api";
+import UserHeader from "../components/UserHeader";
 
 type ClientDTO = {
   id: number;
@@ -67,6 +68,7 @@ export default function Clients() {
 
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0 lg:ml-40">
+          <UserHeader user="Johnny" />
           <div className="flex gap-5 flex-col lg:flex-row lg:justify-between lg:items-center">
             <SearchBar onChange={setSearch} />
 
@@ -107,7 +109,7 @@ export default function Clients() {
                   </label>
                 ))}
               </div>
-              <Button text="Aplicar filtro" onClick={() => {}} />
+              <Button onClick={() => {}} >Aplicar Filtro</Button>
             </Modal>
           </div>
 
@@ -135,7 +137,9 @@ export default function Clients() {
         href="/clients/register"
         className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5"
       >
-        <FloatingButton icon={<FaPlus />} background="#FFA322" />
+        <FloatingButton background={"#FFA322"}>
+          <FaPlus className="text-lg" /> Adicionar Cliente
+        </FloatingButton>
       </a>
     </section>
   );

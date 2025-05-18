@@ -188,11 +188,12 @@ export default function Client() {
 
                   <div className="text-center">
                     <Button
-                      text="Adicionar Pedido"
                       onClick={() =>
                         navigate(`/orders/register?clientId=${id}`)
                       }
-                    />
+                    >
+                      Adicionar Pedido
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -203,22 +204,23 @@ export default function Client() {
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white text-[#282828]">
             <p className="text-base font-bold">Pedidos</p>
 
-            <SearchBar onChange={setItemSearch} />
-
-            <div className="flex gap-3 flex-wrap lg:flex-nowrap">
-              <div className="hidden lg:block">
-                <FilterSelect
-                  options={orderOptions}
-                  placeholder="Ordem"
-                  value={`${sortBy}|${direction}`}
-                  onChange={applyOrder}
+            <div className="flex flex-col gap-5 lg:flex-row">
+              <SearchBar onChange={setItemSearch} />
+              <div className="flex gap-3 flex-wrap lg:flex-nowrap">
+                <div className="hidden lg:block">
+                  <FilterSelect
+                    options={orderOptions}
+                    placeholder="Ordem"
+                    value={`${sortBy}|${direction}`}
+                    onChange={applyOrder}
+                  />
+                </div>
+                <Filter
+                  text="Ordem"
+                  onClick={() => setOpenModal("order")}
+                  className="lg:hidden"
                 />
               </div>
-              <Filter
-                text="Ordem"
-                onClick={() => setOpenModal("order")}
-                className="lg:hidden"
-              />
             </div>
 
             {/* Modal - Mobile */}
@@ -241,7 +243,7 @@ export default function Client() {
                   </label>
                 ))}
               </div>
-              <Button text="Aplicar filtro" />
+              <Button>Aplicar Filtro</Button>
             </Modal>
 
             <div className="flex flex-col gap-3">
@@ -267,15 +269,18 @@ export default function Client() {
       </div>
 
       {/* Floating Button */}
-      <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2">
+      <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2 items-end">
         <Link to={`/clients/${id}/edit?clientId=${id}`}>
-          <FloatingButton icon={<RiPencilFill />} background="#2696FF" />
+          <FloatingButton background="#2696FF">
+            <RiPencilFill className="text-lg" /> Editar
+          </FloatingButton>
         </Link>
         <FloatingButton
-          icon={<FaTrash />}
           background="#EE3A4B"
           onClick={() => setOpenModal("delete")}
-        />
+        >
+          <FaTrash className="text-lg" /> Apagar
+        </FloatingButton>
       </div>
 
       {/* Action Confirmation Modal */}
@@ -287,9 +292,19 @@ export default function Client() {
         <p className="text-sm text-[#282828]">
           Essa ação removerá o cliente <b>{client?.name}</b>. Continuar?
         </p>
-        <div className="flex gap-3 mt-4">
-          <Button text="Cancelar" onClick={() => setOpenModal(null)} />
-          <Button text="Excluir" onClick={deleteClient} />
+        <div className="flex gap-3">
+          <button
+            className="flex-1 py-2 rounded-full bg-gray-100 text-[#282828] cursor-pointer"
+            onClick={() => setOpenModal(null)}
+          >
+            Cancelar
+          </button>
+          <button
+            className="flex-1 py-2 rounded-full bg-[#EE3A4B] text-white cursor-pointer"
+            onClick={deleteClient}
+          >
+            Excluir
+          </button>
         </div>
       </Modal>
 
@@ -301,7 +316,7 @@ export default function Client() {
       >
         <p className="text-sm text-[#282828]">{errorMsg}</p>
         <div className="text-center mt-4">
-          <Button text="Fechar" onClick={() => setOpenModal(null)} />
+          <Button onClick={() => setOpenModal(null)}>Fechar</Button>
         </div>
       </Modal>
     </section>

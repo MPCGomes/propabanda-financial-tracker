@@ -27,7 +27,7 @@ export default function UserHeader({ user }: Props) {
           className="text-[#ffa322] w-8 h-8 bg-[#ffa32233] text-xl flex items-center justify-center rounded-full"
           title={show ? "Ocultar valores" : "Mostrar valores"}
         >
-          {show ? <FaRegEyeSlash /> : <FaRegEye />}
+          {show ? <FaRegEye /> : <FaRegEyeSlash />}
         </button>
 
         {/* logout */}

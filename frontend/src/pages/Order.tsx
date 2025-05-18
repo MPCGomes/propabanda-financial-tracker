@@ -130,18 +130,18 @@ export default function Order() {
         onClose={() => setConfirmDelete(false)}
         title="Excluir pedido?"
       >
-        <p className="text-sm mb-4">
+        <p className="text-sm text-[#282828]">
           Essa ação removerá o pedido <b>#{order?.id}</b>. Continuar?
         </p>
         <div className="flex gap-3">
           <button
-            className="flex-1 py-2 rounded bg-gray-200"
+            className="flex-1 py-2 rounded-full bg-gray-100 text-[#282828] cursor-pointer"
             onClick={() => setConfirmDelete(false)}
           >
             Cancelar
           </button>
           <button
-            className="flex-1 py-2 rounded bg-[#EE3A4B] text-white"
+            className="flex-1 py-2 rounded-full bg-[#EE3A4B] text-white cursor-pointer"
             onClick={deleteOrder}
           >
             Excluir
@@ -228,17 +228,19 @@ export default function Order() {
       </div>
 
       {/* Floating Buttons */}
-      <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2">
+      <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2 items-end">
         <FloatingButton
-          icon={<RiPencilFill />}
           background="#2696FF"
           onClick={() => navigate(`/orders/${id}/edit`)}
-        />
+        >
+          <RiPencilFill /> Editar
+        </FloatingButton>
         <FloatingButton
-          icon={<FaTrash />}
           background="#EE3A4B"
           onClick={() => setConfirmDelete(true)}
-        />
+        >
+          <FaTrash /> Apagar
+        </FloatingButton>
       </div>
     </section>
   );

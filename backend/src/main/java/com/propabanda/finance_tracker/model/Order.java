@@ -11,8 +11,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import static jakarta.persistence.CascadeType.ALL;
-
 @Entity
 @Table(name = "app_order")
 @Getter
@@ -32,6 +30,8 @@ public class Order {
 
     @NotNull
     @DecimalMin("0.00")
+
+    @Column(name = "value", nullable = false)
     private BigDecimal value;
 
     @NotNull

@@ -9,11 +9,16 @@ import Button from "../components/Button";
 import DialogModal from "../components/DialogModal";
 import Money from "../components/Money";
 import { useShowValues } from "../contexts/ShowValuesContext";
-import { MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
+import {
+  MdKeyboardArrowUp,
+  MdKeyboardArrowDown,
+  MdFileUpload,
+} from "react-icons/md";
 import api from "../lib/api";
 
 // Chart
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
+import { IoMdDownload } from "react-icons/io";
 Chart.register(ArcElement, Tooltip, Legend);
 
 const Doughnut = lazy(() =>
@@ -135,7 +140,7 @@ export default function DashboardPerformance() {
         </div>
 
         {/* Content */}
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
+        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:ml-40">
           <UserHeader user="Johnny" />
 
           {/* Header + Filters */}
@@ -162,30 +167,41 @@ export default function DashboardPerformance() {
             title="Período"
           >
             <div className="flex gap-2">
-              <input
-                type="date"
-                value={period.start}
-                onChange={(e) =>
-                  setPeriod((p) => ({ ...p, start: e.target.value }))
-                }
-                className="w-full border rounded p-2 text-sm"
-              />
-              <input
-                type="date"
-                value={period.end}
-                onChange={(e) =>
-                  setPeriod((p) => ({ ...p, end: e.target.value }))
-                }
-                className="w-full border rounded p-2 text-sm"
-              />
+              <div className="w-full">
+                <label htmlFor="" className="text-sm text-[#282828]">
+                  Início
+                </label>
+                <input
+                  type="date"
+                  value={period.start}
+                  onChange={(e) =>
+                    setPeriod((p) => ({ ...p, start: e.target.value }))
+                  }
+                  className="w-full border rounded p-2 text-sm"
+                />
+              </div>
+              <div className="w-full">
+                <label htmlFor="" className="text-sm text-[#282828]">
+                  Fim
+                </label>
+                <input
+                  type="date"
+                  value={period.end}
+                  onChange={(e) =>
+                    setPeriod((p) => ({ ...p, end: e.target.value }))
+                  }
+                  className="w-full border rounded p-2 text-sm"
+                />
+              </div>
             </div>
             <Button
-              text="Aplicar"
               onClick={() => {
                 setOpenModal(null);
                 fetchPerf();
               }}
-            />
+            >
+              Aplicar
+            </Button>
           </Modal>
 
           {/* Item Modal */}
@@ -207,24 +223,27 @@ export default function DashboardPerformance() {
               ))}
             </div>
             <Button
-              text="Aplicar"
               onClick={() => {
                 setOpenModal(null);
                 fetchPerf();
               }}
-            />
+            >
+              Aplicar
+            </Button>
           </Modal>
 
           {/* Charts + Balance */}
           <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
             {perf ? (
               <>
-                <p className="text-xs text-[#282828]">
-                  Receita total no período
-                </p>
-                <p className="text-2xl font-bold text-[#282828]">
-                  R$ <Money value={perf.finalBalance} />
-                </p>
+                <div>
+                  <p className="text-xs text-[#282828]">
+                    Receita total no período
+                  </p>
+                  <p className="text-2xl font-bold text-[#282828]">
+                    R$ <Money value={perf.finalBalance} />
+                  </p>
+                </div>
 
                 <div style={{ height: 260 }}>
                   <Suspense
@@ -292,6 +311,15 @@ export default function DashboardPerformance() {
                 Nenhum dado no período.
               </p>
             )}
+            {/* Export + Import Buttons */}
+            <div className="flex gap-3 justify-end mt-4">
+              <Button variant="outlined">
+                <MdFileUpload /> Importar
+              </Button>
+              <Button>
+                <IoMdDownload /> Exportar
+              </Button>
+            </div>
           </div>
         </div>
       </div>

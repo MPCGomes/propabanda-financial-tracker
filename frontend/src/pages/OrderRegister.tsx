@@ -287,12 +287,10 @@ export default function OrderRegister() {
             </label>
 
             <div className="flex gap-3 justify-end">
-              <Button
-                text="Cancelar"
-                variant="outlined"
-                onClick={() => navigate("/orders")}
-              />
-              <Button text="Cadastrar" onClick={handleSubmit} />
+              <Button variant="outlined" onClick={() => navigate("/orders")}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSubmit} >Cadastrar</Button>
             </div>
           </div>
         </div>
