@@ -30,7 +30,7 @@ public class Client {
     private String documentNumber;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "representant_id", referencedColumnName = "id", nullable = false, unique = true)
+    @JoinColumn(name = "representative_id", referencedColumnName = "id", nullable = false, unique = true)
     private Representative representative;
 
     @OneToOne(cascade = CascadeType.ALL)

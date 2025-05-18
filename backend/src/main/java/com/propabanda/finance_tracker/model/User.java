@@ -19,9 +19,9 @@ public class User {
     private Long id;
 
     @NotBlank
-    @Size(max = 60)
-    @Column(name = "username", nullable = false, unique = true)
-    private String username;
+    @Size(max = 100)
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @NotBlank
     @Pattern(regexp = "\\d{11}")

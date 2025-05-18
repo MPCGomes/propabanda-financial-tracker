@@ -9,33 +9,30 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
-    private final UserRepository         userRepository;
-    private final BCryptPasswordEncoder  passwordEncoder;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository,
-                       BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository  = userRepository;
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserResponseDTO> findAll() {
-        return userRepository.findAll()
-                .stream()
+        return userRepository.findAll().stream()
                 .map(this::toUserResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Optional<UserResponseDTO> findById(Long id) {
         return userRepository.findById(id).map(this::toUserResponseDTO);
     }
 
-    public Optional<User> findModelByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public Optional<User> findModelByDocumentNumber(String documentNumber) {
+        return userRepository.findByDocumentNumber(documentNumber);
     }
 
     public UserResponseDTO save(UserRequestDTO userRequestDTO) {
@@ -50,7 +47,7 @@ public class UserService {
 
     private User toUserModel(UserRequestDTO userRequestDTO) {
         User user = new User();
-        user.setUsername(userRequestDTO.getUsername().trim());
+        user.setName(userRequestDTO.getName().trim());
         user.setDocumentNumber(userRequestDTO.getDocumentNumber());
         user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
         user.setRole(userRequestDTO.getRole());
@@ -60,7 +57,7 @@ public class UserService {
     private UserResponseDTO toUserResponseDTO(User user) {
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setId(user.getId());
-        userResponseDTO.setUsername(user.getUsername());
+        userResponseDTO.setName(user.getName());
         userResponseDTO.setDocumentNumber(user.getDocumentNumber());
         userResponseDTO.setRole(user.getRole());
         return userResponseDTO;

@@ -35,7 +35,7 @@ create table item(
 
 create table app_user(
   id serial primary key,
-  username varchar(60) not null unique,
+  name varchar(100) not null,
   document_number varchar(11) not null unique,
   password varchar(255) not null,
   role varchar(50) not null
@@ -43,6 +43,7 @@ create table app_user(
 
 create table app_order(
   id serial primary key,
+  identifier varchar(30) not null unique,
   client_id integer not null,
   value numeric(10,2) not null,
   contract_start_date date not null,

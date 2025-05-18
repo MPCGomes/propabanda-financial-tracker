@@ -10,17 +10,17 @@ import lombok.Setter;
 @Setter
 public class UserRequestDTO {
 
-    @NotBlank(message = "Informe o CPF do usuário.")
-    @Pattern(regexp = "\\d{11}", message = "O CPF deve conter 11 dígitos numéricos.")
-    private String documentNumber;
+    @NotBlank(message = "Informe o nome do usuário.")
+    @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres.")
+    private String name;
 
-    @NotBlank(message = "Informe o nome de usuário.")
-    @Size(max = 60, message = "O nome de usuário pode ter no máximo 60 caracteres.")
-    private String username;
+    @NotBlank(message = "Informe o CPF (11 dígitos).")
+    @Pattern(regexp = "\\d{11}", message = "O CPF deve conter exatamente 11 dígitos numéricos.")
+    private String documentNumber;
 
     @NotBlank(message = "Informe a senha.")
     private String password;
 
-    @NotBlank(message = "Informe o perfil (role) do usuário.")
+    @NotBlank(message = "Informe o perfil (role).")
     private String role;
 }

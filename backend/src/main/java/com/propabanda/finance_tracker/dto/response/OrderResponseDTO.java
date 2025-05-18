@@ -12,6 +12,8 @@ import java.util.Set;
 public class OrderResponseDTO {
 
     private Long id;
+    private String identifier;
+
     private Long clientId;
     private String clientName;
 
@@ -30,6 +32,5 @@ public class OrderResponseDTO {
     private BigDecimal discountedValue;
     private BigDecimal paidValue;
     private BigDecimal remainingValue;
-
     private LocalDate createdAt;
 }

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
-@Table(name = "representant")
+@Table(name = "representative")
 @Getter
 @Setter
 public class Representative {
