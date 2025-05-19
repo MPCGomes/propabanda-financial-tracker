@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -29,15 +31,17 @@ public class AuthController {
     }
 
     @PostMapping
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid AuthRequestDTO authRequestDTO) {
-        User user = userRepository.findByDocumentNumber(authRequestDTO.getDocumentNumber())
+    public ResponseEntity<?> login(@RequestBody @Valid AuthRequestDTO dto) {
+
+        User user = userRepository.findByDocumentNumber(dto.getDocumentNumber())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (!bCryptPasswordEncoder.matches(authRequestDTO.getPassword(), user.getPassword())) {
-            return ResponseEntity.badRequest().build();
+        if (!bCryptPasswordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(400).body(Map.of("error", "Credenciais inválidas"));
         }
 
         String token = jwtUtil.generateToken(user.getDocumentNumber());
         return ResponseEntity.ok(new AuthResponseDTO(token));
     }
+
 }

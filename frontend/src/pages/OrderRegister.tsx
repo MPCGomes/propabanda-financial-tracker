@@ -13,7 +13,7 @@ import ClientAutoComplete, {
   ClientOption,
 } from "../components/ClientAutoComplete";
 
-type ItemOption = { value: number; label: string; price: number };
+type ItemOption = { value: number; label: string };
 
 const MAX_FILE_MB = 10;
 
@@ -23,10 +23,12 @@ export default function OrderRegister() {
     "clientId"
   );
 
-  // Form States
+  /* ---------- estados ---------- */
   const [client, setClient] = useState<ClientOption | null>(null);
   const [items, setItems] = useState<ItemOption[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+
+  const [orderValue, setOrderValue] = useState(""); // <<< valor editável
 
   const [startDate, setStartDate] = useState(() =>
     new Date().toISOString().slice(0, 10)
@@ -45,9 +47,8 @@ export default function OrderRegister() {
   const [contractFile, setContractFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Values
-  const itemPrice = items.find((i) => i.value === selectedItemId)?.price ?? 0;
-  const subtotal = itemPrice;
+  /* ---------- cálculos ---------- */
+  const subtotal = +orderValue || 0;
   const discountVal = (subtotal * (+discountPct || 0)) / 100;
   const total = subtotal - discountVal;
 
@@ -56,20 +57,13 @@ export default function OrderRegister() {
   const paidValue = instValue * (+paidInstallments || 0);
   const remainValue = total - paidValue;
 
-  // Effects
+  /* ---------- efeitos ---------- */
   useEffect(() => {
-    // Items
-    api.get("/api/items").then(({ data }) =>
-      setItems(
-        data.map((it: any) => ({
-          value: it.id,
-          label: it.name,
-          price: parseFloat(it.price),
-        }))
-      )
-    );
-
-    // Pre-Selected Client
+    api
+      .get("/api/items")
+      .then(({ data }) =>
+        setItems(data.map((it: any) => ({ value: it.id, label: it.name })))
+      );
     if (clientIdParam) {
       api
         .get(`/api/clients/${clientIdParam}`)
@@ -77,10 +71,11 @@ export default function OrderRegister() {
     }
   }, [clientIdParam]);
 
-  // Helpers
+  /* ---------- helpers ---------- */
   const validate = () =>
     client &&
     selectedItemId &&
+    subtotal > 0 &&
     instCountN >= 1 &&
     +paidInstallments <= instCountN &&
     (+installmentDay || 0) >= 1 &&
@@ -94,7 +89,7 @@ export default function OrderRegister() {
     setContractFile(file);
   };
 
-  // Submit
+  /* ---------- submit ---------- */
   const handleSubmit = async () => {
     if (!validate()) {
       setErrorMessage("Preencha todos os campos corretamente.");
@@ -102,9 +97,9 @@ export default function OrderRegister() {
     }
 
     try {
-      // Order
       const { data: order } = await api.post("/api/orders", {
         clientId: client!.id,
+        value: subtotal,
         contractStartDate: startDate,
         contractEndDate: endDate,
         installmentDay: +installmentDay || 0,
@@ -113,13 +108,13 @@ export default function OrderRegister() {
         emissionDate: startDate,
         paidInstallmentsCount: +paidInstallments || 0,
         contractFilePath: null,
-        items: [{ itemId: selectedItemId!, quantity: 1 }],
+        items: [selectedItemId!],
       });
 
-      // Contract
       if (contractFile) {
         const form = new FormData();
         form.append("file", contractFile);
+
         await api.post(`/api/orders/${order.id}/contract`, form, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -127,15 +122,17 @@ export default function OrderRegister() {
 
       navigate(`/orders/${order.id}`);
     } catch (err: any) {
-      if (err?.response?.status === 413)
-        setErrorMessage("Arquivo excede o limite do servidor.");
-      else setErrorMessage(err?.response?.data || "Erro ao salvar pedido.");
+      const msg =
+        typeof err?.response?.data === "string"
+          ? err.response.data
+          : err?.response?.data?.error || "Erro interno.";
+      setErrorMessage(msg);
     }
   };
 
+  /* ---------- UI ---------- */
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      {/* Error Modal */}
       <DialogModal
         isOpen={!!errorMessage}
         message={errorMessage ?? ""}
@@ -143,16 +140,14 @@ export default function OrderRegister() {
       />
 
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        {/* Menu */}
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
           <Header orders="active" />
         </div>
 
-        {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
           <GoBack link="/orders" />
 
-          {/* Forms */}
+          {/* ---- formulário principal ---- */}
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white">
             <p className="text-base font-medium">Cadastrar Pedido</p>
 
@@ -177,7 +172,16 @@ export default function OrderRegister() {
                 onChange={(id) => setSelectedItemId(Number(id))}
               />
 
-              {/* Dates */}
+              <InputText
+                type="number"
+                label="Valor Total (R$)"
+                value={orderValue}
+                onValueChange={setOrderValue}
+                placeholder="0,00"
+                min={0}
+              />
+
+              {/* datas */}
               <div className="flex gap-3">
                 <InputText
                   type="date"
@@ -193,14 +197,8 @@ export default function OrderRegister() {
                 />
               </div>
 
-              {/* números */}
+              {/* parcelas etc. */}
               <div className="flex gap-3">
-                <InputText
-                  label="Valor Total"
-                  value={subtotal.toFixed(2)}
-                  readOnly
-                  type="number"
-                />
                 <InputText
                   type="number"
                   min={1}
@@ -209,9 +207,6 @@ export default function OrderRegister() {
                   onValueChange={setInstallmentCount}
                   placeholder="0"
                 />
-              </div>
-
-              <div className="flex gap-3">
                 <InputText
                   type="number"
                   min={1}
@@ -221,6 +216,9 @@ export default function OrderRegister() {
                   onValueChange={setInstallmentDay}
                   placeholder="Dia"
                 />
+              </div>
+
+              <div className="flex gap-3">
                 <InputText
                   type="number"
                   min={0}
@@ -229,20 +227,19 @@ export default function OrderRegister() {
                   onValueChange={setPaidInstallments}
                   placeholder="0"
                 />
+                <InputText
+                  type="number"
+                  min={0}
+                  label="Desconto (%)"
+                  value={discountPct}
+                  onValueChange={setDiscountPct}
+                  placeholder="0"
+                />
               </div>
-
-              <InputText
-                type="number"
-                min={0}
-                label="Desconto (%)"
-                value={discountPct}
-                onValueChange={setDiscountPct}
-                placeholder="0"
-              />
             </div>
           </div>
 
-          {/* Summary */}
+          {/* ---- resumo ---- */}
           <div className="flex flex-col p-5 gap-3 rounded-lg bg-white">
             <Info label="Sub-Total" value={`R$ ${subtotal.toFixed(2)}`} />
             <Info label="Desconto (%)" value={`${discountPct || 0}%`} />
@@ -265,7 +262,7 @@ export default function OrderRegister() {
             <Info label="Total" value={`R$ ${total.toFixed(2)}`} />
           </div>
 
-          {/* Contract */}
+          {/* ---- contrato ---- */}
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white">
             <p className="text-sm font-medium">Contrato</p>
 
@@ -290,7 +287,7 @@ export default function OrderRegister() {
               <Button variant="outlined" onClick={() => navigate("/orders")}>
                 Cancelar
               </Button>
-              <Button onClick={handleSubmit} >Cadastrar</Button>
+              <Button onClick={handleSubmit}>Cadastrar</Button>
             </div>
           </div>
         </div>

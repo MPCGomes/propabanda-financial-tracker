@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
 @Entity
@@ -18,10 +19,14 @@ import java.util.Set;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+            generator = "app_order_seq")
+    @SequenceGenerator(name  = "app_order_seq",
+            sequenceName = "app_order_id_seq",
+            allocationSize = 1)
     private Long id;
 
-    @Column(name = "identifier", nullable = false, unique = true)
+    @Column(name = "identifier", nullable = false, unique = true, updatable = false)
     private String identifier;
 
     @ManyToOne(optional = false)
@@ -82,4 +87,17 @@ public class Order {
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @PrePersist
+    private void generateIdentifier() {
+        if (id == null) return;
+
+        String dayCode   = emissionDate != null
+                ? emissionDate.format(DateTimeFormatter.ofPattern("ddMMyy"))
+                : LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy"));
+
+        String seqCode   = String.format("%04d", id % 10_000);
+
+        this.identifier  = dayCode + seqCode;
+    }
 }

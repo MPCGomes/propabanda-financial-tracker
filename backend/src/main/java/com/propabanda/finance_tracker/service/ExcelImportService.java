@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -144,19 +145,18 @@ public class ExcelImportService {
 
     private String getCellValue(Cell cell) {
         if (cell == null) return "";
-        return switch (cell.getCellType()) {
-            case STRING -> cell.getStringCellValue().trim();
-            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
-            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
-            default -> "";
-        };
+        DataFormatter fmt = new DataFormatter();
+        return fmt.formatCellValue(cell).trim();
     }
+
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("d/M/uuuu");
 
     private LocalDate parseDate(Cell cell) {
         if (cell == null) return null;
         if (cell.getCellType() == CellType.NUMERIC) {
             return cell.getLocalDateTimeCellValue().toLocalDate();
         }
-        return LocalDate.parse(cell.getStringCellValue());
+        String txt = cell.getStringCellValue().trim();
+        return LocalDate.parse(txt, FMT);
     }
 }

@@ -27,47 +27,29 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    @Bean            // <-- CORS liberado só para o front em 5173
+    @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(List.of("http://localhost:5173"));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT",
-                "DELETE", "PATCH", "OPTIONS"));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cfg);
-        return source;
+        return new UrlBasedCorsConfigurationSource() {{
+            registerCorsConfiguration("/**", cfg);
+        }};
     }
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http
-                .csrf(AbstractHttpConfigurer::disable)
+        http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        /* OPTIONS passa sem autenticar (pre-flight) */
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        /* rotas públicas */
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth").permitAll()
-                        /* filtro de clientes (GET + POST) */
-                        .requestMatchers(HttpMethod.GET ,  "/api/clients/filter").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/clients/filter").authenticated()
-
-                        /* demais rotas */
+                        .requestMatchers(HttpMethod.POST, "/auth").permitAll()          // rota pública real
                         .anyRequest().authenticated())
-
-                .addFilterBefore(jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
 }

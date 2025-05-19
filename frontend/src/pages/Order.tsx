@@ -21,12 +21,13 @@ type OrderDTO = {
   contractStartDate: string;
   contractEndDate: string;
   emissionDate: string;
-  totalValue: string;
+  value: string;
+  discountedValue: string;
   installmentCount: number;
   paidValue: string;
   remainingValue: string;
   installmentDay: number;
-  items: ItemDTO[];
+  items: { name: string }[];
   contractFilePath: string | null;
 };
 
@@ -166,14 +167,14 @@ export default function Order() {
                 <Info label="Cliente" value={order.clientName} />
                 <Info
                   label="Itens"
-                  value={order.items.map((i) => i.itemName).join(", ")}
+                  value={order.items.map((i) => i.name).join(", ")}
                 />
                 <Info
                   label="Período Contratação"
                   value={`${order.contractStartDate} — ${order.contractEndDate}`}
                 />
                 <Info label="Emissão" value={order.emissionDate} />
-                <Info label="Valor Total" value={`R$ ${order.totalValue}`} />
+                <Info label="Valor Total" value={`R$ ${order.value}`} />
                 <Info
                   label="Nº Parcelas"
                   value={order.installmentCount.toString()}

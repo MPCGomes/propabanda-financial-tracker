@@ -18,7 +18,7 @@ type ClientDTO = {
   id: number;
   name: string;
   documentNumber: string;
-  representantResponseDTO: { name: string; email: string; phone: string };
+  representativeResponseDTO: { name: string; email: string; phone: string };
   addressResponseDTO: {
     zipCode: string;
     street: string;
@@ -32,6 +32,7 @@ type ClientDTO = {
 
 type OrderDTO = {
   id: number;
+  identifier: string;
   emissionDate: string;
   discountedValue: string;
   items: { itemName: string }[];
@@ -39,9 +40,7 @@ type OrderDTO = {
 
 const orderOptions = [
   { value: "emissionDate|desc", label: "Mais recentes" },
-  { value: "emissionDate|asc", label: "Mais antigos" },
-  { value: "itemName|asc", label: "A - Z" },
-  { value: "itemName|desc", label: "Z - A" },
+  { value: "emissionDate|asc", label: "Mais antigos" }
 ];
 
 export default function Client() {
@@ -143,21 +142,21 @@ export default function Client() {
               </div>
               <hr className="border-[#F0F0F0]" />
 
-              {/* Representant */}
+              {/* Representative */}
               <div className="flex gap-5 flex-col">
                 <p className="text-sm font-medium">Representante</p>
                 <div className="w-full flex flex-col gap-5">
                   <Info
                     label="Nome"
-                    value={client.representantResponseDTO.name}
+                    value={client.representativeResponseDTO.name}
                   />
                   <Info
                     label="E-mail"
-                    value={client.representantResponseDTO.email}
+                    value={client.representativeResponseDTO.email}
                   />
                   <Info
                     label="Telefone"
-                    value={client.representantResponseDTO.phone}
+                    value={client.representativeResponseDTO.phone}
                   />
                 </div>
               </div>
@@ -250,7 +249,7 @@ export default function Client() {
               {orders.map((o) => (
                 <Order
                   key={o.id}
-                  product={o.items[0]?.itemName ?? "—"}
+                  product={`Pedido Nº ${o.identifier}`}
                   date={o.emissionDate}
                   value={o.discountedValue}
                   color="#32c058"

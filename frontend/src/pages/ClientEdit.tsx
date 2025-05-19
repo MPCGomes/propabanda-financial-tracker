@@ -33,9 +33,9 @@ export default function ClientEdit() {
       .then(({ data }) => {
         setName(data.name);
         setCnpj(data.documentNumber);
-        setRepName(data.representantResponseDTO.name);
-        setRepPhone(data.representantResponseDTO.phone);
-        setRepEmail(data.representantResponseDTO.email);
+        setRepName(data.representativeResponseDTO.name);
+        setRepPhone(data.representativeResponseDTO.phone);
+        setRepEmail(data.representativeResponseDTO.email);
         setZip(data.addressResponseDTO.zipCode);
         setStreet(data.addressResponseDTO.street);
         setNumber(data.addressResponseDTO.number);
@@ -66,7 +66,7 @@ export default function ClientEdit() {
       await api.put(`/api/clients/${id}`, {
         name,
         documentNumber: cnpj,
-        representantRequestDTO: {
+        representativeRequestDTO: {
           name: repName,
           phone: repPhone,
           email: repEmail,
@@ -111,7 +111,7 @@ export default function ClientEdit() {
             <InputText label="CNPJ" value={cnpj} onValueChange={setCnpj} />
           </div>
 
-          {/* Representant */}
+          {/* Representative */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Representante</p>
             <InputText

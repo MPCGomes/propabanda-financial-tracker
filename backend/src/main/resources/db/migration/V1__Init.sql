@@ -1,67 +1,64 @@
-create table representative(
-  id serial primary key,
-  name varchar(100) not null,
-  email varchar(100) not null,
-  phone varchar(11) not null
+CREATE SEQUENCE order_seq START WITH 1 INCREMENT BY 1;
+
+CREATE TABLE representative (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  phone VARCHAR(11) NOT NULL
 );
 
-create table address(
-  id serial primary key,
-  zip_code varchar(8) not null,
-  state varchar(2) not null,
-  city varchar(100) not null,
-  neighbourhood varchar(100) not null,
-  street varchar(100) not null,
-  number varchar(5) not null,
-  complement varchar(50),
-  reference varchar(100)
+CREATE TABLE address (
+  id SERIAL PRIMARY KEY,
+  zip_code VARCHAR(8) NOT NULL,
+  state VARCHAR(2) NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  neighbourhood VARCHAR(100) NOT NULL,
+  street VARCHAR(100) NOT NULL,
+  number VARCHAR(5) NOT NULL,
+  complement VARCHAR(50),
+  reference VARCHAR(100)
 );
 
-create table client(
-  id serial primary key,
-  name varchar(100) not null,
-  document_number varchar(14) not null unique,
-  representative_id integer not null unique,
-  address_id integer not null unique,
-  created_at timestamp default current_timestamp,
-  foreign key(representative_id) references representative(id),
-  foreign key(address_id) references address(id)
+CREATE TABLE client (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  document_number VARCHAR(14) NOT NULL UNIQUE,
+  representative_id INTEGER NOT NULL UNIQUE REFERENCES representative(id),
+  address_id INTEGER NOT NULL UNIQUE REFERENCES address(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-create table item(
-  id serial primary key,
-  name varchar(100) not null unique
+CREATE TABLE item (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE
 );
 
-create table app_user(
-  id serial primary key,
-  name varchar(100) not null,
-  document_number varchar(11) not null unique,
-  password varchar(255) not null,
-  role varchar(50) not null
+CREATE TABLE app_user (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  document_number VARCHAR(11) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL
 );
 
-create table app_order(
-  id serial primary key,
-  identifier varchar(30) not null unique,
-  client_id integer not null,
-  value numeric(10,2) not null,
-  contract_start_date date not null,
-  contract_end_date date not null,
-  installment_day integer not null,
-  installment_count integer not null,
-  discount numeric(5,2) not null default 0,
-  emission_date date not null,
-  paid_installments_count integer not null default 0,
-  contract_file_path varchar(255),
-  created_at timestamp default current_timestamp,
-  foreign key(client_id) references client(id)
+CREATE TABLE app_order (
+  id SERIAL PRIMARY KEY,
+  identifier VARCHAR(10) NOT NULL UNIQUE,
+  client_id INTEGER NOT NULL REFERENCES client(id),
+  value NUMERIC(10,2) NOT NULL,
+  contract_start_date DATE NOT NULL,
+  contract_end_date DATE NOT NULL,
+  installment_day INTEGER NOT NULL,
+  installment_count INTEGER NOT NULL,
+  discount NUMERIC(5,2) NOT NULL DEFAULT 0,
+  emission_date DATE NOT NULL,
+  paid_installments_count INTEGER NOT NULL DEFAULT 0,
+  contract_file_path VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-create table order_item_link(
-  order_id integer not null,
-  item_id integer not null,
-  primary key(order_id,item_id),
-  foreign key(order_id) references app_order(id) on delete cascade,
-  foreign key(item_id) references item(id) on delete cascade
+CREATE TABLE order_item_link (
+  order_id INTEGER NOT NULL REFERENCES app_order(id) ON DELETE CASCADE,
+  item_id INTEGER NOT NULL REFERENCES item(id) ON DELETE CASCADE,
+  PRIMARY KEY (order_id, item_id)
 );

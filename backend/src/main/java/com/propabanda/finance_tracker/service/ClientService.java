@@ -47,10 +47,35 @@ public class ClientService {
     }
 
     public ClientResponseDTO update(Long id, ClientRequestDTO clientRequestDTO) {
-        Client client = toClientModel(clientRequestDTO);
-        client.setId(id);
-        client = clientRepository.save(client);
-        return toClientResponseDTO(client);
+
+        Client client = clientRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+
+        client.setName(clientRequestDTO.getName());
+        client.setDocumentNumber(clientRequestDTO.getDocumentNumber());
+
+        if (!client.getDocumentNumber().equals(clientRequestDTO.getDocumentNumber()) &&
+                existsByDocumentNumber(clientRequestDTO.getDocumentNumber())) {
+            throw new IllegalArgumentException("Documento já cadastrado");
+        }
+
+        Representative representative = client.getRepresentative();
+        representative.setName(clientRequestDTO.getRepresentativeRequestDTO().getName());
+        representative.setEmail(clientRequestDTO.getRepresentativeRequestDTO().getEmail());
+        representative.setPhone(clientRequestDTO.getRepresentativeRequestDTO().getPhone());
+
+        AddressRequestDTO addressRequestDTO = clientRequestDTO.getAddressRequestDTO();
+        Address address = client.getAddress();
+        address.setZipCode(addressRequestDTO.getZipCode());
+        address.setState(addressRequestDTO.getState());
+        address.setCity(addressRequestDTO.getCity());
+        address.setNeighbourhood(addressRequestDTO.getNeighbourhood());
+        address.setStreet(addressRequestDTO.getStreet());
+        address.setNumber(addressRequestDTO.getNumber());
+        address.setComplement(addressRequestDTO.getComplement());
+        address.setReference(addressRequestDTO.getReference());
+
+        return toClientResponseDTO(clientRepository.save(client));
     }
 
     public void delete(Long id) {

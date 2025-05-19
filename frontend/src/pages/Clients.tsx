@@ -14,7 +14,7 @@ import UserHeader from "../components/UserHeader";
 type ClientDTO = {
   id: number;
   name: string;
-  representantResponseDTO: { name: string };
+  representativeResponseDTO: { name: string };
 };
 
 const orderOptions = [
@@ -38,7 +38,7 @@ export default function Clients() {
     const body = search.trim()
       ? { search, sortBy, direction }
       : { sortBy, direction };
-    const { data } = await api.post("/api/clients/filter", body);
+    const { data } = await api.post<ClientDTO[]>("/api/clients/filter", body);
     setClients(data);
   };
 
@@ -109,7 +109,7 @@ export default function Clients() {
                   </label>
                 ))}
               </div>
-              <Button onClick={() => {}} >Aplicar Filtro</Button>
+              <Button onClick={() => {}}>Aplicar Filtro</Button>
             </Modal>
           </div>
 
@@ -119,7 +119,7 @@ export default function Clients() {
               <Client
                 key={c.id}
                 client={c.name}
-                rep={c.representantResponseDTO.name}
+                rep={c.representativeResponseDTO.name}
                 link={`/clients/${c.id}`}
               />
             ))}

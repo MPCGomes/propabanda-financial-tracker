@@ -14,18 +14,16 @@ import UserHeader from "../components/UserHeader";
 
 type OrderDTO = {
   id: number;
-  clientName: string;
+  identifier: string;
   emissionDate: string;
-  discountedValue: string;
-  items: { itemName: string }[];
+  discountedValue: number;
+  items: { id: number; name: string }[];
 };
 
 // Filters
 const orderOptions = [
   { value: "emissionDate|desc", label: "Mais recentes" },
-  { value: "emissionDate|asc", label: "Mais antigos" },
-  { value: "name|asc", label: "A - Z" },
-  { value: "name|desc", label: "Z - A" },
+  { value: "emissionDate|asc", label: "Mais antigos" }
 ];
 
 export default function Orders() {
@@ -49,7 +47,15 @@ export default function Orders() {
       ...(search.trim() && { search }),
     };
     const { data } = await api.post("/api/orders/filter", payload);
-    setOrders(data);
+    setOrders(
+      data.map((o: any) => ({
+        id: o.id,
+        identifier: o.identifier,
+        emissionDate: o.emissionDate,
+        discountedValue: +o.discountedValue,
+        items: o.items.map((it: any) => ({ id: it.id, name: it.name })),
+      }))
+    );
   };
 
   // Effects
@@ -135,9 +141,9 @@ export default function Orders() {
             {orders.map((o) => (
               <Order
                 key={o.id}
-                product={o.items[0]?.itemName ?? "—"}
+                product={`Pedido Nº ${o.identifier}`}
                 date={o.emissionDate}
-                value={o.discountedValue}
+                value={`R$ ${o.discountedValue.toFixed(2)}`}
                 color="#32c058"
                 link={`/orders/${o.id}`}
                 icon="+"

@@ -122,6 +122,8 @@ export default function DashboardPerformance() {
       prev.includes(id) ? prev.filter((n) => n !== id) : [...prev, id]
     );
 
+  const colors = ["#FFA322", "#FFB24D", "#FFC27A", "#FFD1A6", "#FFE0D1"];
+
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
       <DialogModal
@@ -251,7 +253,18 @@ export default function DashboardPerformance() {
                   >
                     {chartData && (
                       <Doughnut
-                        data={chartData}
+                        data={
+                          chartData && {
+                            ...chartData,
+                            datasets: [
+                              {
+                                ...chartData.datasets[0],
+                                backgroundColor: colors,
+                                borderWidth: 0,
+                              },
+                            ],
+                          }
+                        }
                         options={{
                           plugins: {
                             legend: { position: "bottom" },
@@ -261,7 +274,9 @@ export default function DashboardPerformance() {
                                   show
                                     ? `R$ ${(+ctx.parsed).toLocaleString(
                                         "pt-BR",
-                                        { minimumFractionDigits: 2 }
+                                        {
+                                          minimumFractionDigits: 2,
+                                        }
                                       )}`
                                     : "***",
                               },

@@ -11,6 +11,7 @@ import com.propabanda.finance_tracker.model.Order;
 import com.propabanda.finance_tracker.repository.ClientRepository;
 import com.propabanda.finance_tracker.repository.ItemRepository;
 import com.propabanda.finance_tracker.repository.OrderRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,19 +59,32 @@ public class OrderService {
     }
 
     public OrderResponseDTO save(OrderRequestDTO orderRequestDTO) {
-        Order order = toOrderModel(orderRequestDTO);
-        order = orderRepository.save(order);
-        order.setIdentifier(buildIdentifier(order));
-        order = orderRepository.save(order);
+        Order order = orderRepository.save(toOrderModel(orderRequestDTO));
         return toOrderResponseDTO(order);
     }
 
     public OrderResponseDTO update(Long id, OrderRequestDTO orderRequestDTO) {
-        Order order = toOrderModel(orderRequestDTO);
-        order.setId(id);
-        order.setIdentifier(buildIdentifier(order));
-        order = orderRepository.save(order);
-        return toOrderResponseDTO(order);
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        order.setValue(orderRequestDTO.getValue());
+        order.setContractStartDate(orderRequestDTO.getContractStartDate());
+        order.setContractEndDate(orderRequestDTO.getContractEndDate());
+        order.setInstallmentDay(orderRequestDTO.getInstallmentDay());
+        order.setInstallmentCount(orderRequestDTO.getInstallmentCount());
+        order.setDiscount(orderRequestDTO.getDiscount());
+        order.setEmissionDate(orderRequestDTO.getEmissionDate());
+        order.setPaidInstallmentsCount(orderRequestDTO.getPaidInstallmentsCount());
+        order.setContractFilePath(orderRequestDTO.getContractFilePath());
+
+        Set<Item> items = orderRequestDTO.getItems().stream()
+                .map(itemId -> itemRepository.findById(itemId)
+                        .orElseThrow(() -> new IllegalArgumentException("Item id " + itemId + " not found")))
+                .collect(Collectors.toSet());
+        order.setItems(items);
+
+        return toOrderResponseDTO(orderRepository.save(order));
     }
 
     private String buildIdentifier(Order order) {
@@ -158,6 +172,7 @@ public class OrderService {
                 .toList();
     }
 
+    @Transactional
     public void uploadContract(Long orderId, MultipartFile multipartFile) throws IOException {
 
         Order order = orderRepository.findById(orderId)
@@ -175,18 +190,21 @@ public class OrderService {
             throw new IllegalArgumentException("File too large");
         }
 
-        String safeName = originalName.replaceAll("[^a-zA-Z0-9.\\- _]", "_");
+        String safeName = originalName.replaceAll("[^a-zA-Z0-9.\\-_]", "_");
         Path uploadPath = Paths.get(uploadDir);
         Files.createDirectories(uploadPath);
 
-        Path dest = uploadPath.resolve("order_" + orderId + "_" + System.currentTimeMillis() + "_" + safeName);
+        Path dest = uploadPath.resolve(
+                "order_" + orderId + "_" + System.currentTimeMillis() + "_" + safeName);
 
         try (InputStream in = multipartFile.getInputStream()) {
             Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
+            order.setContractFilePath(dest.toString());
+            orderRepository.save(order);
+        } catch (Exception e) {
+            Files.deleteIfExists(dest);
+            throw e;
         }
-
-        order.setContractFilePath(dest.toString());
-        orderRepository.save(order);
     }
 
     public File getContractFile(Long orderId) {

@@ -48,7 +48,8 @@ const Line = lazy(() =>
 type ItemOption = { id: number; name: string };
 type OrderResume = {
   id: number;
-  emissionDate: string; // yyyy-MM-dd
+  identifier: string;
+  emissionDate: string;
   discountedValue: number;
   items: { itemId: number; itemName: string }[];
 };
@@ -101,12 +102,10 @@ export default function Dashboard() {
       setOrders(
         data.map((o: any) => ({
           id: o.id,
+          identifier: o.identifier,
           emissionDate: o.emissionDate,
           discountedValue: +o.discountedValue,
-          items: Array.from(o.items).map((it: any) => ({
-            itemId: it.itemId,
-            itemName: it.itemName,
-          })),
+          items: o.items.map((it: any) => ({ id: it.id, name: it.name })),
         }))
       );
     } catch {
@@ -150,6 +149,8 @@ export default function Dashboard() {
           data: labels.map((l) => map.get(l)),
           tension: 0.3,
           fill: false,
+          borderColor: "#FFA322",
+          backgroundColor: "#FFA322",
         },
       ],
     };
@@ -348,13 +349,9 @@ export default function Dashboard() {
               {showEntryList && (
                 <ul className="text-sm text-[#282828] px-2 pb-2 space-y-2">
                   {orders.map((o) => (
-                    <li
-                      key={o.id}
-                      className="flex justify-between hover:underline cursor-pointer"
-                      onClick={() => navigate(`/orders/${o.id}`)}
-                    >
+                    <li key={o.id} /* … */>
                       <span>
-                        {o.items.map((it) => it.itemName).join(", ")}
+                        Pedido Nº {o.identifier}
                         <span className="text-xs text-[#888]">
                           {" "}
                           ({o.emissionDate})
@@ -376,11 +373,38 @@ export default function Dashboard() {
             <Row label="Saldo Final" value={summary.endBal} gray />
 
             {/* Export + Import Buttons */}
+            {/* Import / Export */}
             <div className="flex gap-3 justify-end mt-4">
-              <Button variant="outlined">
-                <MdFileUpload /> Importar
-              </Button>
-              <Button>
+              {/* Import */}
+              <label className="relative inline-flex">
+                <input
+                  type="file"
+                  accept=".xlsx"
+                  className="hidden"
+                  onChange={async (e) => {
+                    if (!e.target.files?.length) return;
+                    const form = new FormData();
+                    form.append("file", e.target.files[0]);
+                    await api.post("/api/import/orders", form, {
+                      headers: { "Content-Type": "multipart/form-data" },
+                    });
+                    fetchOrders();
+                  }}
+                />
+                <Button variant="outlined">
+                  <MdFileUpload /> Importar
+                </Button>
+              </label>
+
+              {/* Export */}
+              <Button
+                onClick={() =>
+                  window.open(
+                    `${api.defaults.baseURL}/api/export/report.xlsx`,
+                    "_blank"
+                  )
+                }
+              >
                 <IoMdDownload /> Exportar
               </Button>
             </div>
