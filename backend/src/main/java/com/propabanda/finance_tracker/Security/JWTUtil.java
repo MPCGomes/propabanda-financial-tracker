@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.Security;
 
+import com.propabanda.finance_tracker.model.User;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,9 +25,10 @@ public class JWTUtil {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String documentNumber) {
+    public String generateToken(User user) {
         return Jwts.builder()
-                .setSubject(documentNumber)
+                .setSubject(user.getDocumentNumber())
+                .claim("name", user.getName())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

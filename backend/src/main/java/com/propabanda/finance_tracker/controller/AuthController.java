@@ -6,6 +6,7 @@ import com.propabanda.finance_tracker.dto.response.AuthResponseDTO;
 import com.propabanda.finance_tracker.model.User;
 import com.propabanda.finance_tracker.repository.UserRepository;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -31,17 +33,15 @@ public class AuthController {
     }
 
     @PostMapping
-    public ResponseEntity<?> login(@RequestBody @Valid AuthRequestDTO dto) {
-
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid AuthRequestDTO dto) {
         User user = userRepository.findByDocumentNumber(dto.getDocumentNumber())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
+                .orElseThrow(() -> new UsernameNotFoundException("Credenciais inválidas"));
         if (!bCryptPasswordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(400).body(Map.of("error", "Credenciais inválidas"));
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new AuthResponseDTO("Credenciais inválidas"));
         }
-
-        String token = jwtUtil.generateToken(user.getDocumentNumber());
+        String token = jwtUtil.generateToken(user);
         return ResponseEntity.ok(new AuthResponseDTO(token));
     }
-
 }

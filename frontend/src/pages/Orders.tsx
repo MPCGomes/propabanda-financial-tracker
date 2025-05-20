@@ -11,35 +11,34 @@ import FilterSelect from "../components/FilterSelect";
 import { FaPlus } from "react-icons/fa6";
 import api from "../lib/api";
 import UserHeader from "../components/UserHeader";
+import Money from "../components/Money";
+import { useShowValues } from "../contexts/ShowValuesContext";
 
 type OrderDTO = {
   id: number;
   identifier: string;
+  clientName: string;
   emissionDate: string;
   discountedValue: number;
-  items: { id: number; name: string }[];
 };
 
-// Filters
 const orderOptions = [
   { value: "emissionDate|desc", label: "Mais recentes" },
-  { value: "emissionDate|asc", label: "Mais antigos" }
+  { value: "emissionDate|asc", label: "Mais antigos" },
 ];
 
 export default function Orders() {
   const navigate = useNavigate();
+  const { show } = useShowValues();
 
-  //States
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"emissionDate" | "name">("emissionDate");
+  const [sortBy, setSortBy] = useState<"emissionDate">("emissionDate");
   const [direction, setDirection] = useState<"asc" | "desc">("desc");
   const [openModal, setOpenModal] = useState<null | "order">(null);
 
-  // Debounce
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Endpoints
   const fetchOrders = async () => {
     const payload = {
       sortBy,
@@ -51,14 +50,13 @@ export default function Orders() {
       data.map((o: any) => ({
         id: o.id,
         identifier: o.identifier,
+        clientName: o.client?.name ?? o.clientName ?? "",
         emissionDate: o.emissionDate,
         discountedValue: +o.discountedValue,
-        items: o.items.map((it: any) => ({ id: it.id, name: it.name })),
       }))
     );
   };
 
-  // Effects
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(fetchOrders, 300);
@@ -67,12 +65,8 @@ export default function Orders() {
     };
   }, [search, sortBy, direction]);
 
-  // Handlers
   const applyOrder = (value: string) => {
-    const [s, d] = value.split("|") as [
-      "emissionDate" | "name",
-      "asc" | "desc",
-    ];
+    const [s, d] = value.split("|") as ["emissionDate", "asc" | "desc"];
     setSortBy(s);
     setDirection(d);
     setOpenModal(null);
@@ -81,21 +75,17 @@ export default function Orders() {
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-center min-h-screen lg:p-3 lg:items-start">
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        {/* Menu */}
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
           <Header orders="active" />
         </div>
 
-        {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0 lg:ml-40">
-          <UserHeader user="Johnny" />
+          <UserHeader />
 
-          {/* Search Bar + Filters */}
           <div className="flex gap-5 flex-col lg:flex-row lg:justify-between lg:items-center">
             <SearchBar onChange={setSearch} />
 
             <div className="flex gap-3">
-              {/* Desktop */}
               <div className="hidden lg:block">
                 <FilterSelect
                   options={orderOptions}
@@ -104,7 +94,7 @@ export default function Orders() {
                   onChange={applyOrder}
                 />
               </div>
-              {/* Mobile */}
+
               <Filter
                 text="Ordem"
                 onClick={() => setOpenModal("order")}
@@ -112,7 +102,6 @@ export default function Orders() {
               />
             </div>
 
-            {/* Order Modal - Mobile */}
             <Modal
               isOpen={openModal === "order"}
               onClose={() => setOpenModal(null)}
@@ -132,24 +121,29 @@ export default function Orders() {
                   </label>
                 ))}
               </div>
-              <Button>Aplicar filtro</Button>
+              <Button onClick={() => setOpenModal(null)}>Aplicar filtro</Button>
             </Modal>
           </div>
 
-          {/* Orders */}
           <div className="flex flex-col gap-3 p-2 bg-white rounded-lg">
             {orders.map((o) => (
               <Order
                 key={o.id}
                 product={`Pedido Nº ${o.identifier}`}
-                date={o.emissionDate}
-                value={`R$ ${o.discountedValue.toFixed(2)}`}
+                date={`${o.clientName} | ${o.emissionDate}`}
+                value={
+                  show
+                    ? new Intl.NumberFormat("pt-BR", {
+                        minimumFractionDigits: 2,
+                      }).format(o.discountedValue)
+                    : "***"
+                }
                 color="#32c058"
                 link={`/orders/${o.id}`}
                 icon="+"
               />
             ))}
-            {orders.length === 0 && (
+            {!orders.length && (
               <p className="text-center text-sm text-gray-500 py-6">
                 Nenhum pedido encontrado.
               </p>
@@ -158,7 +152,6 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Floating Buttons */}
       <a
         href="/orders/register"
         className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5"

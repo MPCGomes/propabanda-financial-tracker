@@ -1,26 +1,26 @@
-import { ReactNode } from "react";
-import Modal from "./Modal";
 import Button from "./Button";
 
-export interface DialogModalProps {
+interface DialogModalProps {
   isOpen: boolean;
-  message?: string;
+  message: string;
   onClose: () => void;
-  title?: string;
-  children?: ReactNode;
 }
 
 export default function DialogModal({
   isOpen,
   message,
   onClose,
-  title,
-  children,
 }: DialogModalProps) {
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} {...(title ? { title } : {})}>
-      {message && <p className="mb-4">{message}</p>}
-      {children ?? <Button text="OK" onClick={onClose} className="w-full" />}
-    </Modal>
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <p className="text-base mb-6">{message}</p>
+        <div className="flex justify-end">
+          <Button onClick={onClose}>Fechar</Button>
+        </div>
+      </div>
+    </div>
   );
 }

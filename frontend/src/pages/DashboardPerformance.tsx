@@ -1,4 +1,3 @@
-/* src/pages/DashboardPerformance.tsx ---------------------------------- */
 import { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import Header from "../components/Header";
 import UserHeader from "../components/UserHeader";
@@ -15,10 +14,10 @@ import {
   MdFileUpload,
 } from "react-icons/md";
 import api from "../lib/api";
-
 // Chart
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import { IoMdDownload } from "react-icons/io";
+
 Chart.register(ArcElement, Tooltip, Legend);
 
 const Doughnut = lazy(() =>
@@ -31,10 +30,12 @@ interface ItemPerf {
   totalRevenue: number;
   percentageOfTotal: number;
 }
+
 interface PerformanceDTO {
   finalBalance: number;
   itemPerformances: ItemPerf[];
 }
+
 type ItemOption = { id: number; name: string };
 
 // Helpers
@@ -51,16 +52,19 @@ export default function DashboardPerformance() {
   });
   const [items, setItems] = useState<ItemOption[]>([]);
   const [selectedItems, setSelected] = useState<number[]>([]);
-  const [openModal, setOpenModal] = useState<null | "period" | "item">(null);
+  const [openModal, setOpenModal] = useState<
+    null | "period" | "item" | "import"
+  >(null);
 
   // Data
   const [perf, setPerf] = useState<PerformanceDTO | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
 
   // UI
   const [showList, setShowList] = useState(false);
 
-  // Fetch
+  // Load items
   useEffect(() => {
     api
       .get("/api/items")
@@ -70,7 +74,12 @@ export default function DashboardPerformance() {
       .catch(() => setErr("Falha ao carregar itens."));
   }, []);
 
-  // Fetch
+  // Fetch performance data - initial load
+  useEffect(() => {
+    fetchPerf();
+  }, []);
+
+  // Fetch performance data
   const fetchPerf = async () => {
     try {
       const body = {
@@ -94,9 +103,6 @@ export default function DashboardPerformance() {
       setErr("Falha ao carregar dados de performance.");
     }
   };
-  useEffect(() => {
-    fetchPerf();
-  }, [period, selectedItems]);
 
   // Chart
   const chartData = useMemo(() => {
@@ -124,6 +130,26 @@ export default function DashboardPerformance() {
 
   const colors = ["#FFA322", "#FFB24D", "#FFC27A", "#FFD1A6", "#FFE0D1"];
 
+  // Handle export
+  const handleExport = async () => {
+    try {
+      const { data } = await api.get("/api/export/report.xlsx", {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "relatorio_completo.xlsx";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setErr(
+        e?.response?.data?.message ??
+          "Falha interna ao gerar o arquivo de exportação."
+      );
+    }
+  };
+
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
       <DialogModal
@@ -131,20 +157,14 @@ export default function DashboardPerformance() {
         message={err ?? ""}
         onClose={() => setErr(null)}
       />
-
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
         {/* Menu */}
-        <div
-          className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1
-                        lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10"
-        >
+        <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
           <Header dashboard="active" />
         </div>
-
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:ml-40">
-          <UserHeader user="Johnny" />
-
+          <UserHeader />
           {/* Header + Filters */}
           <div className="flex flex-col gap-5 lg:flex-row lg:justify-between">
             <DashboardHeader performance="Dash" />
@@ -161,7 +181,6 @@ export default function DashboardPerformance() {
               />
             </div>
           </div>
-
           {/* Period Modal */}
           <Modal
             isOpen={openModal === "period"}
@@ -170,9 +189,7 @@ export default function DashboardPerformance() {
           >
             <div className="flex gap-2">
               <div className="w-full">
-                <label htmlFor="" className="text-sm text-[#282828]">
-                  Início
-                </label>
+                <label className="text-sm text-[#282828]">Início</label>
                 <input
                   type="date"
                   value={period.start}
@@ -183,9 +200,7 @@ export default function DashboardPerformance() {
                 />
               </div>
               <div className="w-full">
-                <label htmlFor="" className="text-sm text-[#282828]">
-                  Fim
-                </label>
+                <label className="text-sm text-[#282828]">Fim</label>
                 <input
                   type="date"
                   value={period.end}
@@ -205,7 +220,6 @@ export default function DashboardPerformance() {
               Aplicar
             </Button>
           </Modal>
-
           {/* Item Modal */}
           <Modal
             isOpen={openModal === "item"}
@@ -234,6 +248,67 @@ export default function DashboardPerformance() {
             </Button>
           </Modal>
 
+          {/* Import Modal */}
+          <Modal
+            isOpen={openModal === "import"}
+            onClose={() => {
+              setImportFile(null);
+              setOpenModal(null);
+            }}
+            title="Importar Pedidos"
+          >
+            <label className="flex flex-col items-center gap-2 p-6 border-dashed border border-[#28282833] rounded-lg bg-[#fafafa] cursor-pointer">
+              <p className="text-2xl">
+                <MdFileUpload />
+              </p>
+              <p className="text-sm">
+                {importFile ? importFile.name : "Clique para selecionar .xlsx"}
+              </p>
+              <input
+                type="file"
+                accept=".xlsx"
+                className="hidden"
+                onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
+            <div className="flex gap-3 justify-end mt-4">
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setImportFile(null);
+                  setOpenModal(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                disabled={!importFile}
+                onClick={async () => {
+                  if (!importFile) return;
+                  try {
+                    const form = new FormData();
+                    form.append("file", importFile);
+                    await api.post("/api/import", form, {
+                      headers: { "Content-Type": "multipart/form-data" },
+                    });
+                    setErr("Importação concluída com sucesso.");
+                    fetchPerf();
+                  } catch (e: any) {
+                    setErr(
+                      e?.response?.data?.message ??
+                        "Falha interna ao importar o arquivo."
+                    );
+                  } finally {
+                    setImportFile(null);
+                    setOpenModal(null);
+                  }
+                }}
+              >
+                Enviar
+              </Button>
+            </div>
+          </Modal>
+
           {/* Charts + Balance */}
           <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
             {perf ? (
@@ -246,7 +321,6 @@ export default function DashboardPerformance() {
                     R$ <Money value={perf.finalBalance} />
                   </p>
                 </div>
-
                 <div style={{ height: 260 }}>
                   <Suspense
                     fallback={<p className="text-sm">Carregando gráfico…</p>}
@@ -267,16 +341,16 @@ export default function DashboardPerformance() {
                         }
                         options={{
                           plugins: {
-                            legend: { position: "bottom" },
+                            legend: {
+                              position: "bottom",
+                            },
                             tooltip: {
                               callbacks: {
                                 label: (ctx) =>
                                   show
                                     ? `R$ ${(+ctx.parsed).toLocaleString(
                                         "pt-BR",
-                                        {
-                                          minimumFractionDigits: 2,
-                                        }
+                                        { minimumFractionDigits: 2 }
                                       )}`
                                     : "***",
                               },
@@ -295,11 +369,9 @@ export default function DashboardPerformance() {
               <p className="text-sm text-center text-gray-500">Carregando…</p>
             )}
           </div>
-
           {/* History */}
           <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
             <p className="text-base font-medium text-[#282828]">Histórico</p>
-
             {perf?.itemPerformances.map((it, idx) => (
               <div
                 key={it.itemId}
@@ -320,7 +392,6 @@ export default function DashboardPerformance() {
                 </div>
               </div>
             ))}
-
             {perf && perf.itemPerformances.length === 0 && (
               <p className="text-xs text-center text-[#888]">
                 Nenhum dado no período.
@@ -328,10 +399,10 @@ export default function DashboardPerformance() {
             )}
             {/* Export + Import Buttons */}
             <div className="flex gap-3 justify-end mt-4">
-              <Button variant="outlined">
+              <Button variant="outlined" onClick={() => setOpenModal("import")}>
                 <MdFileUpload /> Importar
               </Button>
-              <Button>
+              <Button onClick={handleExport}>
                 <IoMdDownload /> Exportar
               </Button>
             </div>

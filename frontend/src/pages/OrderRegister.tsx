@@ -173,11 +173,19 @@ export default function OrderRegister() {
               />
 
               <InputText
-                type="number"
+                type="text"
                 label="Valor Total (R$)"
                 value={orderValue}
-                onValueChange={setOrderValue}
-                placeholder="0,00"
+                onValueChange={(v) =>
+                  setOrderValue(
+                    (
+                      parseFloat(v.replace(/\D/g, "") || "0") / 100
+                    ).toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
+                  )
+                }
                 min={0}
               />
 
@@ -201,19 +209,18 @@ export default function OrderRegister() {
               <div className="flex gap-3">
                 <InputText
                   type="number"
-                  min={1}
                   label="Parcelas"
+                  min={1}
                   value={installmentCount}
-                  onValueChange={setInstallmentCount}
-                  placeholder="0"
+                  onValueChange={(v) => setInstallmentCount(String(Number(v)))}
                 />
                 <InputText
                   type="number"
+                  label="Venc. parcelas"
                   min={1}
                   max={31}
-                  label="Venc. parcelas"
                   value={installmentDay}
-                  onValueChange={setInstallmentDay}
+                  onValueChange={(v) => setInstallmentDay(String(Number(v)))}
                   placeholder="Dia"
                 />
               </div>
@@ -221,19 +228,17 @@ export default function OrderRegister() {
               <div className="flex gap-3">
                 <InputText
                   type="number"
-                  min={0}
                   label="Parcelas pagas"
+                  min={0}
                   value={paidInstallments}
-                  onValueChange={setPaidInstallments}
-                  placeholder="0"
+                  onValueChange={(v) => setPaidInstallments(String(Number(v)))}
                 />
                 <InputText
                   type="number"
-                  min={0}
                   label="Desconto (%)"
+                  min={0}
                   value={discountPct}
-                  onValueChange={setDiscountPct}
-                  placeholder="0"
+                  onValueChange={(v) => setDiscountPct(String(Number(v)))}
                 />
               </div>
             </div>

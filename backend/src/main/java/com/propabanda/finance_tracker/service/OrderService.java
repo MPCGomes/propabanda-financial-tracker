@@ -140,16 +140,19 @@ public class OrderService {
                 .toList();
     }
 
-    public List<OrderResponseDTO> findByClientFiltered(Long clientId, ClientOrderFilterDTO clientOrderFilterDTO) {
-        List<Order> orderList = orderRepository.findAll().stream()
-                .filter(order -> order.getClient().getId().equals(clientId))
+    public List<OrderResponseDTO> findByClientFiltered(
+            Long clientId,
+            ClientOrderFilterDTO clientOrderFilterDTO
+    ) {
+        List<Order> orderList = orderRepository.findAll()
+                .stream()
+                .filter(o -> o.getClient().getId().equals(clientId))
                 .toList();
 
-        if (clientOrderFilterDTO.getItemSearch() != null && !clientOrderFilterDTO.getItemSearch().isBlank()) {
-            String term = clientOrderFilterDTO.getItemSearch().toLowerCase();
+        if (clientOrderFilterDTO.getSearch() != null && !clientOrderFilterDTO.getSearch().isBlank()) {
+            String term = clientOrderFilterDTO.getSearch().toLowerCase();
             orderList = orderList.stream()
-                    .filter(order -> order.getItems().stream()
-                            .anyMatch(item -> item.getName().toLowerCase().contains(term)))
+                    .filter(o -> o.getIdentifier().toLowerCase().contains(term))
                     .toList();
         }
 

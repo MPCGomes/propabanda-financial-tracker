@@ -17,16 +17,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/export")
 public class ExportController {
-
     private final ClientService clientService;
     private final OrderService orderService;
     private final DashboardService dashboardService;
     private final ExcelExportService excelExportService;
 
-    public ExportController(ClientService clientService,
-                            OrderService orderService,
-                            DashboardService dashboardService,
-                            ExcelExportService excelExportService) {
+    public ExportController(ClientService clientService, OrderService orderService, DashboardService dashboardService, ExcelExportService excelExportService) {
         this.clientService = clientService;
         this.orderService = orderService;
         this.dashboardService = dashboardService;
@@ -34,16 +30,14 @@ public class ExportController {
     }
 
     @GetMapping("/report.xlsx")
-    public ResponseEntity<ByteArrayResource> exportAllData() {
+    public ResponseEntity<?> exportAllData() {
         try {
             List<ClientResponseDTO> clients = clientService.findAll();
             List<OrderResponseDTO> orders = orderService.findAll();
-
             DashboardEvolutionDTO dashboard = dashboardService.getEvolution(new DashboardFilterDTO());
             List<ItemPerformanceDTO> itemPerformance = dashboardService.getPerformance(new DashboardFilterDTO()).getItemPerformances();
 
             byte[] excelData = excelExportService.generateFullReport(clients, orders, dashboard, itemPerformance);
-
             ByteArrayResource resource = new ByteArrayResource(excelData);
 
             return ResponseEntity.ok()
@@ -51,9 +45,23 @@ public class ExportController {
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .contentLength(excelData.length)
                     .body(resource);
-
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(500)
+                    .body(new ErrorResponse("Falha ao gerar o arquivo de exportação: " + e.getMessage()));
+        }
+    }
+
+    private static class ErrorResponse {
+        private final String message;
+
+        public ErrorResponse(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
         }
     }
 }
