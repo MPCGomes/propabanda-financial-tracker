@@ -6,16 +6,18 @@ import Info from "../components/Info";
 import Button from "../components/Button";
 import InputText from "../components/InputText";
 import InputSelect from "../components/InputSelect";
-import DialogModal from "../components/DialogModal";
 import { FaUpload } from "react-icons/fa";
 import api from "../lib/api";
 import ClientAutoComplete, {
   ClientOption,
 } from "../components/ClientAutoComplete";
+import Modal from "../components/Modal";
 
 type ItemOption = { value: number; label: string };
 
 const MAX_FILE_MB = 10;
+const formatCurrency = (n: number) =>
+  `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
 export default function OrderRegister() {
   const navigate = useNavigate();
@@ -28,7 +30,12 @@ export default function OrderRegister() {
   const [items, setItems] = useState<ItemOption[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
-  const [orderValue, setOrderValue] = useState(""); // <<< valor editável
+  // valores iniciais fixos
+  const [orderValue, setOrderValue] = useState("0,00");
+  const [installmentCount, setInstallmentCount] = useState("1");
+  const [installmentDay, setInstallmentDay] = useState("10");
+  const [paidInstallments, setPaidInstallments] = useState("0");
+  const [discountPct, setDiscountPct] = useState("0");
 
   const [startDate, setStartDate] = useState(() =>
     new Date().toISOString().slice(0, 10)
@@ -39,16 +46,12 @@ export default function OrderRegister() {
       .slice(0, 10)
   );
 
-  const [installmentCount, setInstallmentCount] = useState("");
-  const [installmentDay, setInstallmentDay] = useState("");
-  const [paidInstallments, setPaidInstallments] = useState("");
-  const [discountPct, setDiscountPct] = useState("");
-
   const [contractFile, setContractFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   /* ---------- cálculos ---------- */
-  const subtotal = +orderValue || 0;
+  const subtotal =
+    parseFloat(orderValue.replace(/\./g, "").replace(",", ".")) || 0;
   const discountVal = (subtotal * (+discountPct || 0)) / 100;
   const total = subtotal - discountVal;
 
@@ -74,7 +77,7 @@ export default function OrderRegister() {
   /* ---------- helpers ---------- */
   const validate = () =>
     client &&
-    selectedItemId &&
+    selectedItemId !== null &&
     subtotal > 0 &&
     instCountN >= 1 &&
     +paidInstallments <= instCountN &&
@@ -87,6 +90,16 @@ export default function OrderRegister() {
       return;
     }
     setContractFile(file);
+  };
+
+  const handleValueChange = (v: string) => {
+    const digits = v.replace(/\D/g, "");
+    const num = parseFloat(digits || "0") / 100;
+    const formatted = num.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    setOrderValue(formatted);
   };
 
   /* ---------- submit ---------- */
@@ -133,11 +146,14 @@ export default function OrderRegister() {
   /* ---------- UI ---------- */
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      <DialogModal
+      <Modal
         isOpen={!!errorMessage}
-        message={errorMessage ?? ""}
         onClose={() => setErrorMessage(null)}
-      />
+        title="Atenção"
+      >
+        <p className="text-sm mb-4">{errorMessage}</p>
+        <Button onClick={() => setErrorMessage(null)}>Fechar</Button>
+      </Modal>
 
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
@@ -176,17 +192,7 @@ export default function OrderRegister() {
                 type="text"
                 label="Valor Total (R$)"
                 value={orderValue}
-                onValueChange={(v) =>
-                  setOrderValue(
-                    (
-                      parseFloat(v.replace(/\D/g, "") || "0") / 100
-                    ).toLocaleString("pt-BR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })
-                  )
-                }
-                min={0}
+                onValueChange={handleValueChange}
               />
 
               {/* datas */}
@@ -221,7 +227,6 @@ export default function OrderRegister() {
                   max={31}
                   value={installmentDay}
                   onValueChange={(v) => setInstallmentDay(String(Number(v)))}
-                  placeholder="Dia"
                 />
               </div>
 
@@ -246,25 +251,22 @@ export default function OrderRegister() {
 
           {/* ---- resumo ---- */}
           <div className="flex flex-col p-5 gap-3 rounded-lg bg-white">
-            <Info label="Sub-Total" value={`R$ ${subtotal.toFixed(2)}`} />
-            <Info label="Desconto (%)" value={`${discountPct || 0}%`} />
-            <Info
-              label="Desconto (R$)"
-              value={`R$ ${discountVal.toFixed(2)}`}
-            />
-            <Info label="Valor Parcelas" value={`R$ ${instValue.toFixed(2)}`} />
+            <Info label="Sub-Total" value={formatCurrency(subtotal)} />
+            <Info label="Desconto (%)" value={`${discountPct}%`} />
+            <Info label="Desconto (R$)" value={formatCurrency(discountVal)} />
+            <Info label="Valor Parcelas" value={formatCurrency(instValue)} />
             <Info
               label="Valor Pago"
-              value={`R$ ${paidValue.toFixed(2)}`}
+              value={formatCurrency(paidValue)}
               color="#32c058"
             />
             <hr className="border-[#F0F0F0]" />
             <Info
               label="Valor Restante"
-              value={`R$ ${remainValue.toFixed(2)}`}
+              value={formatCurrency(remainValue)}
               color="#ee3a4b"
             />
-            <Info label="Total" value={`R$ ${total.toFixed(2)}`} />
+            <Info label="Total" value={formatCurrency(total)} />
           </div>
 
           {/* ---- contrato ---- */}
