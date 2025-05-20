@@ -40,7 +40,7 @@ type OrderDTO = {
 
 const orderOptions = [
   { value: "emissionDate|desc", label: "Mais recentes" },
-  { value: "emissionDate|asc", label: "Mais antigos" }
+  { value: "emissionDate|asc", label: "Mais antigos" },
 ];
 
 export default function Client() {
@@ -51,7 +51,7 @@ export default function Client() {
 
   // Orders
   const [orders, setOrders] = useState<OrderDTO[]>([]);
-  const [itemSearch, setItemSearch] = useState("");
+  const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"emissionDate" | "itemName">(
     "emissionDate"
   );
@@ -72,9 +72,11 @@ export default function Client() {
     setClient(data);
   };
 
+  const [identifierSearch, setIdentifierSearch] = useState("");
+
   const fetchOrders = async () => {
     const { data } = await api.post(`/api/orders/client/${id}/filter`, {
-      itemSearch,
+      search: identifierSearch,
       sortBy,
       direction,
     });
@@ -91,7 +93,7 @@ export default function Client() {
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [itemSearch, sortBy, direction, id]);
+  }, [search, sortBy, direction, id]);
 
   // Handlers
   const applyOrder = (value: string) => {
@@ -204,7 +206,7 @@ export default function Client() {
             <p className="text-base font-bold">Pedidos</p>
 
             <div className="flex flex-col gap-5 lg:flex-row">
-              <SearchBar onChange={setItemSearch} />
+              <SearchBar onChange={setSearch} />
               <div className="flex gap-3 flex-wrap lg:flex-nowrap">
                 <div className="hidden lg:block">
                   <FilterSelect

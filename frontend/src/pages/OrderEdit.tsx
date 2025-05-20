@@ -22,115 +22,110 @@ export default function OrderEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  /* ---------- estado ---------- */
   const [client, setClient] = useState<ClientOption | null>(null);
-
   const [items, setItems] = useState<ItemOption[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
-
-  const [orderValue, setOrderValue] = useState(""); // ❶ valor editável
-
+  const [orderValue, setOrderValue] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
   const [installmentCount, setInstallmentCount] = useState("");
   const [installmentDay, setInstallmentDay] = useState("");
   const [paidInstallments, setPaidInstallments] = useState("");
   const [discountPct, setDiscountPct] = useState("");
-
   const [contractFile, setContractFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  /* ---------- cálculos ---------- */
-  const subtotal = +orderValue || 0;
+  const subtotal =
+    parseFloat(orderValue.replace(/\./g, "").replace(",", ".")) || 0;
   const discountVal = (subtotal * (+discountPct || 0)) / 100;
   const total = subtotal - discountVal;
-
   const instCountN = +installmentCount || 0;
   const instValue = instCountN ? total / instCountN : 0;
   const paidValue = instValue * (+paidInstallments || 0);
   const remainValue = total - paidValue;
 
-  /* ---------- carregar dados ---------- */
   useEffect(() => {
-    (async () => {
-      try {
-        const [{ data: order }, { data: itemsData }] = await Promise.all([
-          api.get(`/api/orders/${id}`),
-          api.get("/api/items"),
-        ]);
-
-        /* itens (apenas id + nome) */
+    api
+      .get("/api/items")
+      .then(({ data }) =>
         setItems(
-          itemsData.map((it: any) => ({ value: it.id, label: it.name }))
-        );
+          data.map((it: any) => ({
+            value: it.id,
+            label: it.name,
+          }))
+        )
+      )
+      .catch(() => setErrorMessage("Falha ao carregar itens."));
+  }, []);
 
-        /* pedido */
+  useEffect(() => {
+    if (items.length === 0) return;
+    api
+      .get(`/api/orders/${id}`)
+      .then(({ data: order }) => {
         setClient({ id: order.clientId, name: order.clientName });
-        setSelectedItemId(order.items[0]?.itemId ?? null);
-        setOrderValue(String(order.value)); // ❷ valor
+        // aqui usamos order.items[0].id, pois a API retorna id + name
+        setSelectedItemId(order.items[0]?.id ?? null);
+        setOrderValue(
+          order.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })
+        );
         setStartDate(order.contractStartDate);
         setEndDate(order.contractEndDate);
         setInstallmentCount(String(order.installmentCount));
         setInstallmentDay(String(order.installmentDay));
         setPaidInstallments(String(order.paidInstallmentsCount));
         setDiscountPct(String(order.discount));
-      } catch {
-        setErrorMessage("Pedido não encontrado.");
-      }
-    })();
-  }, [id]);
+      })
+      .catch(() => setErrorMessage("Pedido não encontrado."));
+  }, [id, items]);
 
-  /* ---------- validação ---------- */
   const validate = () =>
     client &&
-    selectedItemId &&
+    selectedItemId !== null &&
     subtotal > 0 &&
     instCountN >= 1 &&
     +paidInstallments <= instCountN &&
-    (+installmentDay || 0) >= 1 &&
-    (+installmentDay || 0) <= 31;
+    +installmentDay >= 1 &&
+    +installmentDay <= 31;
 
-  /* ---------- submit ---------- */
+  const handleValueChange = (v: string) => {
+    const digits = v.replace(/\D/g, "");
+    const num = parseFloat(digits || "0") / 100;
+    const formatted = num.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    setOrderValue(formatted);
+  };
+
   const handleSubmit = async () => {
     if (!validate()) {
       setErrorMessage("Preencha todos os campos corretamente.");
       return;
     }
-    try {
-      await api.put(`/api/orders/${id}`, {
-        clientId: client!.id,
-        value: subtotal,
-        contractStartDate: startDate,
-        contractEndDate: endDate,
-        installmentDay: +installmentDay || 0,
-        installmentCount: instCountN,
-        discount: +discountPct || 0,
-        emissionDate: startDate,
-        paidInstallmentsCount: +paidInstallments || 0,
-        contractFilePath: null,
-        items: [selectedItemId!],
+    await api.put(`/api/orders/${id}`, {
+      clientId: client!.id,
+      value: subtotal,
+      contractStartDate: startDate,
+      contractEndDate: endDate,
+      installmentDay: +installmentDay,
+      installmentCount: instCountN,
+      discount: +discountPct,
+      emissionDate: startDate,
+      paidInstallmentsCount: +paidInstallments,
+      contractFilePath: null,
+      items: [selectedItemId!],
+    });
+    if (contractFile) {
+      const form = new FormData();
+      form.append("file", contractFile);
+      await api.post(`/api/orders/${id}/contract`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
-      /* upload opcional do contrato */
-      if (contractFile) {
-        const form = new FormData();
-        form.append("file", contractFile);
-        await api.post(`/api/orders/${id}/contract`, form, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }
-      navigate(`/orders/${id}`);
-    } catch (err: any) {
-      const msg =
-        typeof err?.response?.data === "string"
-          ? err.response.data
-          : err?.response?.data?.error || "Erro interno.";
-      setErrorMessage(msg);
     }
+    navigate(`/orders/${id}`);
   };
 
-  /* ---------- componente ---------- */
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
       <DialogModal
@@ -138,30 +133,23 @@ export default function OrderEdit() {
         message={errorMessage ?? ""}
         onClose={() => setErrorMessage(null)}
       />
-
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        {/* menu lateral */}
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
           <Header orders="active" />
         </div>
-
-        {/* conteúdo */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
           <GoBack link={`/orders/${id}`} />
-
-          {/* formulário ----------------------- */}
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white">
             <p className="text-base font-medium">Editar Pedido</p>
-
             {client && (
               <>
                 <p className="text-sm font-medium">Empresa</p>
-
-                <ClientAutoComplete
-                  defaultClient={client}
-                  onSelect={setClient}
+                <InputText
+                  type="text"
+                  label="Empresa"
+                  value={client.name}
+                  disabled
                 />
-
                 <InputSelect
                   label="Itens"
                   id="item"
@@ -169,15 +157,12 @@ export default function OrderEdit() {
                   value={selectedItemId ?? undefined}
                   onChange={(v) => setSelectedItemId(Number(v))}
                 />
-
                 <InputText
-                  type="number"
+                  type="text"
                   label="Valor Total (R$)"
                   value={orderValue}
-                  onValueChange={setOrderValue}
-                  min={0}
+                  onValueChange={handleValueChange}
                 />
-
                 <div className="flex gap-3">
                   <InputText
                     type="date"
@@ -192,15 +177,15 @@ export default function OrderEdit() {
                     onValueChange={setEndDate}
                   />
                 </div>
-
                 <div className="flex gap-3">
                   <InputText
                     type="number"
                     label="Parcelas"
                     min={1}
                     value={installmentCount}
-                    onValueChange={setInstallmentCount}
-                    placeholder="0"
+                    onValueChange={(v) =>
+                      setInstallmentCount(String(Number(v)))
+                    }
                   />
                   <InputText
                     type="number"
@@ -208,34 +193,30 @@ export default function OrderEdit() {
                     min={1}
                     max={31}
                     value={installmentDay}
-                    onValueChange={setInstallmentDay}
-                    placeholder="Dia"
+                    onValueChange={(v) => setInstallmentDay(String(Number(v)))}
                   />
                 </div>
-
                 <div className="flex gap-3">
                   <InputText
                     type="number"
                     label="Parcelas pagas"
                     min={0}
                     value={paidInstallments}
-                    onValueChange={setPaidInstallments}
-                    placeholder="0"
+                    onValueChange={(v) =>
+                      setPaidInstallments(String(Number(v)))
+                    }
                   />
                   <InputText
                     type="number"
                     label="Desconto (%)"
                     min={0}
                     value={discountPct}
-                    onValueChange={setDiscountPct}
-                    placeholder="0"
+                    onValueChange={(v) => setDiscountPct(String(Number(v)))}
                   />
                 </div>
               </>
             )}
           </div>
-
-          {/* resumo --------------------------- */}
           <div className="flex flex-col p-5 gap-3 rounded-lg bg-white">
             <Info label="Sub-Total" value={formatCurrency(subtotal)} />
             <Info label="Desconto (%)" value={`${discountPct || 0}%`} />
@@ -253,11 +234,8 @@ export default function OrderEdit() {
             />
             <Info label="Total" value={formatCurrency(total)} />
           </div>
-
-          {/* contrato ------------------------- */}
           <div className="flex flex-col p-5 gap-5 rounded-lg bg-white">
             <p className="text-base font-bold">Contrato</p>
-
             <label className="flex flex-col items-center gap-2 p-8 border-dashed border border-[#28282833] rounded-lg bg-[#fafafa] cursor-pointer">
               <p className="text-2xl">
                 <FaUpload />
@@ -274,7 +252,6 @@ export default function OrderEdit() {
                 }
               />
             </label>
-
             <div className="flex gap-3 justify-end">
               <Button
                 variant="outlined"

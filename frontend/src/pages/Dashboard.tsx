@@ -7,7 +7,6 @@ import DashboardHeader from "../components/DashboardHeader";
 import Filter from "../components/Filter";
 import Modal from "../components/Modal";
 import Button from "../components/Button";
-import DialogModal from "../components/DialogModal";
 import Money from "../components/Money";
 
 import {
@@ -44,17 +43,15 @@ const Line = lazy(() =>
   import("react-chartjs-2").then((m) => ({ default: m.Line }))
 );
 
-// Types
 type ItemOption = { id: number; name: string };
 type OrderResume = {
   id: number;
   identifier: string;
   emissionDate: string;
   discountedValue: number;
-  items: { itemId: number; itemName: string }[];
+  clientName: string;
 };
 
-// Helpers
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 const firstDayYear = () => iso(new Date(new Date().getFullYear(), 0, 1));
 
@@ -62,32 +59,35 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { show } = useShowValues();
 
-  // Filters
   const [period, setPeriod] = useState<{ start: string; end: string }>({
     start: firstDayYear(),
     end: iso(new Date()),
   });
   const [items, setItems] = useState<ItemOption[]>([]);
   const [selectedItems, setSelItems] = useState<number[]>([]);
-  const [openModal, setOpenModal] = useState<null | "period" | "item">(null);
+  const [openModal, setOpenModal] = useState<
+    null | "period" | "item" | "import" | "error"
+  >(null);
 
-  // Data Errors
   const [orders, setOrders] = useState<OrderResume[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
   const [showEntryList, setShowEntryList] = useState(false);
 
-  // Fetch Items
+  const [importFile, setImportFile] = useState<File | null>(null);
+
   useEffect(() => {
     api
       .get("/api/items")
       .then(({ data }) =>
         setItems(data.map((i: any) => ({ id: i.id, name: i.name })))
       )
-      .catch(() => setErr("Falha ao carregar itens."));
+      .catch(() => {
+        setErr("Falha ao carregar itens.");
+        setOpenModal("error");
+      });
   }, []);
 
-  // Fetch Orders
   const fetchOrders = async () => {
     try {
       const body = {
@@ -105,20 +105,19 @@ export default function Dashboard() {
           identifier: o.identifier,
           emissionDate: o.emissionDate,
           discountedValue: +o.discountedValue,
-          items: o.items.map((it: any) => ({ id: it.id, name: it.name })),
+          clientName: o.client?.name ?? o.clientName ?? "—",
         }))
       );
     } catch {
       setErr("Falha ao carregar dados do dashboard.");
+      setOpenModal("error");
     }
   };
 
-  // Initial Load + Refresh Load
   useEffect(() => {
     fetchOrders();
-  }, [period, selectedItems]);
+  }, []);
 
-  // Summary
   const summary = useMemo(() => {
     const totalIn = orders.reduce((s, o) => s + o.discountedValue, 0);
     const startBal = 0;
@@ -133,7 +132,6 @@ export default function Dashboard() {
     return { count: orders.length, totalIn, startBal, endBal, variation };
   }, [orders]);
 
-  // Chart
   const chartData = useMemo(() => {
     const map = new Map<string, number>();
     orders.forEach((o) => {
@@ -156,7 +154,6 @@ export default function Dashboard() {
     };
   }, [orders]);
 
-  // Helpers
   const toggleItem = (id: number) =>
     setSelItems((p) =>
       p.includes(id) ? p.filter((n) => n !== id) : [...p, id]
@@ -166,17 +163,72 @@ export default function Dashboard() {
     period.start !== firstDayYear() || period.end !== iso(new Date());
   const itemActive = selectedItems.length > 0;
 
-  // UI
+  const handleExport = async () => {
+    try {
+      // Build query parameters for GET request
+      const params = new URLSearchParams();
+      params.append("startDate", period.start);
+      params.append("endDate", period.end);
+
+      // Add itemIds as separate query parameters if there are any selected
+      if (selectedItems.length > 0) {
+        // Ensure we're converting the IDs to strings since URLSearchParams requires string values
+        selectedItems.forEach((id) => params.append("itemIds", id.toString()));
+      }
+
+      // Make a GET request with query parameters
+      const response = await api.get(
+        `/api/export/report.xlsx?${params.toString()}`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Erro ao gerar o relatório");
+      }
+
+      const data = response.data;
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "relatorio_completo.xlsx";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (e: any) {
+      console.error("Export error:", e);
+      setErr(
+        e?.response?.data?.message ??
+          e?.message ??
+          "Falha interna ao gerar o arquivo de exportação."
+      );
+      setOpenModal("error");
+    }
+  };
+
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      <DialogModal
-        isOpen={!!err}
-        message={err ?? ""}
-        onClose={() => setErr(null)}
-      />
+      {/* Replace DialogModal with standard Modal for errors */}
+      <Modal
+        isOpen={openModal === "error"}
+        onClose={() => {
+          setOpenModal(null);
+          setErr(null);
+        }}
+        title="Atenção"
+      >
+        <p className="text-sm mb-4">{err}</p>
+        <Button
+          onClick={() => {
+            setOpenModal(null);
+            setErr(null);
+          }}
+        >
+          OK
+        </Button>
+      </Modal>
 
       <div className="p-4 lg:p-0 w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        {/* Menu */}
         <div
           className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1
                         lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10"
@@ -184,11 +236,9 @@ export default function Dashboard() {
           <Header dashboard="active" />
         </div>
 
-        {/* Content */}
         <div className="flex flex-col gap-5 w-full pb-[100px] lg:ml-40">
-          <UserHeader user="Johnny" />
+          <UserHeader />
 
-          {/* Header + Filters */}
           <div className="flex flex-col gap-5 lg:flex-row lg:justify-between">
             <DashboardHeader evolution="Dash" />
             <div className="flex gap-3">
@@ -205,7 +255,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Period Modal */}
           <Modal
             isOpen={openModal === "period"}
             onClose={() => setOpenModal(null)}
@@ -213,9 +262,7 @@ export default function Dashboard() {
           >
             <div className="flex gap-2">
               <div className="w-full">
-                <label htmlFor="" className="text-sm text-[#282828]">
-                  Início
-                </label>
+                <label className="text-sm text-[#282828]">Início</label>
                 <input
                   type="date"
                   value={period.start}
@@ -226,9 +273,7 @@ export default function Dashboard() {
                 />
               </div>
               <div className="w-full">
-                <label htmlFor="" className="text-sm text-[#282828]">
-                  Fim
-                </label>
+                <label className="text-sm text-[#282828]">Fim</label>
                 <input
                   type="date"
                   value={period.end}
@@ -249,7 +294,6 @@ export default function Dashboard() {
             </Button>
           </Modal>
 
-          {/* Item Modal */}
           <Modal
             isOpen={openModal === "item"}
             onClose={() => setOpenModal(null)}
@@ -277,7 +321,69 @@ export default function Dashboard() {
             </Button>
           </Modal>
 
-          {/* Balance + Chart */}
+          <Modal
+            isOpen={openModal === "import"}
+            onClose={() => {
+              setImportFile(null);
+              setOpenModal(null);
+            }}
+            title="Importar Pedidos"
+          >
+            <label className="flex flex-col items-center gap-2 p-6 border-dashed border border-[#28282833] rounded-lg bg-[#fafafa] cursor-pointer">
+              <p className="text-2xl">
+                <MdFileUpload />
+              </p>
+              <p className="text-sm">
+                {importFile ? importFile.name : "Clique para selecionar .xlsx"}
+              </p>
+              <input
+                type="file"
+                accept=".xlsx"
+                className="hidden"
+                onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
+
+            <div className="flex gap-3 justify-end mt-4">
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setImportFile(null);
+                  setOpenModal(null);
+                }}
+              >
+                Cancelar
+              </Button>
+
+              <Button
+                disabled={!importFile}
+                onClick={async () => {
+                  if (!importFile) return;
+                  try {
+                    const form = new FormData();
+                    form.append("file", importFile);
+                    await api.post("/api/import", form, {
+                      headers: { "Content-Type": "multipart/form-data" },
+                    });
+                    setErr("Importação concluída com sucesso.");
+                    setOpenModal("error");
+                    fetchOrders();
+                  } catch (e: any) {
+                    setErr(
+                      e?.response?.data?.message ??
+                        "Falha interna ao importar o arquivo."
+                    );
+                    setOpenModal("error");
+                  } finally {
+                    setImportFile(null);
+                  }
+                }}
+              >
+                Enviar
+              </Button>
+            </div>
+          </Modal>
+
           <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
             <div className="text-[#282828]">
               <p className="text-xs">Saldo no período</p>
@@ -314,7 +420,7 @@ export default function Dashboard() {
                       y: {
                         ticks: {
                           callback: (v) =>
-                            show ? `R$ ${(+v).toFixed(0)}` : "***",
+                            show ? `R$ ${(+v).toLocaleString("pt-BR")}` : "***",
                         },
                       },
                     },
@@ -324,7 +430,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* History */}
           <div className="flex flex-col p-5 bg-white rounded-lg">
             <p className="text-base font-medium text-[#282828] mb-5">
               Histórico
@@ -349,15 +454,19 @@ export default function Dashboard() {
               {showEntryList && (
                 <ul className="text-sm text-[#282828] px-2 pb-2 space-y-2">
                   {orders.map((o) => (
-                    <li key={o.id} /* … */>
+                    <li
+                      key={o.id}
+                      className="flex justify-between cursor-pointer hover:text-[#FFA322]"
+                      onClick={() => navigate(`/orders/${o.id}`)}
+                    >
                       <span>
                         Pedido Nº {o.identifier}
                         <span className="text-xs text-[#888]">
                           {" "}
-                          ({o.emissionDate})
+                          ({o.emissionDate} - {o.clientName})
                         </span>
                       </span>
-                      <span>
+                      <span className="ml-2">
                         R$ <Money value={o.discountedValue} />
                       </span>
                     </li>
@@ -372,39 +481,11 @@ export default function Dashboard() {
             <Row label="Variação em %" value={summary.variation} />
             <Row label="Saldo Final" value={summary.endBal} gray />
 
-            {/* Export + Import Buttons */}
-            {/* Import / Export */}
             <div className="flex gap-3 justify-end mt-4">
-              {/* Import */}
-              <label className="relative inline-flex">
-                <input
-                  type="file"
-                  accept=".xlsx"
-                  className="hidden"
-                  onChange={async (e) => {
-                    if (!e.target.files?.length) return;
-                    const form = new FormData();
-                    form.append("file", e.target.files[0]);
-                    await api.post("/api/import/orders", form, {
-                      headers: { "Content-Type": "multipart/form-data" },
-                    });
-                    fetchOrders();
-                  }}
-                />
-                <Button variant="outlined">
-                  <MdFileUpload /> Importar
-                </Button>
-              </label>
-
-              {/* Export */}
-              <Button
-                onClick={() =>
-                  window.open(
-                    `${api.defaults.baseURL}/api/export/report.xlsx`,
-                    "_blank"
-                  )
-                }
-              >
+              <Button variant="outlined" onClick={() => setOpenModal("import")}>
+                <MdFileUpload /> Importar
+              </Button>
+              <Button onClick={handleExport}>
                 <IoMdDownload /> Exportar
               </Button>
             </div>
@@ -415,7 +496,6 @@ export default function Dashboard() {
   );
 }
 
-// Row Helper
 function Row({
   label,
   value,

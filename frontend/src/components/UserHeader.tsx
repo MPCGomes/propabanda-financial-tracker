@@ -12,7 +12,7 @@ function extractNameFromToken() {
   try {
     const [, payload] = raw.split(".");
     const data = JSON.parse(atob(payload));
-    return data.sub ?? null;
+    return data.name ?? data.sub ?? null;
   } catch {
     return null;
   }
@@ -21,7 +21,10 @@ function extractNameFromToken() {
 export default function UserHeader({ user }: Props) {
   const { show, toggle } = useShowValues();
 
-  const name = useMemo(() => user ?? extractNameFromToken() ?? "usuário", [user]);
+  const name = useMemo(
+    () => user ?? extractNameFromToken() ?? "usuário",
+    [user]
+  );
 
   return (
     <div className="flex justify-between items-center bg-white rounded-lg p-3">

@@ -68,7 +68,7 @@ export default function Clients() {
 
         {/* Content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pb-0 lg:ml-40">
-          <UserHeader user="Johnny" />
+          <UserHeader />
           <div className="flex gap-5 flex-col lg:flex-row lg:justify-between lg:items-center">
             <SearchBar onChange={setSearch} />
 

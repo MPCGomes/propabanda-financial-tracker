@@ -32,8 +32,9 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-database-postgresql'
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	implementation 'org.apache.poi:poi:5.2.5'
+	implementation 'org.apache.poi:poi:5.4.0'
 	implementation 'org.apache.poi:poi-ooxml:5.4.0'
+	implementation 'org.apache.poi:poi-ooxml-full:5.4.0'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
@@ -45,6 +46,14 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+flyway {
+	url      = project.findProperty('flyway.url')
+	user     = project.findProperty('flyway.user')
+	password = project.findProperty('flyway.password')
+	schemas  = ['public']
+	locations= ['classpath:db/migration']
 }
 
 tasks.named('test') {

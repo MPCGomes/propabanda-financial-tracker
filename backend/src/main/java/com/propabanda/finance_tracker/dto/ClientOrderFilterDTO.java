@@ -7,7 +7,8 @@ import lombok.Setter;
 @Setter
 public class ClientOrderFilterDTO {
 
-    private String itemSearch;
+    private String search;
     private String sortBy;
     private String direction;
+
 }
