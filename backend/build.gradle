@@ -48,6 +48,14 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+flyway {
+	url      = project.findProperty('flyway.url')
+	user     = project.findProperty('flyway.user')
+	password = project.findProperty('flyway.password')
+	schemas  = ['public']
+	locations= ['classpath:db/migration']
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }

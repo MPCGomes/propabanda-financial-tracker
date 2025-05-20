@@ -6,7 +6,8 @@ import Header from "../components/Header";
 import GoBack from "../components/GoBack";
 import Info from "../components/Info";
 import FloatingButton from "../components/FloatingButton";
-import DialogModal from "../components/DialogModal";
+import Modal from "../components/Modal";
+import Button from "../components/Button";
 import api from "../lib/api";
 
 type ItemDTO = {
@@ -55,7 +56,7 @@ export default function Order() {
         responseType: "blob",
       });
 
-      if (headers["content-type"] !== "application/pdf") {
+      if (!headers["content-type"]?.startsWith("application/pdf")) {
         setErrMsg("Pré-visualização disponível apenas para PDF.");
         return;
       }
@@ -98,17 +99,14 @@ export default function Order() {
 
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      {/* Modals */}
-      {/* Errors */}
-      <DialogModal
-        isOpen={!!errMsg}
-        message={errMsg ?? ""}
-        onClose={() => setErrMsg(null)}
-        title="Aviso"
-      />
+      {/* Erro */}
+      <Modal isOpen={!!errMsg} onClose={() => setErrMsg(null)} title="Aviso">
+        <p className="text-sm mb-4">{errMsg}</p>
+        <Button onClick={() => setErrMsg(null)}>OK</Button>
+      </Modal>
 
-      {/* PDF Viewer */}
-      <DialogModal
+      {/* Pré-visualização PDF */}
+      <Modal
         isOpen={!!previewUrl}
         onClose={() => {
           if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -123,10 +121,10 @@ export default function Order() {
             className="w-full h-[80vh] rounded border"
           />
         )}
-      </DialogModal>
+      </Modal>
 
-      {/* Confirmation Modal */}
-      <DialogModal
+      {/* Confirmação de exclusão */}
+      <Modal
         isOpen={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         title="Excluir pedido?"
@@ -148,21 +146,21 @@ export default function Order() {
             Excluir
           </button>
         </div>
-      </DialogModal>
+      </Modal>
 
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        {/* Side/Bottom Menu */}
+        {/* Menu lateral / inferior */}
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
           <Header orders="active" />
         </div>
 
-        {/* Content */}
+        {/* Conteúdo */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
           <GoBack link="/orders" />
 
           {order && (
             <>
-              {/* Order Data */}
+              {/* Dados do pedido */}
               <div className="flex flex-col p-5 gap-5 rounded-lg bg-white">
                 <Info label="Cliente" value={order.clientName} />
                 <Info
@@ -195,7 +193,7 @@ export default function Order() {
                 />
               </div>
 
-              {/* Contract */}
+              {/* Contrato */}
               <div className="flex p-5 gap-5 rounded-lg bg-white justify-between items-center">
                 <div>
                   <p className="text-base font-bold">Contrato</p>
@@ -228,7 +226,7 @@ export default function Order() {
         </div>
       </div>
 
-      {/* Floating Buttons */}
+      {/* Botões flutuantes */}
       <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2 items-end">
         <FloatingButton
           background="#2696FF"

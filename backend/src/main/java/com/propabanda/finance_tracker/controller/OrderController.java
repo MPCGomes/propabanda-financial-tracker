@@ -87,16 +87,22 @@ public class OrderController {
 
     @GetMapping("/{id}/contract")
     public ResponseEntity<FileSystemResource> downloadContract(@PathVariable Long id) {
-        try {
-            File file = orderService.getContractFile(id);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName())
-                    .contentLength(file.length())
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(new FileSystemResource(file));
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+        File file = orderService.getContractFile(id);
+        String filename = file.getName();
+        MediaType mediaType;
+        if (filename.toLowerCase().endsWith(".pdf")) {
+            mediaType = MediaType.APPLICATION_PDF;
+        } else if (filename.toLowerCase().endsWith(".docx")) {
+            mediaType = MediaType
+                    .parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        } else {
+            mediaType = MediaType.APPLICATION_OCTET_STREAM;
         }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentLength(file.length())
+                .contentType(mediaType)
+                .body(new FileSystemResource(file));
     }
 
     @DeleteMapping("/{id}/contract")
