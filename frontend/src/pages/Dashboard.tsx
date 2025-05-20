@@ -7,7 +7,6 @@ import DashboardHeader from "../components/DashboardHeader";
 import Filter from "../components/Filter";
 import Modal from "../components/Modal";
 import Button from "../components/Button";
-import DialogModal from "../components/DialogModal";
 import Money from "../components/Money";
 
 import {
@@ -67,7 +66,7 @@ export default function Dashboard() {
   const [items, setItems] = useState<ItemOption[]>([]);
   const [selectedItems, setSelItems] = useState<number[]>([]);
   const [openModal, setOpenModal] = useState<
-    null | "period" | "item" | "import"
+    null | "period" | "item" | "import" | "error"
   >(null);
 
   const [orders, setOrders] = useState<OrderResume[]>([]);
@@ -83,7 +82,10 @@ export default function Dashboard() {
       .then(({ data }) =>
         setItems(data.map((i: any) => ({ id: i.id, name: i.name })))
       )
-      .catch(() => setErr("Falha ao carregar itens."));
+      .catch(() => {
+        setErr("Falha ao carregar itens.");
+        setOpenModal("error");
+      });
   }, []);
 
   const fetchOrders = async () => {
@@ -108,6 +110,7 @@ export default function Dashboard() {
       );
     } catch {
       setErr("Falha ao carregar dados do dashboard.");
+      setOpenModal("error");
     }
   };
 
@@ -162,14 +165,30 @@ export default function Dashboard() {
 
   const handleExport = async () => {
     try {
-      const body = {
-        startDate: period.start,
-        endDate: period.end,
-        itemIds: selectedItems,
-      };
-      const { data } = await api.post("/api/export/report.xlsx", body, {
-        responseType: "blob",
-      });
+      // Build query parameters for GET request
+      const params = new URLSearchParams();
+      params.append("startDate", period.start);
+      params.append("endDate", period.end);
+
+      // Add itemIds as separate query parameters if there are any selected
+      if (selectedItems.length > 0) {
+        // Ensure we're converting the IDs to strings since URLSearchParams requires string values
+        selectedItems.forEach((id) => params.append("itemIds", id.toString()));
+      }
+
+      // Make a GET request with query parameters
+      const response = await api.get(
+        `/api/export/report.xlsx?${params.toString()}`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Erro ao gerar o relatório");
+      }
+
+      const data = response.data;
       const url = window.URL.createObjectURL(data);
       const a = document.createElement("a");
       a.href = url;
@@ -177,20 +196,37 @@ export default function Dashboard() {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (e: any) {
+      console.error("Export error:", e);
       setErr(
         e?.response?.data?.message ??
+          e?.message ??
           "Falha interna ao gerar o arquivo de exportação."
       );
+      setOpenModal("error");
     }
   };
 
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      <DialogModal
-        isOpen={!!err}
-        message={err ?? ""}
-        onClose={() => setErr(null)}
-      />
+      {/* Replace DialogModal with standard Modal for errors */}
+      <Modal
+        isOpen={openModal === "error"}
+        onClose={() => {
+          setOpenModal(null);
+          setErr(null);
+        }}
+        title="Atenção"
+      >
+        <p className="text-sm mb-4">{err}</p>
+        <Button
+          onClick={() => {
+            setOpenModal(null);
+            setErr(null);
+          }}
+        >
+          OK
+        </Button>
+      </Modal>
 
       <div className="p-4 lg:p-0 w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
         <div
@@ -330,15 +366,16 @@ export default function Dashboard() {
                       headers: { "Content-Type": "multipart/form-data" },
                     });
                     setErr("Importação concluída com sucesso.");
+                    setOpenModal("error");
                     fetchOrders();
                   } catch (e: any) {
                     setErr(
                       e?.response?.data?.message ??
                         "Falha interna ao importar o arquivo."
                     );
+                    setOpenModal("error");
                   } finally {
                     setImportFile(null);
-                    setOpenModal(null);
                   }
                 }}
               >

@@ -10,14 +10,13 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.*;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 public class ExcelExportService {
@@ -31,6 +30,7 @@ public class ExcelExportService {
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             DataFormat df = wb.createDataFormat();
 
+            // Fonte e estilos comuns
             XSSFFont arial12 = wb.createFont();
             arial12.setFontName("Arial");
             arial12.setFontHeightInPoints((short) 12);
@@ -62,6 +62,7 @@ public class ExcelExportService {
             percentStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             percentStyle.setDataFormat(df.getFormat("0.00%"));
 
+            // Geração das planilhas
             createClientsSheet(wb, clientList, headerStyle, textStyle);
             createOrdersSheet(wb, orderList, headerStyle, textStyle, currencyStyle, percentStyle);
             createDashboardSheet(wb, dashboardEvolutionDTO, headerStyle, textStyle, currencyStyle, percentStyle);
@@ -82,7 +83,7 @@ public class ExcelExportService {
     ) {
         XSSFSheet sheet = wb.createSheet("Clientes");
         sheet.setDisplayGridlines(false);
-        sheet.setDefaultColumnWidth(20);
+        sheet.setDefaultColumnWidth(25);
 
         String[] cols = {"ID", "Nome", "Documento", "Representante", "Email", "Telefone", "Cidade", "Estado"};
         XSSFRow header = sheet.createRow(0);
@@ -92,9 +93,9 @@ public class ExcelExportService {
             c.setCellStyle(headerStyle);
         }
 
-        int r = 1;
+        int rowIndex = 1;
         for (ClientResponseDTO dto : list) {
-            XSSFRow row = sheet.createRow(r++);
+            XSSFRow row = sheet.createRow(rowIndex++);
             row.createCell(0).setCellValue(dto.getId());
             row.createCell(1).setCellValue(dto.getName());
             row.createCell(2).setCellValue(dto.getDocumentNumber());
@@ -108,8 +109,7 @@ public class ExcelExportService {
             }
         }
 
-        createTableWithStyle(sheet, r, cols.length);
-        autoSizeColumns(sheet, cols.length);
+        createTableWithStyle(sheet, rowIndex, cols.length, "Clientes");
     }
 
     private void createOrdersSheet(
@@ -122,7 +122,7 @@ public class ExcelExportService {
     ) {
         XSSFSheet sheet = wb.createSheet("Pedidos");
         sheet.setDisplayGridlines(false);
-        sheet.setDefaultColumnWidth(20);
+        sheet.setDefaultColumnWidth(25);
 
         String[] cols = {
                 "ID", "Cliente", "Itens", "Emissão", "Início", "Fim",
@@ -136,12 +136,12 @@ public class ExcelExportService {
             c.setCellStyle(headerStyle);
         }
 
-        int r = 1;
+        int rowIndex = 1;
         for (OrderResponseDTO dto : list) {
             String items = dto.getItems().stream()
                     .map(ItemResponseDTO::getName)
                     .collect(Collectors.joining(", "));
-            XSSFRow row = sheet.createRow(r++);
+            XSSFRow row = sheet.createRow(rowIndex++);
             row.createCell(0).setCellValue(dto.getId());
             row.createCell(1).setCellValue(dto.getClientName());
             row.createCell(2).setCellValue(items);
@@ -176,8 +176,7 @@ public class ExcelExportService {
             }
         }
 
-        createTableWithStyle(sheet, r, cols.length);
-        autoSizeColumns(sheet, cols.length);
+        createTableWithStyle(sheet, rowIndex, cols.length, "Pedidos");
     }
 
     private void createDashboardSheet(
@@ -190,7 +189,7 @@ public class ExcelExportService {
     ) {
         XSSFSheet sheet = wb.createSheet("Resumo");
         sheet.setDisplayGridlines(false);
-        sheet.setDefaultColumnWidth(20);
+        sheet.setDefaultColumnWidth(25);
 
         String[] indicators = {
                 "Saldo Inicial", "Entradas no Período", "Saldo Final",
@@ -227,8 +226,7 @@ public class ExcelExportService {
             row.getCell(0).setCellStyle(textStyle);
         }
 
-        createTableWithStyle(sheet, indicators.length + 1, 2);
-        autoSizeColumns(sheet, 2);
+        createTableWithStyle(sheet, indicators.length + 1, 2, "Resumo");
     }
 
     private void createItemPerformanceSheet(
@@ -241,7 +239,7 @@ public class ExcelExportService {
     ) {
         XSSFSheet sheet = wb.createSheet("Performance Itens");
         sheet.setDisplayGridlines(false);
-        sheet.setDefaultColumnWidth(20);
+        sheet.setDefaultColumnWidth(25);
 
         String[] cols = {"ID", "Item", "Total (R$)", "% do Total"};
         XSSFRow header = sheet.createRow(0);
@@ -251,9 +249,9 @@ public class ExcelExportService {
             c.setCellStyle(headerStyle);
         }
 
-        int r = 1;
+        int rowIndex = 1;
         for (ItemPerformanceDTO dto : list) {
-            XSSFRow row = sheet.createRow(r++);
+            XSSFRow row = sheet.createRow(rowIndex++);
             row.createCell(0).setCellValue(dto.getItemId());
             row.createCell(1).setCellValue(dto.getItemName());
             XSSFCell tot = row.createCell(2);
@@ -266,35 +264,40 @@ public class ExcelExportService {
             row.getCell(1).setCellStyle(textStyle);
         }
 
-        createTableWithStyle(sheet, r, cols.length);
-        autoSizeColumns(sheet, cols.length);
+        createTableWithStyle(sheet, rowIndex, cols.length, "Performance");
     }
 
-    private void createTableWithStyle(XSSFSheet sheet, int lastRow, int lastCol) {
-        CellReference tl = new CellReference(0, 0);
-        CellReference br = new CellReference(lastRow - 1, lastCol - 1);
-        AreaReference area = new AreaReference(tl, br, SpreadsheetVersion.EXCEL2007);
+    private void createTableWithStyle(XSSFSheet sheet, int lastRow, int lastCol, String tableName) {
+        if (lastRow <= 1) {
+            // Need at least one data row to create a table
+            return;
+        }
 
-        XSSFTable table = sheet.createTable(area);
-        CTTable ct = table.getCTTable();
-        ct.setName(sheet.getSheetName() + "Table");
-        ct.setDisplayName(sheet.getSheetName() + "Table");
-        ct.setHeaderRowCount(1);
-        ct.addNewAutoFilter().setRef(area.formatAsString());
+        String safeName = tableName.replaceAll("[^a-zA-Z0-9]", "") + UUID.randomUUID().toString().substring(0, 8);
 
-        CTTableStyleInfo style = ct.getTableStyleInfo();
+        CellReference topLeft = new CellReference(0, 0);
+        CellReference bottomRight = new CellReference(lastRow - 1, lastCol - 1);
+        AreaReference areaRef = new AreaReference(topLeft, bottomRight, SpreadsheetVersion.EXCEL2007);
+
+        XSSFTable table = sheet.createTable(areaRef);
+        table.setName(safeName);
+        table.setDisplayName(safeName);
+
+        // Set table style to Medium 3 (Orange)
+        table.setStyleName("TableStyleMedium3");
+
+        // Enable auto-filter
+        table.getCTTable().addNewAutoFilter().setRef(areaRef.formatAsString());
+
+        // Set header row
+        table.getCTTable().setHeaderRowCount(1);
+
+        // Create columns
+        XSSFTableStyleInfo style = (XSSFTableStyleInfo) table.getStyle();
         style.setName("TableStyleMedium3");
         style.setShowColumnStripes(false);
         style.setShowRowStripes(true);
-    }
-
-    private void autoSizeColumns(XSSFSheet sheet, int cols) {
-        for (int i = 0; i < cols; i++) {
-            sheet.autoSizeColumn(i);
-            int w = sheet.getColumnWidth(i);
-            if (w < 256 * 12) {
-                sheet.setColumnWidth(i, 256 * 12);
-            }
-        }
+        style.setFirstColumn(false);
+        style.setLastColumn(false);
     }
 }

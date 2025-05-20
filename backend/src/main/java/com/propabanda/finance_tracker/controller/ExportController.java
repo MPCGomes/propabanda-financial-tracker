@@ -3,6 +3,7 @@ package com.propabanda.finance_tracker.controller;
 import com.propabanda.finance_tracker.dto.DashboardEvolutionDTO;
 import com.propabanda.finance_tracker.dto.DashboardFilterDTO;
 import com.propabanda.finance_tracker.dto.ItemPerformanceDTO;
+import com.propabanda.finance_tracker.dto.OrderFilterDTO;
 import com.propabanda.finance_tracker.dto.response.ClientResponseDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
 import com.propabanda.finance_tracker.service.*;
@@ -12,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 
 @RestController
@@ -30,12 +33,43 @@ public class ExportController {
     }
 
     @GetMapping("/report.xlsx")
-    public ResponseEntity<?> exportAllData() {
+    public ResponseEntity<?> exportFilteredData(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) List<Long> itemIds) {
         try {
+            // Create filter based on request parameters
+            DashboardFilterDTO dashboardFilter = new DashboardFilterDTO();
+            OrderFilterDTO orderFilter = new OrderFilterDTO();
+
+            if (startDate != null && !startDate.isEmpty()) {
+                LocalDate parsedDate = LocalDate.parse(startDate);
+                dashboardFilter.setStartDate(parsedDate);
+                orderFilter.setStartDate(parsedDate);
+            }
+
+            if (endDate != null && !endDate.isEmpty()) {
+                LocalDate parsedDate = LocalDate.parse(endDate);
+                dashboardFilter.setEndDate(parsedDate);
+                orderFilter.setEndDate(parsedDate);
+            }
+
+            if (itemIds != null && !itemIds.isEmpty()) {
+                // Convert List<Long> to Set<Long> for dashboardFilter
+                dashboardFilter.setItemIds(new HashSet<>(itemIds));
+                // For orderFilter it's already the right collection type
+                orderFilter.setItemIds(itemIds);
+            }
+
+            // Default values for orderFilter for sorting
+            orderFilter.setSortBy("emissionDate");
+            orderFilter.setDirection("asc");
+
+            // Get filtered data
             List<ClientResponseDTO> clients = clientService.findAll();
-            List<OrderResponseDTO> orders = orderService.findAll();
-            DashboardEvolutionDTO dashboard = dashboardService.getEvolution(new DashboardFilterDTO());
-            List<ItemPerformanceDTO> itemPerformance = dashboardService.getPerformance(new DashboardFilterDTO()).getItemPerformances();
+            List<OrderResponseDTO> orders = orderService.findAllFiltered(orderFilter);
+            DashboardEvolutionDTO dashboard = dashboardService.getEvolution(dashboardFilter);
+            List<ItemPerformanceDTO> itemPerformance = dashboardService.getPerformance(dashboardFilter).getItemPerformances();
 
             byte[] excelData = excelExportService.generateFullReport(clients, orders, dashboard, itemPerformance);
             ByteArrayResource resource = new ByteArrayResource(excelData);
