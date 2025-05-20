@@ -72,7 +72,7 @@ export default function Client() {
     setClient(data);
   };
 
-  const [identifierSearch, setIdentifierSearch] = useState("");
+  const [identifierSearch] = useState("");
 
   const fetchOrders = async () => {
     const { data } = await api.post(`/api/orders/client/${id}/filter`, {

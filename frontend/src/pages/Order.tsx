@@ -10,12 +10,6 @@ import Modal from "../components/Modal";
 import Button from "../components/Button";
 import api from "../lib/api";
 
-type ItemDTO = {
-  itemName: string;
-  quantity: number;
-  total: string;
-};
-
 type OrderDTO = {
   id: number;
   clientName: string;

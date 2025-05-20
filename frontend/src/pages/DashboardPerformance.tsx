@@ -5,16 +5,11 @@ import DashboardHeader from "../components/DashboardHeader";
 import Filter from "../components/Filter";
 import Modal from "../components/Modal";
 import Button from "../components/Button";
-import DialogModal from "../components/DialogModal";
 import Money from "../components/Money";
 import { useShowValues } from "../contexts/ShowValuesContext";
-import {
-  MdKeyboardArrowUp,
-  MdKeyboardArrowDown,
-  MdFileUpload,
-} from "react-icons/md";
+import { MdFileUpload } from "react-icons/md";
 import api from "../lib/api";
-// Chart
+
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import { IoMdDownload } from "react-icons/io";
 
@@ -60,9 +55,6 @@ export default function DashboardPerformance() {
   const [perf, setPerf] = useState<PerformanceDTO | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [importFile, setImportFile] = useState<File | null>(null);
-
-  // UI
-  const [showList, setShowList] = useState(false);
 
   // Load items
   useEffect(() => {
@@ -152,11 +144,10 @@ export default function DashboardPerformance() {
 
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      <DialogModal
-        isOpen={!!err}
-        message={err ?? ""}
-        onClose={() => setErr(null)}
-      />
+      <Modal isOpen={!!err} onClose={() => setErr(null)} title="Erro">
+        <p className="text-sm mb-4">{err}</p>
+        <Button onClick={() => setErr(null)}>OK</Button>
+      </Modal>
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
         {/* Menu */}
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">

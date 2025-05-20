@@ -25,12 +25,10 @@ export default function OrderRegister() {
     "clientId"
   );
 
-  /* ---------- estados ---------- */
   const [client, setClient] = useState<ClientOption | null>(null);
   const [items, setItems] = useState<ItemOption[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
-  // valores iniciais fixos
   const [orderValue, setOrderValue] = useState("0,00");
   const [installmentCount, setInstallmentCount] = useState("1");
   const [installmentDay, setInstallmentDay] = useState("10");
@@ -49,7 +47,7 @@ export default function OrderRegister() {
   const [contractFile, setContractFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  /* ---------- cálculos ---------- */
+  // math
   const subtotal =
     parseFloat(orderValue.replace(/\./g, "").replace(",", ".")) || 0;
   const discountVal = (subtotal * (+discountPct || 0)) / 100;
@@ -60,7 +58,6 @@ export default function OrderRegister() {
   const paidValue = instValue * (+paidInstallments || 0);
   const remainValue = total - paidValue;
 
-  /* ---------- efeitos ---------- */
   useEffect(() => {
     api
       .get("/api/items")
@@ -74,7 +71,7 @@ export default function OrderRegister() {
     }
   }, [clientIdParam]);
 
-  /* ---------- helpers ---------- */
+  // helpers
   const validate = () =>
     client &&
     selectedItemId !== null &&
@@ -102,7 +99,7 @@ export default function OrderRegister() {
     setOrderValue(formatted);
   };
 
-  /* ---------- submit ---------- */
+  // submit
   const handleSubmit = async () => {
     if (!validate()) {
       setErrorMessage("Preencha todos os campos corretamente.");
@@ -143,7 +140,6 @@ export default function OrderRegister() {
     }
   };
 
-  /* ---------- UI ---------- */
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
       <Modal

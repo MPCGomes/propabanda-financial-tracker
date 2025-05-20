@@ -4,31 +4,29 @@ import Header from "../components/Header";
 import GoBack from "../components/GoBack";
 import InputText from "../components/InputText";
 import Button from "../components/Button";
-import DialogModal from "../components/DialogModal";
 import api from "../lib/api";
+import Modal from "../components/Modal";
 
-/* -------------------------------------------------- */
-/* helpers */
+// helpers
 const digitsOnly = (t: string) => t.replace(/\D/g, "");
 const isBlank = (t: string) => !t.trim();
 
-/* -------------------------------------------------- */
 export default function ClientRegister() {
   const navigate = useNavigate();
 
-  /* ---------- estado ---------- */
+  // state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  /* empresa */
+  // client
   const [name, setName] = useState("");
   const [cnpj, setCnpj] = useState("");
 
-  /* representante */
+  // representative
   const [repName, setRepName] = useState("");
   const [repPhone, setRepPhone] = useState("");
   const [repEmail, setRepEmail] = useState("");
 
-  /* endereço */
+  // address
   const [zip, setZip] = useState("");
   const [street, setStreet] = useState("");
   const [number, setNumber] = useState("");
@@ -38,7 +36,7 @@ export default function ClientRegister() {
   const [state, setState] = useState("");
   const [neighbourhood, setNeighbourhood] = useState("");
 
-  /* ---------- CEP ---------- */
+  // cep
   const fetchCep = async (cepRaw: string) => {
     const cep = digitsOnly(cepRaw);
     if (cep.length !== 8) return;
@@ -55,7 +53,7 @@ export default function ClientRegister() {
     }
   };
 
-  /* ---------- validação simples ---------- */
+  // validation
   const isValid = () => {
     if (
       [name, repName, repPhone, repEmail, street, number, city, state].some(
@@ -68,7 +66,7 @@ export default function ClientRegister() {
     return cnpjDigits.length === 14 && cepDigits.length === 8;
   };
 
-  /* ---------- submit ---------- */
+  // submit
   const submit = async () => {
     if (!isValid()) {
       setErrorMessage("Preencha todos os campos obrigatórios corretamente.");
@@ -105,27 +103,29 @@ export default function ClientRegister() {
     }
   };
 
-  /* ---------- componente ---------- */
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      {/* modal erro */}
-      <DialogModal
+      {/* error modal */}
+      <Modal
         isOpen={!!errorMessage}
-        message={errorMessage ?? ""}
         onClose={() => setErrorMessage(null)}
-      />
+        title="Erro"
+      >
+        <p className="text-sm mb-4">{errorMessage}</p>
+        <Button onClick={() => setErrorMessage(null)}>OK</Button>
+      </Modal>
 
       <div className="w-full max-w-[1280px] flex gap-5 pt-12 lg:pt-20">
-        {/* menu lateral */}
+        {/* side menu */}
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
           <Header clients="active" />
         </div>
 
-        {/* conteúdo */}
+        {/* content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
           <GoBack link="/clients" />
 
-          {/* empresa */}
+          {/* client */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Empresa</p>
             <InputText label="Nome" value={name} onValueChange={setName} />
@@ -137,7 +137,7 @@ export default function ClientRegister() {
             />
           </div>
 
-          {/* representante */}
+          {/* representative */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Representante</p>
             <InputText
@@ -157,7 +157,7 @@ export default function ClientRegister() {
             />
           </div>
 
-          {/* endereço */}
+          {/* address */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Endereço</p>
 

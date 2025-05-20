@@ -8,7 +8,7 @@ export default function Login() {
   const [error, setError] = useState("");
 
   const handleLogin = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault(); // evita recarregar a página
+    if (e) e.preventDefault();
     setError("");
     try {
       const { data } = await api.post("/auth", { documentNumber, password });

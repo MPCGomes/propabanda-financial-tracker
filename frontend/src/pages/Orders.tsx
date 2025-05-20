@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Order from "../components/Order";
 import FloatingButton from "../components/FloatingButton";
@@ -11,7 +10,6 @@ import FilterSelect from "../components/FilterSelect";
 import { FaPlus } from "react-icons/fa6";
 import api from "../lib/api";
 import UserHeader from "../components/UserHeader";
-import Money from "../components/Money";
 import { useShowValues } from "../contexts/ShowValuesContext";
 
 type OrderDTO = {
@@ -28,7 +26,6 @@ const orderOptions = [
 ];
 
 export default function Orders() {
-  const navigate = useNavigate();
   const { show } = useShowValues();
 
   const [orders, setOrders] = useState<OrderDTO[]>([]);

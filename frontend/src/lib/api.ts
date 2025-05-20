@@ -11,7 +11,7 @@ api.interceptors.request.use((cfg) => {
   return cfg;
 });
 
-/* forces logout if 401 or 403 */
+// forces logout if 401 or 403
 api.interceptors.response.use(
   (r) => r,
   (err) => {

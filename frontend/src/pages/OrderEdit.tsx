@@ -6,12 +6,10 @@ import Info from "../components/Info";
 import Button from "../components/Button";
 import InputText from "../components/InputText";
 import InputSelect from "../components/InputSelect";
-import DialogModal from "../components/DialogModal";
 import { FaUpload } from "react-icons/fa";
 import api from "../lib/api";
-import ClientAutoComplete, {
-  ClientOption,
-} from "../components/ClientAutoComplete";
+import { ClientOption } from "../components/ClientAutoComplete";
+import Modal from "../components/Modal";
 
 type ItemOption = { value: number; label: string };
 
@@ -64,7 +62,6 @@ export default function OrderEdit() {
       .get(`/api/orders/${id}`)
       .then(({ data: order }) => {
         setClient({ id: order.clientId, name: order.clientName });
-        // aqui usamos order.items[0].id, pois a API retorna id + name
         setSelectedItemId(order.items[0]?.id ?? null);
         setOrderValue(
           order.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })
@@ -128,11 +125,14 @@ export default function OrderEdit() {
 
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      <DialogModal
+      <Modal
         isOpen={!!errorMessage}
-        message={errorMessage ?? ""}
         onClose={() => setErrorMessage(null)}
-      />
+        title="Aviso"
+      >
+        <p className="text-sm mb-4">{errorMessage}</p>
+        <Button onClick={() => setErrorMessage(null)}>OK</Button>
+      </Modal>
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
           <Header orders="active" />

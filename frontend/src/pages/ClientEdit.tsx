@@ -4,8 +4,8 @@ import Header from "../components/Header";
 import GoBack from "../components/GoBack";
 import InputText from "../components/InputText";
 import Button from "../components/Button";
-import DialogModal from "../components/DialogModal";
 import api from "../lib/api";
+import Modal from "../components/Modal";
 
 export default function ClientEdit() {
   const { id } = useParams();
@@ -90,11 +90,14 @@ export default function ClientEdit() {
 
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      <DialogModal
+      <Modal
         isOpen={!!errorMsg}
-        message={errorMsg ?? ""}
         onClose={() => setErrorMsg(null)}
-      />
+        title="Aviso"
+      >
+        <p className="text-sm mb-4">{errorMsg}</p>
+        <Button onClick={() => setErrorMsg(null)}>OK</Button>
+      </Modal>
 
       <div className="w-full max-w-[1280px] flex gap-5 pt-12 lg:pt-20">
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
