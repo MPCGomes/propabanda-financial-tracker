@@ -16,7 +16,7 @@ RUN chmod +x gradlew && \
     ./gradlew clean bootJar --no-daemon -x test
 
 # Runtime w/ JRE
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copy .jar
