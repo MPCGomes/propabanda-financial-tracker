@@ -1,16 +1,16 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
-import DashboardPerformance from "../pages/DashboardPerformance";
-import Clients from "../pages/Clients";
-import Client from "../pages/Client";
-import ClientRegister from "../pages/ClientRegister";
-import ClientEdit from "../pages/ClientEdit";
-import Orders from "../pages/Orders";
-import Order from "../pages/Order";
-import OrderRegister from "../pages/OrderRegister";
+import Dashboard from "../pages/Dashboard/Evolution";
+import DashboardPerformance from "../pages/Dashboard/Performance";
+import Clients from "../pages/Client/ViewAll";
+import Client from "../pages/Client/View";
+import ClientRegister from "../pages/Client/Register";
+import ClientEdit from "../pages/Client/Edit";
+import Orders from "../pages/Order/ViewAll";
+import Order from "../pages/Order/View";
+import OrderRegister from "../pages/Order/Register";
 import PrivateRoute from "./PrivateRoute";
-import OrderEdit from "../pages/OrderEdit";
+import OrderEdit from "../pages/Order/Edit";
 
 export default function AppRouter() {
   return (
