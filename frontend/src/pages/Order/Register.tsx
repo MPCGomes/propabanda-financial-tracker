@@ -1,29 +1,34 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../components/Header";
-import GoBack from "../components/GoBack";
-import Info from "../components/Info";
-import Button from "../components/Button";
-import InputText from "../components/InputText";
-import InputSelect from "../components/InputSelect";
-import { FaUpload } from "react-icons/fa";
-import api from "../lib/api";
+
+import Header from "../../components/Header";
+import GoBack from "../../components/GoBack";
 import ClientAutoComplete, {
   ClientOption,
-} from "../components/ClientAutoComplete";
-import Modal from "../components/Modal";
-
-type ItemOption = { value: number; label: string };
+} from "../../components/ClientAutoComplete";
+import InputText from "../../components/InputText";
+import InputSelect from "../../components/InputSelect";
+import Button from "../../components/Button";
+import SectionCard from "../../components/SectionCard";
+import InfoGroup from "../../components/InfoGroup";
+import ErrorModal from "../../components/ErrorModal";
+import { useModal } from "../../hooks/useModal";
+import { FaUpload } from "react-icons/fa";
+import api from "../../lib/api";
 
 const MAX_FILE_MB = 10;
 const formatCurrency = (n: number) =>
   `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
+type ItemOption = { value: number; label: string };
 
 export default function OrderRegister() {
   const navigate = useNavigate();
   const clientIdParam = new URLSearchParams(useLocation().search).get(
     "clientId"
   );
+
+  const errorModal = useModal(false);
 
   const [client, setClient] = useState<ClientOption | null>(null);
   const [items, setItems] = useState<ItemOption[]>([]);
@@ -47,7 +52,7 @@ export default function OrderRegister() {
   const [contractFile, setContractFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // math
+  // cálculos
   const subtotal =
     parseFloat(orderValue.replace(/\./g, "").replace(",", ".")) || 0;
   const discountVal = (subtotal * (+discountPct || 0)) / 100;
@@ -60,7 +65,7 @@ export default function OrderRegister() {
 
   useEffect(() => {
     api
-      .get("/api/items")
+      .get<ItemOption[]>("/api/items")
       .then(({ data }) =>
         setItems(data.map((it: any) => ({ value: it.id, label: it.name })))
       );
@@ -71,7 +76,6 @@ export default function OrderRegister() {
     }
   }, [clientIdParam]);
 
-  // helpers
   const validate = () =>
     client &&
     selectedItemId !== null &&
@@ -84,6 +88,7 @@ export default function OrderRegister() {
   const handleFile = (file: File) => {
     if (file.size / 1024 / 1024 > MAX_FILE_MB) {
       setErrorMessage(`Arquivo maior que ${MAX_FILE_MB} MB.`);
+      errorModal.open();
       return;
     }
     setContractFile(file);
@@ -99,10 +104,10 @@ export default function OrderRegister() {
     setOrderValue(formatted);
   };
 
-  // submit
   const handleSubmit = async () => {
     if (!validate()) {
       setErrorMessage("Preencha todos os campos corretamente.");
+      errorModal.open();
       return;
     }
 
@@ -124,7 +129,6 @@ export default function OrderRegister() {
       if (contractFile) {
         const form = new FormData();
         form.append("file", contractFile);
-
         await api.post(`/api/orders/${order.id}/contract`, form, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -137,19 +141,19 @@ export default function OrderRegister() {
           ? err.response.data
           : err?.response?.data?.error || "Erro interno.";
       setErrorMessage(msg);
+      errorModal.open();
     }
   };
 
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      <Modal
-        isOpen={!!errorMessage}
-        onClose={() => setErrorMessage(null)}
-        title="Atenção"
-      >
-        <p className="text-sm mb-4">{errorMessage}</p>
-        <Button onClick={() => setErrorMessage(null)}>Fechar</Button>
-      </Modal>
+      <ErrorModal
+        error={errorMessage}
+        onClose={() => {
+          setErrorMessage(null);
+          errorModal.close();
+        }}
+      />
 
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
@@ -159,116 +163,103 @@ export default function OrderRegister() {
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
           <GoBack link="/orders" />
 
-          {/* ---- formulário principal ---- */}
-          <div className="flex flex-col p-5 gap-5 rounded-lg bg-white">
-            <p className="text-base font-medium">Cadastrar Pedido</p>
+          <SectionCard title="Cadastrar Pedido">
+            {/* Cliente */}
+            {clientIdParam ? (
+              <InputText label="Cliente" value={client?.name || ""} disabled />
+            ) : (
+              <ClientAutoComplete onSelect={setClient} />
+            )}
 
-            <div className="flex flex-col gap-5">
-              <p className="text-sm font-medium">Empresa</p>
+            <InputSelect
+              label="Itens"
+              id="item"
+              options={items}
+              value={selectedItemId ?? undefined}
+              onChange={(id) => setSelectedItemId(Number(id))}
+            />
 
-              {clientIdParam ? (
-                <InputText
-                  label="Cliente"
-                  value={client?.name ?? ""}
-                  readOnly
-                />
-              ) : (
-                <ClientAutoComplete onSelect={setClient} />
-              )}
+            <InputText
+              type="text"
+              label="Valor Total (R$)"
+              value={orderValue}
+              onValueChange={handleValueChange}
+            />
 
-              <InputSelect
-                label="Itens"
-                id="item"
-                options={items}
-                value={selectedItemId ?? undefined}
-                onChange={(id) => setSelectedItemId(Number(id))}
-              />
-
+            <div className="flex gap-3">
               <InputText
-                type="text"
-                label="Valor Total (R$)"
-                value={orderValue}
-                onValueChange={handleValueChange}
+                type="date"
+                label="Início"
+                value={startDate}
+                onValueChange={setStartDate}
               />
-
-              {/* datas */}
-              <div className="flex gap-3">
-                <InputText
-                  type="date"
-                  label="Início"
-                  value={startDate}
-                  onValueChange={setStartDate}
-                />
-                <InputText
-                  type="date"
-                  label="Fim"
-                  value={endDate}
-                  onValueChange={setEndDate}
-                />
-              </div>
-
-              {/* parcelas etc. */}
-              <div className="flex gap-3">
-                <InputText
-                  type="number"
-                  label="Parcelas"
-                  min={1}
-                  value={installmentCount}
-                  onValueChange={(v) => setInstallmentCount(String(Number(v)))}
-                />
-                <InputText
-                  type="number"
-                  label="Venc. parcelas"
-                  min={1}
-                  max={31}
-                  value={installmentDay}
-                  onValueChange={(v) => setInstallmentDay(String(Number(v)))}
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <InputText
-                  type="number"
-                  label="Parcelas pagas"
-                  min={0}
-                  value={paidInstallments}
-                  onValueChange={(v) => setPaidInstallments(String(Number(v)))}
-                />
-                <InputText
-                  type="number"
-                  label="Desconto (%)"
-                  min={0}
-                  value={discountPct}
-                  onValueChange={(v) => setDiscountPct(String(Number(v)))}
-                />
-              </div>
+              <InputText
+                type="date"
+                label="Fim"
+                value={endDate}
+                onValueChange={setEndDate}
+              />
             </div>
-          </div>
 
-          {/* ---- resumo ---- */}
-          <div className="flex flex-col p-5 gap-3 rounded-lg bg-white">
-            <Info label="Sub-Total" value={formatCurrency(subtotal)} />
-            <Info label="Desconto (%)" value={`${discountPct}%`} />
-            <Info label="Desconto (R$)" value={formatCurrency(discountVal)} />
-            <Info label="Valor Parcelas" value={formatCurrency(instValue)} />
-            <Info
-              label="Valor Pago"
-              value={formatCurrency(paidValue)}
-              color="#32c058"
+            <div className="flex gap-3">
+              <InputText
+                type="number"
+                label="Parcelas"
+                min={1}
+                value={installmentCount}
+                onValueChange={(v) => setInstallmentCount(String(Number(v)))}
+              />
+              <InputText
+                type="number"
+                label="Venc. parcelas"
+                min={1}
+                max={31}
+                value={installmentDay}
+                onValueChange={(v) => setInstallmentDay(String(Number(v)))}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <InputText
+                type="number"
+                label="Parcelas pagas"
+                min={0}
+                value={paidInstallments}
+                onValueChange={(v) => setPaidInstallments(String(Number(v)))}
+              />
+              <InputText
+                type="number"
+                label="Desconto (%)"
+                min={0}
+                value={discountPct}
+                onValueChange={(v) => setDiscountPct(String(Number(v)))}
+              />
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Resumo">
+            <InfoGroup
+              items={[
+                { label: "Sub-Total", value: formatCurrency(subtotal) },
+                { label: "Desconto (%)", value: `${discountPct}%` },
+                { label: "Desconto (R$)", value: formatCurrency(discountVal) },
+                { label: "Valor Parcelas", value: formatCurrency(instValue) },
+                {
+                  label: "Valor Pago",
+                  value: formatCurrency(paidValue),
+                  color: "#32c058",
+                },
+                {
+                  label: "Valor Restante",
+                  value: formatCurrency(remainValue),
+                  color: "#ee3a4b",
+                },
+                { label: "Total", value: formatCurrency(total) },
+              ]}
             />
-            <hr className="border-[#F0F0F0]" />
-            <Info
-              label="Valor Restante"
-              value={formatCurrency(remainValue)}
-              color="#ee3a4b"
-            />
-            <Info label="Total" value={formatCurrency(total)} />
-          </div>
+          </SectionCard>
 
-          {/* ---- contrato ---- */}
-          <div className="flex flex-col p-5 gap-5 rounded-lg bg-white">
-            <p className="text-sm font-medium">Contrato</p>
-
+          <SectionCard title="Contrato">
             <label className="flex flex-col items-center gap-2 p-8 border-dashed border border-[#28282833] rounded-lg bg-[#fafafa] cursor-pointer">
               <p className="text-2xl">
                 <FaUpload />
@@ -292,7 +283,7 @@ export default function OrderRegister() {
               </Button>
               <Button onClick={handleSubmit}>Cadastrar</Button>
             </div>
-          </div>
+          </SectionCard>
         </div>
       </div>
     </section>

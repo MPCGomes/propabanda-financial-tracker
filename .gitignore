@@ -1,0 +1,70 @@
+# Secrets
+.env
+
+# Frontend
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Backend
+# Gradle
+.gradle/
+build/
+**/src/main/**/build/
+**/src/test/**/build/
+
+# Wrapper
+!gradle/wrapper/gradle-wrapper.jar
+
+# STS
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+bin/
+**/src/main/**/bin/
+**/src/test/**/bin/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+**/src/main/**/out/
+**/src/test/**/out/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Maven
+target/
+
+# === IDEs & SO ===
+# VS Code
+.vscode/
+!.vscode/extensions.json
+
+# macOS
+.DS_Store
+
+# Dicjer
+db_data/
+uploads/

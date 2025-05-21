@@ -1,32 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
-import GoBack from "../components/GoBack";
-import InputText from "../components/InputText";
-import Button from "../components/Button";
-import api from "../lib/api";
-import Modal from "../components/Modal";
+import Header from "../../components/Header";
+import GoBack from "../../components/GoBack";
+import InputText from "../../components/InputText";
+import Button from "../../components/Button";
+import Modal from "../../components/Modal";
+import api from "../../lib/api";
+import { digitsOnly, isBlank } from "../../utils/validators";
 
-// helpers
-const digitsOnly = (t: string) => t.replace(/\D/g, "");
-const isBlank = (t: string) => !t.trim();
-
-export default function ClientRegister() {
+export default function Register() {
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
-  // state
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // client
   const [name, setName] = useState("");
   const [cnpj, setCnpj] = useState("");
-
-  // representative
   const [repName, setRepName] = useState("");
   const [repPhone, setRepPhone] = useState("");
   const [repEmail, setRepEmail] = useState("");
-
-  // address
   const [zip, setZip] = useState("");
   const [street, setStreet] = useState("");
   const [number, setNumber] = useState("");
@@ -36,11 +26,9 @@ export default function ClientRegister() {
   const [state, setState] = useState("");
   const [neighbourhood, setNeighbourhood] = useState("");
 
-  // cep
-  const fetchCep = async (cepRaw: string) => {
-    const cep = digitsOnly(cepRaw);
+  const fetchCep = async (raw: string) => {
+    const cep = digitsOnly(raw);
     if (cep.length !== 8) return;
-
     try {
       const { data } = await api.get(`https://viacep.com.br/ws/${cep}/json/`);
       if (data.erro) throw new Error();
@@ -49,11 +37,10 @@ export default function ClientRegister() {
       setNeighbourhood(data.bairro);
       setStreet(data.logradouro);
     } catch {
-      setErrorMessage("CEP inválido ou não encontrado.");
+      setError("CEP inválido ou não encontrado.");
     }
   };
 
-  // validation
   const isValid = () => {
     if (
       [name, repName, repPhone, repEmail, street, number, city, state].some(
@@ -61,18 +48,14 @@ export default function ClientRegister() {
       )
     )
       return false;
-    const cnpjDigits = digitsOnly(cnpj);
-    const cepDigits = digitsOnly(zip);
-    return cnpjDigits.length === 14 && cepDigits.length === 8;
+    return digitsOnly(cnpj).length === 14 && digitsOnly(zip).length === 8;
   };
 
-  // submit
   const submit = async () => {
     if (!isValid()) {
-      setErrorMessage("Preencha todos os campos obrigatórios corretamente.");
+      setError("Preencha todos os campos obrigatórios corretamente.");
       return;
     }
-
     try {
       await api.post("/api/clients", {
         name,
@@ -99,33 +82,22 @@ export default function ClientRegister() {
         typeof err?.response?.data === "string"
           ? err.response.data
           : err?.response?.data?.error || "Erro interno.";
-      setErrorMessage(msg);
+      setError(msg);
     }
   };
 
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      {/* error modal */}
-      <Modal
-        isOpen={!!errorMessage}
-        onClose={() => setErrorMessage(null)}
-        title="Erro"
-      >
-        <p className="text-sm mb-4">{errorMessage}</p>
-        <Button onClick={() => setErrorMessage(null)}>OK</Button>
+      <Modal isOpen={!!error} onClose={() => setError(null)} title="Erro">
+        <p className="text-sm mb-4">{error}</p>
+        <Button onClick={() => setError(null)}>OK</Button>
       </Modal>
-
       <div className="w-full max-w-[1280px] flex gap-5 pt-12 lg:pt-20">
-        {/* side menu */}
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
           <Header clients="active" />
         </div>
-
-        {/* content */}
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
           <GoBack link="/clients" />
-
-          {/* client */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Empresa</p>
             <InputText label="Nome" value={name} onValueChange={setName} />
@@ -136,8 +108,6 @@ export default function ClientRegister() {
               placeholder="somente números"
             />
           </div>
-
-          {/* representative */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Representante</p>
             <InputText
@@ -156,11 +126,8 @@ export default function ClientRegister() {
               onValueChange={setRepEmail}
             />
           </div>
-
-          {/* address */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Endereço</p>
-
             <InputText
               label="CEP"
               value={zip}
@@ -169,11 +136,9 @@ export default function ClientRegister() {
                 fetchCep(v);
               }}
             />
-
             <InputText label="Cidade" value={city} readOnly />
             <InputText label="Estado" value={state} readOnly />
             <InputText label="Bairro" value={neighbourhood} readOnly />
-
             <InputText
               label="Rua/Avenida"
               value={street}
@@ -195,8 +160,6 @@ export default function ClientRegister() {
               onValueChange={setReference}
             />
           </div>
-
-          {/* ações */}
           <div className="flex gap-3 justify-end">
             <Button variant="outlined" onClick={() => navigate("/clients")}>
               Cancelar
