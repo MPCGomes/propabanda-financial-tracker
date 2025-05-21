@@ -1,77 +1,74 @@
 import { useEffect, useMemo, useState, lazy, Suspense } from "react";
-import Header from "../components/Header";
-import UserHeader from "../components/UserHeader";
-import DashboardHeader from "../components/DashboardHeader";
-import Filter from "../components/Filter";
-import Modal from "../components/Modal";
-import Button from "../components/Button";
-import Money from "../components/Money";
-import { useShowValues } from "../contexts/ShowValuesContext";
-import { MdFileUpload } from "react-icons/md";
-import api from "../lib/api";
+import Header from "../../components/Header";
+import UserHeader from "../../components/UserHeader";
+import DashboardHeader from "../../components/DashboardHeader";
+import Filter from "../../components/Filter";
+import Button from "../../components/Button";
+import Money from "../../components/Money";
+import AlertModal from "../../components/AlertModal";
+import ErrorModal from "../../components/ErrorModal";
+import SectionCard from "../../components/SectionCard";
+import { useModal } from "../../hooks/useModal";
+import { useShowValues } from "../../contexts/ShowValuesContext";
 
-import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
+import { MdFileUpload } from "react-icons/md";
 import { IoMdDownload } from "react-icons/io";
 
+import api from "../../lib/api";
+
+import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
+import Modal from "../../components/Modal";
 Chart.register(ArcElement, Tooltip, Legend);
 
 const Doughnut = lazy(() =>
   import("react-chartjs-2").then((m) => ({ default: m.Doughnut }))
 );
 
-interface ItemPerf {
+type ItemPerf = {
   itemId: number;
   itemName: string;
   totalRevenue: number;
   percentageOfTotal: number;
-}
+};
 
-interface PerformanceDTO {
+type PerformanceDTO = {
   finalBalance: number;
   itemPerformances: ItemPerf[];
-}
+};
 
 type ItemOption = { id: number; name: string };
 
-// Helpers
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 const firstDayYear = () => iso(new Date(new Date().getFullYear(), 0, 1));
 
 export default function DashboardPerformance() {
   const { show } = useShowValues();
 
-  // Filters
+  const periodModal = useModal(false);
+  const itemModal = useModal(false);
+  const importModal = useModal(false);
+
   const [period, setPeriod] = useState<{ start: string; end: string }>({
     start: firstDayYear(),
     end: iso(new Date()),
   });
   const [items, setItems] = useState<ItemOption[]>([]);
   const [selectedItems, setSelected] = useState<number[]>([]);
-  const [openModal, setOpenModal] = useState<
-    null | "period" | "item" | "import"
-  >(null);
 
-  // Data
   const [perf, setPerf] = useState<PerformanceDTO | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
   const [importFile, setImportFile] = useState<File | null>(null);
 
-  // Load items
   useEffect(() => {
     api
-      .get("/api/items")
+      .get<ItemOption[]>("/api/items")
       .then(({ data }) =>
-        setItems(data.map((i: any) => ({ id: i.id, name: i.name })))
+        setItems(data.map((i) => ({ id: i.id, name: i.name })))
       )
       .catch(() => setErr("Falha ao carregar itens."));
   }, []);
 
-  // Fetch performance data - initial load
-  useEffect(() => {
-    fetchPerf();
-  }, []);
-
-  // Fetch performance data
   const fetchPerf = async () => {
     try {
       const body = {
@@ -96,25 +93,22 @@ export default function DashboardPerformance() {
     }
   };
 
-  // Chart
+  useEffect(() => {
+    fetchPerf();
+  }, []);
+
   const chartData = useMemo(() => {
     if (!perf) return null;
     return {
       labels: perf.itemPerformances.map((p) => p.itemName),
-      datasets: [
-        {
-          data: perf.itemPerformances.map((p) => p.totalRevenue),
-        },
-      ],
+      datasets: [{ data: perf.itemPerformances.map((p) => p.totalRevenue) }],
     };
   }, [perf]);
 
-  // Filter Flags
   const periodActive =
     period.start !== firstDayYear() || period.end !== iso(new Date());
   const itemActive = selectedItems.length > 0;
 
-  // Item Checklist
   const toggleItem = (id: number) =>
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((n) => n !== id) : [...prev, id]
@@ -122,7 +116,6 @@ export default function DashboardPerformance() {
 
   const colors = ["#FFA322", "#FFB24D", "#FFC27A", "#FFD1A6", "#FFE0D1"];
 
-  // Handle export
   const handleExport = async () => {
     try {
       const { data } = await api.get("/api/export/report.xlsx", {
@@ -144,38 +137,42 @@ export default function DashboardPerformance() {
 
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
-      <Modal isOpen={!!err} onClose={() => setErr(null)} title="Erro">
-        <p className="text-sm mb-4">{err}</p>
-        <Button onClick={() => setErr(null)}>OK</Button>
-      </Modal>
+      <ErrorModal error={err} onClose={() => setErr(null)} />
+      <AlertModal
+        isOpen={!!alertMsg}
+        title="Sucesso"
+        onClose={() => setAlertMsg(null)}
+      >
+        <p className="text-sm text-[#282828]">{alertMsg}</p>
+      </AlertModal>
+
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        {/* Menu */}
         <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
           <Header dashboard="active" />
         </div>
-        {/* Content */}
+
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:ml-40">
           <UserHeader />
-          {/* Header + Filters */}
+
           <div className="flex flex-col gap-5 lg:flex-row lg:justify-between">
             <DashboardHeader performance="Dash" />
             <div className="flex gap-3">
               <Filter
                 text="Período"
                 variant={periodActive ? "filtered" : "default"}
-                onClick={() => setOpenModal("period")}
+                onClick={periodModal.open}
               />
               <Filter
                 text="Item"
                 variant={itemActive ? "filtered" : "default"}
-                onClick={() => setOpenModal("item")}
+                onClick={itemModal.open}
               />
             </div>
           </div>
-          {/* Period Modal */}
+
           <Modal
-            isOpen={openModal === "period"}
-            onClose={() => setOpenModal(null)}
+            isOpen={periodModal.isOpen}
+            onClose={periodModal.close}
             title="Período"
           >
             <div className="flex gap-2">
@@ -204,17 +201,17 @@ export default function DashboardPerformance() {
             </div>
             <Button
               onClick={() => {
-                setOpenModal(null);
+                periodModal.close();
                 fetchPerf();
               }}
             >
               Aplicar
             </Button>
           </Modal>
-          {/* Item Modal */}
+
           <Modal
-            isOpen={openModal === "item"}
-            onClose={() => setOpenModal(null)}
+            isOpen={itemModal.isOpen}
+            onClose={itemModal.close}
             title="Itens"
           >
             <div className="flex flex-col gap-2 max-h-52 overflow-y-auto">
@@ -224,14 +221,14 @@ export default function DashboardPerformance() {
                     type="checkbox"
                     checked={selectedItems.includes(it.id)}
                     onChange={() => toggleItem(it.id)}
-                  />{" "}
+                  />
                   {it.name}
                 </label>
               ))}
             </div>
             <Button
               onClick={() => {
-                setOpenModal(null);
+                itemModal.close();
                 fetchPerf();
               }}
             >
@@ -239,12 +236,11 @@ export default function DashboardPerformance() {
             </Button>
           </Modal>
 
-          {/* Import Modal */}
           <Modal
-            isOpen={openModal === "import"}
+            isOpen={importModal.isOpen}
             onClose={() => {
               setImportFile(null);
-              setOpenModal(null);
+              importModal.close();
             }}
             title="Importar Pedidos"
           >
@@ -267,7 +263,7 @@ export default function DashboardPerformance() {
                 variant="outlined"
                 onClick={() => {
                   setImportFile(null);
-                  setOpenModal(null);
+                  importModal.close();
                 }}
               >
                 Cancelar
@@ -282,16 +278,13 @@ export default function DashboardPerformance() {
                     await api.post("/api/import", form, {
                       headers: { "Content-Type": "multipart/form-data" },
                     });
-                    setErr("Importação concluída com sucesso.");
+                    setAlertMsg("Importação concluída com sucesso.");
                     fetchPerf();
-                  } catch (e: any) {
-                    setErr(
-                      e?.response?.data?.message ??
-                        "Falha interna ao importar o arquivo."
-                    );
+                  } catch {
+                    setErr("Falha interna ao importar o arquivo.");
                   } finally {
                     setImportFile(null);
-                    setOpenModal(null);
+                    importModal.close();
                   }
                 }}
               >
@@ -300,8 +293,7 @@ export default function DashboardPerformance() {
             </div>
           </Modal>
 
-          {/* Charts + Balance */}
-          <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
+          <SectionCard title="">
             {perf ? (
               <>
                 <div>
@@ -318,31 +310,24 @@ export default function DashboardPerformance() {
                   >
                     {chartData && (
                       <Doughnut
-                        data={
-                          chartData && {
-                            ...chartData,
-                            datasets: [
-                              {
-                                ...chartData.datasets[0],
-                                backgroundColor: colors,
-                                borderWidth: 0,
-                              },
-                            ],
-                          }
-                        }
+                        data={{
+                          ...chartData,
+                          datasets: [
+                            {
+                              ...chartData.datasets[0],
+                              backgroundColor: colors,
+                              borderWidth: 0,
+                            },
+                          ],
+                        }}
                         options={{
                           plugins: {
-                            legend: {
-                              position: "bottom",
-                            },
+                            legend: { position: "bottom" },
                             tooltip: {
                               callbacks: {
                                 label: (ctx) =>
                                   show
-                                    ? `R$ ${(+ctx.parsed).toLocaleString(
-                                        "pt-BR",
-                                        { minimumFractionDigits: 2 }
-                                      )}`
+                                    ? `R$ ${(+ctx.parsed).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
                                     : "***",
                               },
                             },
@@ -359,16 +344,13 @@ export default function DashboardPerformance() {
             ) : (
               <p className="text-sm text-center text-gray-500">Carregando…</p>
             )}
-          </div>
-          {/* History */}
-          <div className="flex flex-col gap-5 p-5 bg-white rounded-lg">
-            <p className="text-base font-medium text-[#282828]">Histórico</p>
+          </SectionCard>
+
+          <SectionCard title="Histórico">
             {perf?.itemPerformances.map((it, idx) => (
               <div
                 key={it.itemId}
-                className={`flex justify-between p-2 ${
-                  idx % 2 === 0 ? "bg-[#fafafa]" : ""
-                } rounded-md`}
+                className={`flex justify-between p-2 ${idx % 2 === 0 ? "bg-[#fafafa]" : ""} rounded-md`}
               >
                 <p className="text-xs font-medium text-[#28282899]">
                   {it.itemName}
@@ -388,16 +370,15 @@ export default function DashboardPerformance() {
                 Nenhum dado no período.
               </p>
             )}
-            {/* Export + Import Buttons */}
             <div className="flex gap-3 justify-end mt-4">
-              <Button variant="outlined" onClick={() => setOpenModal("import")}>
+              <Button variant="outlined" onClick={importModal.open}>
                 <MdFileUpload /> Importar
               </Button>
               <Button onClick={handleExport}>
                 <IoMdDownload /> Exportar
               </Button>
             </div>
-          </div>
+          </SectionCard>
         </div>
       </div>
     </section>
