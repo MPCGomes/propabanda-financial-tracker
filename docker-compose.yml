@@ -5,7 +5,6 @@ services:
     env_file: .env
     volumes:
       - db_data:/var/lib/postgresql/data
-      - uploads:/data/uploads/contracts
     healthcheck:
       test:
         ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
@@ -25,14 +24,21 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
-      FILE_UPLOAD_DIR: ${UPLOAD_DIR}
     volumes:
       - uploads:/data/uploads/contracts
     ports:
       - "${BACKEND_PORT}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: "https://www.admpropabanda.com.br/api"
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT}:80"
