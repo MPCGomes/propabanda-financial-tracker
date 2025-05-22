@@ -30,13 +30,19 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost", "http://localhost:5173"));
+        cfg.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "https://admpropabanda.com.br",
+                "https://www.admpropabanda.com.br"
+        ));
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        cfg.setAllowedOrigins(List.of("http://localhost", "http://localhost:5173"));
+        cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
-        return new UrlBasedCorsConfigurationSource() {{
-            registerCorsConfiguration("/**", cfg);
-        }};
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
     }
 
     @Bean
