@@ -1,8 +1,8 @@
-# Secrets
+# SECRETS
 .env
 
-# Frontend
-# Logs
+# FRONTEND
+# LOGS
 logs
 *.log
 npm-debug.log*
@@ -10,20 +10,20 @@ yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies
+# DEPENDENCIES
 node_modules/
 dist/
 dist-ssr/
 *.local
 
-# Backend
-# Gradle
+# BACKEND
+# GRADLE
 .gradle/
 build/
 **/src/main/**/build/
 **/src/test/**/build/
 
-# Wrapper
+# WRAPPER
 !gradle/wrapper/gradle-wrapper.jar
 
 # STS
@@ -38,7 +38,7 @@ bin/
 **/src/main/**/bin/
 **/src/test/**/bin/
 
-# IntelliJ IDEA
+# INTELLIJ IDEA
 .idea/
 *.iws
 *.iml
@@ -47,24 +47,27 @@ out/
 **/src/main/**/out/
 **/src/test/**/out/
 
-# NetBeans
+# NETBEANS
 nbproject/private/
 nbbuild/
 dist/
 nbdist/
 .nb-gradle/
 
-# Maven
+# MAVEN
 target/
 
-# === IDEs & SO ===
-# VS Code
+# IDES & SO
+# VS CODE
 .vscode/
 !.vscode/extensions.json
 
-# macOS
+# MACOS
 .DS_Store
 
-# Dicjer
+# DOCKER
 db_data/
 uploads/
+
+# VITE
+.vite/
