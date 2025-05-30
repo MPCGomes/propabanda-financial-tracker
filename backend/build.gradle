@@ -37,6 +37,7 @@ dependencies {
 	implementation 'org.apache.poi:poi-ooxml:5.4.0'
 	implementation 'org.apache.poi:poi-ooxml-full:5.4.0'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
