@@ -11,7 +11,7 @@ export default function Login() {
     if (e) e.preventDefault();
     setError("");
     try {
-      const { data } = await api.post("/auth", { documentNumber, password });
+      const { data } = await api.post("/api/auth", { documentNumber, password });
       localStorage.setItem("token", data.token);
       window.location.href = "/dashboard";
     } catch (err: any) {
