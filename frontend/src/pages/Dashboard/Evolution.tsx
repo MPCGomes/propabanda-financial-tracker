@@ -190,7 +190,7 @@ export default function Dashboard() {
   const itemActive = selectedItems.length > 0;
 
   return (
-    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
+    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen">
       <ErrorModal error={err} onClose={() => setErr(null)} />
 
       <AlertModal
@@ -200,15 +200,14 @@ export default function Dashboard() {
       >
         <p className="text-sm text-[#282828]">{alertMsg}</p>
       </AlertModal>
+      <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:pt-4 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+        <Header dashboard="active" />
+      </div>
 
-      <div className="p-4 lg:p-0 w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
-          <Header dashboard="active" />
-        </div>
+      <UserHeader />
 
-        <div className="flex flex-col gap-5 w-full pb-[100px] lg:ml-40">
-          <UserHeader />
-
+      <div className="p-4 lg:p-0 w-full max-w-[1280px] flex lg:flex-row gap-5 pt-25 lg:pt-25 lg:pb-22">
+        <div className="flex flex-col gap-5 w-full pb-[100px] lg:pl-38 lg:pr-4">
           <div className="flex flex-col gap-5 lg:flex-row lg:justify-between">
             <DashboardHeader evolution="Dash" />
             <div className="flex gap-3">
@@ -394,57 +393,59 @@ export default function Dashboard() {
           </SectionCard>
 
           <SectionCard title="Histórico">
-            <Row label="Saldo Inicial" value={summary.startBal} gray />
-            <Row label="Nº de Pedidos" value={summary.count} />
-            <div className="flex flex-col bg-[#fafafa] rounded-md">
-              <Row
-                label="Entradas"
-                value={summary.totalIn}
-                clickable
-                onClick={() => setShowEntryList((p) => !p)}
-                icon={
-                  showEntryList ? (
-                    <MdKeyboardArrowUp />
-                  ) : (
-                    <MdKeyboardArrowDown />
-                  )
-                }
-              />
-              {showEntryList && (
-                <ul className="text-sm text-[#282828] px-2 pb-2 space-y-2">
-                  {orders.map((o) => (
-                    <li
-                      key={o.id}
-                      className="flex justify-between cursor-pointer hover:text-[#FFA322]"
-                      onClick={() => navigate(`/orders/${o.id}`)}
-                    >
-                      <span>
-                        Pedido Nº {o.identifier}
-                        <span className="text-xs text-[#888]">
-                          {" "}
-                          ({o.emissionDate} - {o.clientName})
+            <div>
+              <Row label="Saldo Inicial" value={summary.startBal} gray />
+              <Row label="Nº de Pedidos" value={summary.count} />
+              <div className="flex flex-col bg-[#fafafa] rounded-md">
+                <Row
+                  label="Entradas"
+                  value={summary.totalIn}
+                  clickable
+                  onClick={() => setShowEntryList((p) => !p)}
+                  icon={
+                    showEntryList ? (
+                      <MdKeyboardArrowUp />
+                    ) : (
+                      <MdKeyboardArrowDown />
+                    )
+                  }
+                />
+                {showEntryList && (
+                  <ul className="text-sm text-[#282828] px-2 pb-2 space-y-2">
+                    {orders.map((o) => (
+                      <li
+                        key={o.id}
+                        className="flex justify-between cursor-pointer hover:text-[#FFA322]"
+                        onClick={() => navigate(`/orders/${o.id}`)}
+                      >
+                        <span>
+                          Pedido Nº {o.identifier}
+                          <span className="text-xs text-[#888]">
+                            {" "}
+                            ({o.emissionDate} - {o.clientName})
+                          </span>
                         </span>
-                      </span>
-                      <span className="ml-2">
-                        R$ <Money value={o.discountedValue} />
-                      </span>
-                    </li>
-                  ))}
-                  {!orders.length && (
-                    <li className="text-xs text-[#888]">Nenhum pedido.</li>
-                  )}
-                </ul>
-              )}
-            </div>
-            <Row label="Variação em %" value={summary.variation} />
-            <Row label="Saldo Final" value={summary.endBal} gray />
-            <div className="flex gap-3 justify-end mt-4">
-              <Button variant="outlined" onClick={importModal.open}>
-                <MdFileUpload /> Importar
-              </Button>
-              <Button onClick={handleExport}>
-                <IoMdDownload /> Exportar
-              </Button>
+                        <span className="ml-2">
+                          R$ <Money value={o.discountedValue} />
+                        </span>
+                      </li>
+                    ))}
+                    {!orders.length && (
+                      <li className="text-xs text-[#888]">Nenhum pedido.</li>
+                    )}
+                  </ul>
+                )}
+              </div>
+              <Row label="Variação em %" value={summary.variation} />
+              <Row label="Saldo Final" value={summary.endBal} gray />
+              <div className="flex gap-3 justify-end mt-4">
+                <Button variant="outlined" onClick={importModal.open}>
+                  <MdFileUpload /> Importar
+                </Button>
+                <Button onClick={handleExport}>
+                  <IoMdDownload /> Exportar
+                </Button>
+              </div>
             </div>
           </SectionCard>
         </div>

@@ -7,6 +7,7 @@ import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import api from "../../lib/api";
 import { digitsOnly } from "../../utils/validators";
+import UserHeader from "../../components/UserHeader";
 
 export default function Edit() {
   const { id } = useParams<{ id: string }>();
@@ -91,16 +92,18 @@ export default function Edit() {
   };
 
   return (
-    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
+    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen">
       <Modal isOpen={!!error} onClose={() => setError(null)} title="Aviso">
         <p className="text-sm mb-4">{error}</p>
         <Button onClick={() => setError(null)}>OK</Button>
       </Modal>
-      <div className="w-full max-w-[1280px] flex gap-5 pt-12 lg:pt-20">
-        <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
-          <Header clients="active" />
-        </div>
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
+      <div className="fixed bottom-0 w-full lg:pt-4 bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+        <Header clients="active" />
+      </div>
+      <UserHeader />
+
+      <div className="w-full max-w-[1280px] flex gap-5 pt-25">
+        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link={`/clients/${id}`} />
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Empresa</p>

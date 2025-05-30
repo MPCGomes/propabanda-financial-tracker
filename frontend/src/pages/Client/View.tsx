@@ -14,6 +14,7 @@ import { FaTrash } from "react-icons/fa";
 import { RiPencilFill } from "react-icons/ri";
 import api from "../../lib/api";
 import useOrders from "../../hooks/useOrders";
+import UserHeader from "../../components/UserHeader";
 
 const orderOptions = [
   { value: "emissionDate|desc", label: "Mais recentes" },
@@ -63,7 +64,7 @@ export default function View() {
   };
 
   return (
-    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
+    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen">
       <Modal
         isOpen={modal === "error"}
         onClose={() => setModal(null)}
@@ -116,12 +117,14 @@ export default function View() {
           </button>
         </div>
       </Modal>
+      <div className="fixed bottom-0 w-full lg:pt-4 bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+        <Header clients="active" />
+      </div>
 
-      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
-          <Header clients="active" />
-        </div>
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
+      <UserHeader />
+
+      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-25 lg:pb-22">
+        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link="/clients" />
           {client && (
             <div className="flex flex-col p-5 gap-5 bg-white rounded-lg">
