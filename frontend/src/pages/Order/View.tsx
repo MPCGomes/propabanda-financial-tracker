@@ -113,7 +113,7 @@ export default function Order() {
           Essa ação removerá o pedido <b>#{order?.id}</b>. Continuar?
         </p>
       </ConfirmModal>
-      <div className="fixed bottom-0 w-full lg:pt-4 bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
         <Header orders="active" />
       </div>
 
