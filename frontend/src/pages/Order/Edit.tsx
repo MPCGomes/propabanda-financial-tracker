@@ -13,6 +13,7 @@ import InfoGroup from "../../components/InfoGroup";
 import { useModal } from "../../hooks/useModal";
 import { FaUpload, FaRegEye, FaDownload } from "react-icons/fa";
 import api from "../../lib/api";
+import UserHeader from "../../components/UserHeader";
 
 type ClientOption = { id: number; name: string };
 type ItemOption = { value: number; label: string };
@@ -184,7 +185,7 @@ export default function OrderEdit() {
   };
 
   return (
-    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
+    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen">
       <ErrorModal
         error={errorMessage}
         onClose={() => {
@@ -202,12 +203,14 @@ export default function OrderEdit() {
       >
         <p className="text-sm text-[#282828]">Pedido atualizado com sucesso.</p>
       </AlertModal>
+      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+        <Header orders="active" />
+      </div>
 
-      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
-          <Header orders="active" />
-        </div>
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
+      <UserHeader />
+
+      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-25 lg:pb-22">
+        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link={`/orders/${id}`} />
 
           <SectionCard title="Editar Pedido">

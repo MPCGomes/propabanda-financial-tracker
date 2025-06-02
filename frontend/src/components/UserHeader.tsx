@@ -27,29 +27,33 @@ export default function UserHeader({ user }: Props) {
   );
 
   return (
-    <div className="flex justify-between items-center bg-white rounded-lg p-3">
-      <p className="text-[#282828] text-sm">
-        Olá, <span className="text-base font-bold">{name}!</span>
-      </p>
+    <div className="bg-[#E69017] py-3 px-20 w-full lg:w-screen lg:flex lg: justify-between fixed border-b-1 border-[#fff6] z-12">
+      <img className="hidden lg:block" src="/propabanda-financa.svg" alt="logo" />
 
-      <div className="flex gap-4">
-        {/* show/hide values */}
-        <button
-          onClick={toggle}
-          className="text-[#ffa322] w-8 h-8 bg-[#ffa32233] text-xl flex items-center justify-center rounded-full"
-          title={show ? "Ocultar valores" : "Mostrar valores"}
-        >
-          {show ? <FaRegEye /> : <FaRegEyeSlash />}
-        </button>
+      <div className="flex w-full items-center justify-between lg:justify-end lg:gap-10">
+        <p className="text-white text-sm">
+          Olá, <span className="text-base font-bold">{name}!</span>
+        </p>
 
-        {/* logout */}
-        <button
-          onClick={logout}
-          className="text-[#ffa322] w-8 h-8 bg-[#ffa32233] text-xl flex items-center justify-center rounded-full"
-          title="Sair"
-        >
-          <MdLogout />
-        </button>
+        <div className="flex gap-4">
+          {/* show/hide values */}
+          <button
+            onClick={toggle}
+            className="text-white w-8 h-8 bg-[#fff4] text-xl flex items-center justify-center rounded-full cursor-pointer"
+            title={show ? "Ocultar valores" : "Mostrar valores"}
+          >
+            {show ? <FaRegEye /> : <FaRegEyeSlash />}
+          </button>
+
+          {/* logout */}
+          <button
+            onClick={logout}
+            className="text-white w-8 h-8 bg-[#fff4] text-xl flex items-center justify-center rounded-full cursor-pointer"
+            title="Sair"
+          >
+            <MdLogout />
+          </button>
+        </div>
       </div>
     </div>
   );

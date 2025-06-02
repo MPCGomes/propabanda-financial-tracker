@@ -12,6 +12,7 @@ import AlertModal from "../../components/AlertModal";
 import { FaRegEye, FaDownload, FaTrash } from "react-icons/fa";
 import { RiPencilFill } from "react-icons/ri";
 import api from "../../lib/api";
+import UserHeader from "../../components/UserHeader";
 
 type OrderDTO = {
   id: number;
@@ -48,10 +49,9 @@ export default function Order() {
 
   const previewContract = async () => {
     try {
-      const { data, headers } = await api.get(
-        `/api/orders/${id}/contract`,
-        { responseType: "blob" }
-      );
+      const { data, headers } = await api.get(`/api/orders/${id}/contract`, {
+        responseType: "blob",
+      });
       if (!headers["content-type"]?.startsWith("application/pdf")) {
         setError("Pré-visualização disponível apenas para PDF.");
         return;
@@ -65,15 +65,13 @@ export default function Order() {
 
   const downloadContract = async () => {
     try {
-      const { data, headers } = await api.get(
-        `/api/orders/${id}/contract`,
-        { responseType: "blob" }
-      );
+      const { data, headers } = await api.get(`/api/orders/${id}/contract`, {
+        responseType: "blob",
+      });
       const disposition = headers["content-disposition"] || "";
-      const fileName = disposition
-        .split("filename=")[1]
-        ?.replace(/\"/g, "")
-        .trim() || `contrato_${id}.pdf`;
+      const fileName =
+        disposition.split("filename=")[1]?.replace(/\"/g, "").trim() ||
+        `contrato_${id}.pdf`;
       const blob = new Blob([data], { type: headers["content-type"] });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -96,7 +94,7 @@ export default function Order() {
   };
 
   return (
-    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen lg:p-3">
+    <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen">
       <ErrorModal error={error} onClose={() => setError(null)} />
       <AlertModal
         isOpen={!!successMsg}
@@ -115,13 +113,14 @@ export default function Order() {
           Essa ação removerá o pedido <b>#{order?.id}</b>. Continuar?
         </p>
       </ConfirmModal>
+      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+        <Header orders="active" />
+      </div>
 
-      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-12 lg:pt-20 lg:pb-22">
-        <div className="fixed bottom-0 w-full bg-white rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-23 lg:bottom-25 z-10">
-          <Header orders="active" />
-        </div>
+      <UserHeader />
 
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:ml-40">
+      <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-25 lg:pb-22">
+        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link="/orders" />
 
           {order && (
@@ -130,14 +129,31 @@ export default function Order() {
                 <InfoGroup
                   items={[
                     { label: "Cliente", value: order.clientName },
-                    { label: "Itens", value: order.items.map(i => i.name).join(", ") },
-                    { label: "Período Contratação", value: `${order.contractStartDate} — ${order.contractEndDate}` },
+                    {
+                      label: "Itens",
+                      value: order.items.map((i) => i.name).join(", "),
+                    },
+                    {
+                      label: "Período Contratação",
+                      value: `${order.contractStartDate} — ${order.contractEndDate}`,
+                    },
                     { label: "Emissão", value: order.emissionDate },
                     { label: "Valor Total", value: `R$ ${order.value}` },
                     { label: "Nº Parcelas", value: order.installmentCount },
-                    { label: "Valor Pago", value: `R$ ${order.paidValue}`, color: "#32c058" },
-                    { label: "Valor Restante", value: `R$ ${order.remainingValue}`, color: "#ee3a4b" },
-                    { label: "Vencimento Parcelas", value: `Todo dia ${order.installmentDay}` },
+                    {
+                      label: "Valor Pago",
+                      value: `R$ ${order.paidValue}`,
+                      color: "#32c058",
+                    },
+                    {
+                      label: "Valor Restante",
+                      value: `R$ ${order.remainingValue}`,
+                      color: "#ee3a4b",
+                    },
+                    {
+                      label: "Vencimento Parcelas",
+                      value: `Todo dia ${order.installmentDay}`,
+                    },
                   ]}
                 />
               </SectionCard>

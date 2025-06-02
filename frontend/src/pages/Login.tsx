@@ -11,7 +11,7 @@ export default function Login() {
     if (e) e.preventDefault();
     setError("");
     try {
-      const { data } = await api.post("/auth", { documentNumber, password });
+      const { data } = await api.post("/api/auth", { documentNumber, password });
       localStorage.setItem("token", data.token);
       window.location.href = "/dashboard";
     } catch (err: any) {
@@ -52,12 +52,6 @@ export default function Login() {
 
         <div className="flex flex-col gap-3 w-full">
           <Button onClick={handleLogin} >Enviar</Button>
-          <a
-            href="#"
-            className="text-xs font-semibold text-[#ffa322] text-center"
-          >
-            Esqueci minha senha
-          </a>
         </div>
       </form>
     </section>
