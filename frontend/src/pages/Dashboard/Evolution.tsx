@@ -296,7 +296,7 @@ export default function Dashboard() {
               setImportFile(null);
               importModal.close();
             }}
-            title="Importar Pedidos"
+            title="Importar Produtos"
           >
             <label className="flex flex-col items-center gap-2 p-6 border-dashed border border-[#28282833] rounded-lg bg-[#fafafa] cursor-pointer">
               <p className="text-2xl">
@@ -395,7 +395,7 @@ export default function Dashboard() {
           <SectionCard title="Histórico">
             <div>
               <Row label="Saldo Inicial" value={summary.startBal} gray />
-              <Row label="Nº de Pedidos" value={summary.count} />
+              <Row label="Nº de Produtos" value={summary.count} />
               <div className="flex flex-col bg-[#fafafa] rounded-md">
                 <Row
                   label="Entradas"
@@ -419,7 +419,7 @@ export default function Dashboard() {
                         onClick={() => navigate(`/orders/${o.id}`)}
                       >
                         <span>
-                          Pedido Nº {o.identifier}
+                          Produto Nº {o.identifier}
                           <span className="text-xs text-[#888]">
                             {" "}
                             ({o.emissionDate} - {o.clientName})
@@ -471,7 +471,7 @@ function Row({
 }) {
   const { show } = useShowValues();
   let rendered: JSX.Element = <></>;
-  if (label === "Nº de Pedidos") rendered = <>{show ? value : "***"}</>;
+  if (label === "Nº de Produtos") rendered = <>{show ? value : "***"}</>;
   else if (label === "Variação em %")
     rendered = <>{show ? `${(value ?? 0).toFixed(2)}%` : "***"}</>;
   else

@@ -165,7 +165,7 @@ export default function OrderRegister() {
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link="/orders" />
 
-          <SectionCard title="Cadastrar Pedido">
+          <SectionCard title="Cadastrar Produto">
             {/* Cliente */}
             {clientIdParam ? (
               <InputText label="Cliente" value={client?.name || ""} disabled />

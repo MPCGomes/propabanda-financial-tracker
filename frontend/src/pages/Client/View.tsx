@@ -169,14 +169,14 @@ export default function View() {
                   <Button
                     onClick={() => navigate(`/orders/register?clientId=${id}`)}
                   >
-                    Adicionar Pedido
+                    Adicionar Produto
                   </Button>
                 </div>
               </div>
             </div>
           )}
           <div className="flex flex-col p-5 gap-5 bg-white rounded-lg">
-            <p className="text-base font-bold">Pedidos</p>
+            <p className="text-base font-bold">Produtos</p>
             <div className="flex flex-col gap-5 lg:flex-row">
               <SearchBar onChange={setSearch} />
               <div className="flex gap-3">
@@ -199,7 +199,7 @@ export default function View() {
               orders.map((o) => (
                 <Order
                   key={o.id}
-                  product={`Pedido Nº ${o.identifier}`}
+                  product={`Produto Nº ${o.identifier}`}
                   date={o.emissionDate}
                   value={o.discountedValue}
                   color="#32c058"

@@ -39,7 +39,7 @@ export default function Header({ clients, dashboard, orders }: Header) {
         <p className="w-5 h-5 text-xl">
           <FaClipboardCheck />
         </p>
-        <p>Pedidos</p>
+        <p>Produtos</p>
       </a>
     </div>
   );

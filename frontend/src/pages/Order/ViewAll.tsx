@@ -86,7 +86,7 @@ export default function Orders() {
             {orders.map((o) => (
               <Order
                 key={o.id}
-                product={`Pedido Nº ${o.identifier}`}
+                product={`Produto Nº ${o.identifier}`}
                 date={`${o.clientName} | ${o.emissionDate}`}
                 value={
                   show
@@ -114,7 +114,7 @@ export default function Orders() {
           background="#FFA322"
           onClick={() => navigate("/orders/register")}
         >
-          <FaPlus className="text-lg" /> Adicionar Pedido
+          <FaPlus className="text-lg" /> Adicionar Produto
         </FloatingButton>
       </div>
     </section>

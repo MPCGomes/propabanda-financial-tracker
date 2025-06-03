@@ -44,7 +44,7 @@ export default function Order() {
     api
       .get<OrderDTO>(`/api/orders/${id}`)
       .then(({ data }) => setOrder(data))
-      .catch(() => setError("Pedido não encontrado."));
+      .catch(() => setError("Produto não encontrado."));
   }, [id]);
 
   const previewContract = async () => {
@@ -125,7 +125,7 @@ export default function Order() {
 
           {order && (
             <>
-              <SectionCard title="Dados do Pedido">
+              <SectionCard title="Dados do Produto">
                 <InfoGroup
                   items={[
                     { label: "Cliente", value: order.clientName },
