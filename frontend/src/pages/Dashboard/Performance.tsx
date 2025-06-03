@@ -241,7 +241,7 @@ export default function DashboardPerformance() {
               setImportFile(null);
               importModal.close();
             }}
-            title="Importar Pedidos"
+            title="Importar Produtos"
           >
             <label className="flex flex-col items-center gap-2 p-6 border-dashed border border-[#28282833] rounded-lg bg-[#fafafa] cursor-pointer">
               <p className="text-2xl">
