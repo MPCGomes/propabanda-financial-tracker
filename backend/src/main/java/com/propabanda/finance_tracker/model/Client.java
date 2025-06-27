@@ -3,6 +3,7 @@ package com.propabanda.finance_tracker.model;
 import com.propabanda.finance_tracker.util.Sanitizer;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -25,7 +26,10 @@ public class Client {
     private String name;
 
     @NotBlank
-    @Size(min = 14, max = 14)
+    @Pattern(
+            regexp = "\\d{11,14}",
+            message = "O CPF ou CNPJ deve conter entre 11 e 14 dígitos numéricos."
+    )
     @Column(name = "document_number", unique = true, nullable = false)
     private String documentNumber;
 
