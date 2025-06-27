@@ -35,7 +35,7 @@ public class AuthController {
     @PostMapping
     public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid AuthRequestDTO dto) {
         User user = userRepository.findByDocumentNumber(dto.getDocumentNumber())
-                .orElseThrow(() -> new UsernameNotFoundException("Credenciais inválidas"));
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials"));
         if (!bCryptPasswordEncoder.matches(dto.getPassword(), user.getPassword())) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)

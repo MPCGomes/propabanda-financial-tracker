@@ -11,11 +11,11 @@ import lombok.Setter;
 public class AddressRequestDTO {
 
     @NotBlank(message = "Informe o CEP.")
-    @Pattern(regexp = "\\d{8}", message = "O CEP deve conter 8 dígitos numéricos (somente números).")
+    @Pattern(regexp = "\\d{8}", message = "O CEP deve conter 8 dígitos numéricos.")
     private String zipCode;
 
-    @NotBlank(message = "Informe a UF (estado).")
-    @Pattern(regexp = "[A-Z]{2}", message = "A UF deve conter 2 letras maiúsculas.")
+    @NotBlank(message = "Informe a Unidade Federativa (UF).")
+    @Pattern(regexp = "[A-Z]{2}", message = "A Unidade Federativa (UF) deve conter 2 letras maiúsculas.")
     private String state;
 
     @NotBlank(message = "Informe a cidade.")
@@ -26,12 +26,12 @@ public class AddressRequestDTO {
     @Size(max = 100, message = "O bairro pode ter no máximo 100 caracteres.")
     private String neighbourhood;
 
-    @NotBlank(message = "Informe a rua ou avenida.")
-    @Size(max = 100, message = "A rua/avenida pode ter no máximo 100 caracteres.")
+    @NotBlank(message = "Informe a rua ou a avenida.")
+    @Size(max = 100, message = "A rua ou a avenida pode ter no máximo 100 caracteres.")
     private String street;
 
     @NotBlank(message = "Informe o número.")
-    @Pattern(regexp = "\\d{1,5}", message = "O número deve conter apenas dígitos (até 5).")
+    @Pattern(regexp = "\\d{1,5}", message = "O número pode conter até 5 dígitos.")
     private String number;
 
     @Size(max = 50, message = "O complemento pode ter no máximo 50 caracteres.")
