@@ -41,6 +41,10 @@ public class Client {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 10)
+    private ClientStatus status = ClientStatus.ATIVO;
+
     @PrePersist
     @PreUpdate
     private void sanitize() {

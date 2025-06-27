@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.dto.response;
 
+import com.propabanda.finance_tracker.model.ClientStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,5 +15,6 @@ public class ClientResponseDTO {
     private String documentNumber;
     private RepresentativeResponseDTO representativeResponseDTO;
     private AddressResponseDTO addressResponseDTO;
+    private ClientStatus status;
     private LocalDate createdAt;
 }

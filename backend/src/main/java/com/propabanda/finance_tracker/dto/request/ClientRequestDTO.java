@@ -1,7 +1,9 @@
 package com.propabanda.finance_tracker.dto.request;
 
+import com.propabanda.finance_tracker.model.ClientStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,4 +25,7 @@ public class ClientRequestDTO {
 
     @Valid
     private AddressRequestDTO addressRequestDTO;
+
+    @NotNull(message = "Informe o status do cliente.")
+    private ClientStatus status;
 }
