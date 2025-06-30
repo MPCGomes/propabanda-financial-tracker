@@ -8,12 +8,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class JwtFilter extends GenericFilter {
 
     private final JWTUtil jwtUtil;
     private final UserDetailServiceImpl userDetailService;
+
+    private static final List<String> EXCLUDED_PATHS = List.of(
+            "/api/auth"
+    );
 
     public JwtFilter(JWTUtil jwtUtil, UserDetailServiceImpl userDetailService) {
         this.jwtUtil = jwtUtil;
@@ -24,7 +29,16 @@ public class JwtFilter extends GenericFilter {
     public void doFilter (ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
 
-        String authHeader = ((HttpServletRequest) servletRequest).getHeader("Authorization");
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        String path = request.getRequestURI();
+
+        // Skip filtering for excluded paths
+        if (EXCLUDED_PATHS.contains(path)) {
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
+
+        String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.replace("Bearer ", "");
@@ -39,7 +53,6 @@ public class JwtFilter extends GenericFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
-
         filterChain.doFilter(servletRequest, servletResponse);
     }
 }
