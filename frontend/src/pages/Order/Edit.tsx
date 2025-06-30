@@ -57,7 +57,7 @@ export default function OrderEdit() {
 
   useEffect(() => {
     api
-      .get<ItemOption[]>("/api/items")
+      .get<ItemOption[]>("/items")
       .then(({ data }) =>
         setItems(data.map((it: any) => ({ value: it.id, label: it.name })))
       )
@@ -70,7 +70,7 @@ export default function OrderEdit() {
   useEffect(() => {
     if (!items.length) return;
     api
-      .get(`/api/orders/${id}`)
+      .get(`/orders/${id}`)
       .then(({ data: order }) => {
         setClient({ id: order.clientId, name: order.clientName });
         setSelectedItemId(order.items[0]?.id ?? null);

@@ -66,13 +66,13 @@ export default function OrderRegister() {
 
   useEffect(() => {
     api
-      .get<ItemOption[]>("/api/items")
+      .get<ItemOption[]>("/items")
       .then(({ data }) =>
         setItems(data.map((it: any) => ({ value: it.id, label: it.name })))
       );
     if (clientIdParam) {
       api
-        .get(`/api/clients/${clientIdParam}`)
+        .get(`/clients/${clientIdParam}`)
         .then(({ data }) => setClient({ id: data.id, name: data.name }));
     }
   }, [clientIdParam]);

@@ -25,7 +25,7 @@ export default function useClient(id?: string) {
   useEffect(() => {
     if (!id) return;
     api
-      .get<FullClientDTO>(`/api/clients/${id}`)
+      .get<FullClientDTO>(`/clients/${id}`)
       .then(({ data }) => setClient(data))
       .catch(() => setError("Cliente não encontrado."));
   }, [id]);

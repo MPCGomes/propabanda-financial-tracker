@@ -8,13 +8,16 @@ import Modal from "../../components/Modal";
 import api from "../../lib/api";
 import { digitsOnly, isBlank } from "../../utils/validators";
 import UserHeader from "../../components/UserHeader";
+import { STATUS_OPTIONS, ClientStatus } from "../../utils/status";
 
 export default function Register() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
+  // form state
+  const [status, setStatus] = useState<ClientStatus>("ATIVO");
   const [name, setName] = useState("");
-  const [cnpj, setCnpj] = useState("");
+  const [documentNumber, setDocumentNumber] = useState("");
   const [repName, setRepName] = useState("");
   const [repPhone, setRepPhone] = useState("");
   const [repEmail, setRepEmail] = useState("");
@@ -27,29 +30,17 @@ export default function Register() {
   const [state, setState] = useState("");
   const [neighbourhood, setNeighbourhood] = useState("");
 
-  const fetchCep = async (raw: string) => {
-    const cep = digitsOnly(raw);
-    if (cep.length !== 8) return;
-    try {
-      const { data } = await api.get(`https://viacep.com.br/ws/${cep}/json/`);
-      if (data.erro) throw new Error();
-      setCity(data.localidade);
-      setState(data.uf);
-      setNeighbourhood(data.bairro);
-      setStreet(data.logradouro);
-    } catch {
-      setError("CEP inválido ou não encontrado.");
-    }
-  };
-
+  // validation: required fields + document (11 or 14) + zip (8)
   const isValid = () => {
     if (
       [name, repName, repPhone, repEmail, street, number, city, state].some(
         isBlank
       )
-    )
+    ) {
       return false;
-    return digitsOnly(cnpj).length === 14 && digitsOnly(zip).length === 8;
+    }
+    const len = digitsOnly(documentNumber).length;
+    return (len === 11 || len === 14) && digitsOnly(zip).length === 8;
   };
 
   const submit = async () => {
@@ -59,8 +50,9 @@ export default function Register() {
     }
     try {
       await api.post("/api/clients", {
+        status,
         name,
-        documentNumber: digitsOnly(cnpj),
+        documentNumber: digitsOnly(documentNumber),
         representativeRequestDTO: {
           name: repName,
           phone: digitsOnly(repPhone),
@@ -93,6 +85,7 @@ export default function Register() {
         <p className="text-sm mb-4">{error}</p>
         <Button onClick={() => setError(null)}>OK</Button>
       </Modal>
+
       <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
         <Header clients="active" />
       </div>
@@ -102,16 +95,35 @@ export default function Register() {
       <div className="w-full max-w-[1280px] flex gap-5 pt-25">
         <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link="/clients" />
+
+          {/* Empresa */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Empresa</p>
+
+            {/* Status dropdown */}
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as ClientStatus)}
+              className="border rounded p-2"
+            >
+              {STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+
             <InputText label="Nome" value={name} onValueChange={setName} />
+
             <InputText
-              label="CNPJ"
-              value={cnpj}
-              onValueChange={setCnpj}
+              label="CPF/CNPJ"
+              value={documentNumber}
+              onValueChange={setDocumentNumber}
               placeholder="somente números"
             />
           </div>
+
+          {/* Representante */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Representante</p>
             <InputText
@@ -130,19 +142,23 @@ export default function Register() {
               onValueChange={setRepEmail}
             />
           </div>
+
+          {/* Endereço */}
           <div className="p-5 rounded-lg bg-white flex flex-col gap-3">
             <p className="text-base font-medium">Endereço</p>
             <InputText
               label="CEP"
               value={zip}
-              onValueChange={(v) => {
-                setZip(v);
-                fetchCep(v);
-              }}
+              onValueChange={setZip}
+              placeholder="somente números"
             />
-            <InputText label="Cidade" value={city} readOnly />
-            <InputText label="Estado" value={state} readOnly />
-            <InputText label="Bairro" value={neighbourhood} readOnly />
+            <InputText label="Cidade" value={city} onValueChange={setCity} />
+            <InputText label="Estado" value={state} onValueChange={setState} />
+            <InputText
+              label="Bairro"
+              value={neighbourhood}
+              onValueChange={setNeighbourhood}
+            />
             <InputText
               label="Rua/Avenida"
               value={street}
@@ -164,6 +180,8 @@ export default function Register() {
               onValueChange={setReference}
             />
           </div>
+
+          {/* Actions */}
           <div className="flex gap-3 justify-end">
             <Button variant="outlined" onClick={() => navigate("/clients")}>
               Cancelar
