@@ -135,6 +135,8 @@ export default function DashboardPerformance() {
     }
   };
 
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen">
       <ErrorModal error={err} onClose={() => setErr(null)} />
@@ -145,14 +147,14 @@ export default function DashboardPerformance() {
       >
         <p className="text-sm text-[#282828]">{alertMsg}</p>
       </AlertModal>
-      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:left-0 z-10 border-gray-200 border-r-1">
         <Header dashboard="active" />
       </div>
 
       <UserHeader />
 
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-25 lg:pb-22">
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:p-0 lg:pl-38 lg:pr-4">
+        <div className="flex flex-col gap-5 w-full px-4 pb-[100px] lg:p-0 lg:pl-38 lg:pr-4">
           <div className="flex flex-col gap-5 lg:flex-row lg:justify-between">
             <DashboardHeader performance="Dash" />
             <div className="flex gap-3">
@@ -373,10 +375,38 @@ export default function DashboardPerformance() {
               <Button variant="outlined" onClick={importModal.open}>
                 <MdFileUpload /> Importar
               </Button>
-              <Button onClick={handleExport}>
+              <Button onClick={() => setIsExportModalOpen(true)}>
                 <IoMdDownload /> Exportar
               </Button>
             </div>
+            {/* Export Modal */}
+            <Modal
+              isOpen={isExportModalOpen}
+              onClose={() => setIsExportModalOpen(false)}
+              title="Exportar Relatório"
+            >
+              <div>
+                <select
+                  name="select"
+                  className="px-4 py-3 border border-gray-200 rounded-full"
+                >
+                  <option value="all">Todos</option>
+                  <option value="active" selected>
+                    Ativos
+                  </option>
+                  <option value="inactive">Inativos</option>
+                </select>
+              </div>
+
+              <Button
+                onClick={async () => {
+                  await handleExport();
+                  setIsExportModalOpen(false);
+                }}
+              >
+                Confirmar
+              </Button>
+            </Modal>
           </SectionCard>
         </div>
       </div>

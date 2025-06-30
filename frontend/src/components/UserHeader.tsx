@@ -36,7 +36,7 @@ export default function UserHeader({ user }: Props) {
 
   return (
     <>
-      <div className="bg-[#E69017] py-3 px-20 w-full lg:w-screen lg:flex lg: justify-between fixed border-b-1 border-[#fff6] z-12">
+      <div className="bg-[#E69017] py-3 px-5 lg:px-20 w-full lg:w-screen lg:flex lg: justify-between fixed border-b-1 border-[#fff6] z-12">
         <img
           className="hidden lg:block"
           src="/propabanda-financa.svg"

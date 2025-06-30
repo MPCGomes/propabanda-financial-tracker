@@ -61,6 +61,8 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const firstDayYear = () => iso(new Date(new Date().getFullYear(), 0, 1));
 
 export default function Dashboard() {
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
   const navigate = useNavigate();
   const { show } = useShowValues();
 
@@ -200,7 +202,7 @@ export default function Dashboard() {
       >
         <p className="text-sm text-[#282828]">{alertMsg}</p>
       </AlertModal>
-      <div className="fixed bottom-0 w-full bg-[#282828] rounded-lg flex justify-center p-1 lg:pt-4 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+      <div className="fixed bottom-0 w-full bg-[#282828] flex justify-center p-1 lg:pt-4 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:left-0 z-10 border-gray-200 border-r-1">
         <Header dashboard="active" />
       </div>
 
@@ -442,10 +444,38 @@ export default function Dashboard() {
                 <Button variant="outlined" onClick={importModal.open}>
                   <MdFileUpload /> Importar
                 </Button>
-                <Button onClick={handleExport}>
+                <Button onClick={() => setIsExportModalOpen(true)}>
                   <IoMdDownload /> Exportar
                 </Button>
               </div>
+              {/* Export Modal */}
+              <Modal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                title="Exportar Relatório"
+              >
+                <div>
+                  <select
+                    name="select"
+                    className="px-4 py-3 border border-gray-200 rounded-full"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="active" selected>
+                      Ativos
+                    </option>
+                    <option value="inactive">Inativos</option>
+                  </select>
+                </div>
+
+                <Button
+                  onClick={async () => {
+                    await handleExport();
+                    setIsExportModalOpen(false);
+                  }}
+                >
+                  Confirmar
+                </Button>
+              </Modal>
             </div>
           </SectionCard>
         </div>
