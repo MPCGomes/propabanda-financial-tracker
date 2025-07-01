@@ -3,6 +3,7 @@ package com.propabanda.finance_tracker.Security;
 import com.propabanda.finance_tracker.service.UserDetailServiceImpl;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,8 +18,7 @@ public class JwtFilter extends GenericFilter {
     private final UserDetailServiceImpl userDetailService;
 
     private static final List<String> EXCLUDED_PATHS = List.of(
-            "/api/auth"
-    );
+            "/api/auth");
 
     public JwtFilter(JWTUtil jwtUtil, UserDetailServiceImpl userDetailService) {
         this.jwtUtil = jwtUtil;
@@ -26,13 +26,13 @@ public class JwtFilter extends GenericFilter {
     }
 
     @Override
-    public void doFilter (ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
 
         HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
         String path = request.getRequestURI();
 
-        // Skip filtering for excluded paths
         if (EXCLUDED_PATHS.contains(path)) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
@@ -43,16 +43,19 @@ public class JwtFilter extends GenericFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.replace("Bearer ", "");
 
-            if (jwtUtil.isTokenValid(token)) {
-                String document = jwtUtil.getDocumentFromToken(token);
-                var userDetails = userDetailService.loadUserByUsername(document);
+            try {
+                if (jwtUtil.isTokenValid(token)) {
+                    String document = jwtUtil.getDocumentFromToken(token);
+                    var userDetails = userDetailService.loadUserByUsername(document);
 
-                var auth = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                );
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                    var auth = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            } catch (Exception e) {
             }
         }
+
         filterChain.doFilter(servletRequest, servletResponse);
     }
 }

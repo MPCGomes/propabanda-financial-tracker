@@ -83,7 +83,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     api
-      .get<ItemOption[]>("/items")
+      .get<ItemOption[]>("/api/items")
       .then(({ data }) =>
         setItems(data.map((i) => ({ id: i.id, name: i.name })))
       )

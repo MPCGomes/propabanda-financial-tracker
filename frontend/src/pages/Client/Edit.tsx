@@ -34,7 +34,7 @@ export default function Edit() {
   // load existing
   useEffect(() => {
     api
-      .get(`/clients/${id}`)
+      .get(`/api/clients/${id}`)
       .then(({ data }) => {
         setName(data.name);
         setDocumentNumber(data.documentNumber);

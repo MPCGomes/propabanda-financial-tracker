@@ -38,7 +38,7 @@ export default function View() {
 
   useEffect(() => {
     api
-      .get(`/clients/${id}`)
+      .get(`/api/clients/${id}`)
       .then(({ data }) => setClient(data))
       .catch(() => {}); // you might want to handle 404 here
   }, [id]);

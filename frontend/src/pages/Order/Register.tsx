@@ -66,7 +66,7 @@ export default function OrderRegister() {
 
   useEffect(() => {
     api
-      .get<ItemOption[]>("/items")
+      .get<ItemOption[]>("/api/items")
       .then(({ data }) =>
         setItems(data.map((it: any) => ({ value: it.id, label: it.name })))
       );

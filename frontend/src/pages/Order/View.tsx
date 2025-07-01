@@ -42,7 +42,7 @@ export default function Order() {
 
   useEffect(() => {
     api
-      .get<OrderDTO>(`/orders/${id}`)
+      .get<OrderDTO>(`/api/orders/${id}`)
       .then(({ data }) => setOrder(data))
       .catch(() => setError("Produto não encontrado."));
   }, [id]);
