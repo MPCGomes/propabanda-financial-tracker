@@ -10,6 +10,7 @@ import Filter from "../../components/Filter";
 import AlertModal from "../../components/AlertModal";
 import ErrorModal from "../../components/ErrorModal";
 import SectionCard from "../../components/SectionCard";
+import Modal from "../../components/Modal";
 import { useModal } from "../../hooks/useModal";
 import { useShowValues } from "../../contexts/ShowValuesContext";
 
@@ -33,7 +34,7 @@ import {
   Legend,
   TimeScale,
 } from "chart.js";
-import Modal from "../../components/Modal";
+
 Chart.register(
   CategoryScale,
   LinearScale,
@@ -62,6 +63,9 @@ const firstDayYear = () => iso(new Date(new Date().getFullYear(), 0, 1));
 
 export default function Dashboard() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportStatus, setExportStatus] = useState<"" | "ATIVO" | "INATIVO">(
+    ""
+  );
 
   const navigate = useNavigate();
   const { show } = useShowValues();
@@ -170,10 +174,14 @@ export default function Dashboard() {
       params.append("startDate", period.start);
       params.append("endDate", period.end);
       selectedItems.forEach((id) => params.append("itemIds", id.toString()));
+      if (exportStatus) {
+        params.append("status", exportStatus);
+      }
 
-      const response = await api.get(`/api/export/report.xlsx?${params}`, {
-        responseType: "blob",
-      });
+      const response = await api.get(
+        `/api/export/report.xlsx?${params.toString()}`,
+        { responseType: "blob" }
+      );
       const url = window.URL.createObjectURL(response.data);
       const a = document.createElement("a");
       a.href = url;
@@ -448,6 +456,7 @@ export default function Dashboard() {
                   <IoMdDownload /> Exportar
                 </Button>
               </div>
+
               {/* Export Modal */}
               <Modal
                 isOpen={isExportModalOpen}
@@ -456,14 +465,17 @@ export default function Dashboard() {
               >
                 <div>
                   <select
-                    name="select"
+                    value={exportStatus}
+                    onChange={(e) =>
+                      setExportStatus(
+                        e.target.value as "ATIVO" | "INATIVO" | ""
+                      )
+                    }
                     className="px-4 py-3 border border-gray-200 rounded-full"
                   >
-                    <option value="all">Todos</option>
-                    <option value="active" selected>
-                      Ativos
-                    </option>
-                    <option value="inactive">Inativos</option>
+                    <option value="">Todos</option>
+                    <option value="ATIVO">Ativos</option>
+                    <option value="INATIVO">Inativos</option>
                   </select>
                 </div>
 
@@ -523,7 +535,9 @@ function Row({
 
   return (
     <div
-      className={`flex items-center justify-between p-2 ${gray ? "bg-[#fafafa]" : ""} ${clickable ? "cursor-pointer" : ""}`}
+      className={`flex items-center justify-between p-2 ${
+        gray ? "bg-[#fafafa]" : ""
+      } ${clickable ? "cursor-pointer" : ""}`}
       onClick={onClick}
     >
       <p className="text-xs font-medium text-[#28282833]">{label}</p>

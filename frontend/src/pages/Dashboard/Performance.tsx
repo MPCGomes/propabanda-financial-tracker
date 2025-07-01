@@ -8,6 +8,7 @@ import Money from "../../components/Money";
 import AlertModal from "../../components/AlertModal";
 import ErrorModal from "../../components/ErrorModal";
 import SectionCard from "../../components/SectionCard";
+import Modal from "../../components/Modal";
 import { useModal } from "../../hooks/useModal";
 import { useShowValues } from "../../contexts/ShowValuesContext";
 
@@ -17,7 +18,6 @@ import { IoMdDownload } from "react-icons/io";
 import api from "../../lib/api";
 
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
-import Modal from "../../components/Modal";
 Chart.register(ArcElement, Tooltip, Legend);
 
 const Doughnut = lazy(() =>
@@ -59,6 +59,12 @@ export default function DashboardPerformance() {
   const [err, setErr] = useState<string | null>(null);
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
   const [importFile, setImportFile] = useState<File | null>(null);
+
+  // export modal state + filter
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportStatus, setExportStatus] = useState<"" | "ATIVO" | "INATIVO">(
+    ""
+  );
 
   useEffect(() => {
     api
@@ -118,10 +124,14 @@ export default function DashboardPerformance() {
 
   const handleExport = async () => {
     try {
-      const { data } = await api.get("/api/export/report.xlsx", {
+      const params = new URLSearchParams();
+      if (exportStatus) {
+        params.append("status", exportStatus);
+      }
+      const response = await api.get(`/api/export/report.xlsx?${params}`, {
         responseType: "blob",
       });
-      const url = window.URL.createObjectURL(data);
+      const url = window.URL.createObjectURL(response.data);
       const a = document.createElement("a");
       a.href = url;
       a.download = "relatorio_completo.xlsx";
@@ -135,8 +145,6 @@ export default function DashboardPerformance() {
     }
   };
 
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen">
       <ErrorModal error={err} onClose={() => setErr(null)} />
@@ -147,7 +155,11 @@ export default function DashboardPerformance() {
       >
         <p className="text-sm text-[#282828]">{alertMsg}</p>
       </AlertModal>
-      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:left-0 z-10 border-gray-200 border-r-1">
+      <div
+        className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] flex justify-center p-1 
+                      lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:left-0 
+                      z-10 border-gray-200 border-r-1"
+      >
         <Header dashboard="active" />
       </div>
 
@@ -245,7 +257,10 @@ export default function DashboardPerformance() {
             }}
             title="Importar Produtos"
           >
-            <label className="flex flex-col items-center gap-2 p-6 border-dashed border border-[#28282833] rounded-lg bg-[#fafafa] cursor-pointer">
+            <label
+              className="flex flex-col items-center gap-2 p-6 border-dashed border 
+                                border-[#28282833] rounded-lg bg-[#fafafa] cursor-pointer"
+            >
               <p className="text-2xl">
                 <MdFileUpload />
               </p>
@@ -328,7 +343,12 @@ export default function DashboardPerformance() {
                               callbacks: {
                                 label: (ctx) =>
                                   show
-                                    ? `R$ ${(+ctx.parsed).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                                    ? `R$ ${(+ctx.parsed).toLocaleString(
+                                        "pt-BR",
+                                        {
+                                          minimumFractionDigits: 2,
+                                        }
+                                      )}`
                                     : "***",
                               },
                             },
@@ -351,7 +371,9 @@ export default function DashboardPerformance() {
             {perf?.itemPerformances.map((it, idx) => (
               <div
                 key={it.itemId}
-                className={`flex justify-between p-2 ${idx % 2 === 0 ? "bg-[#fafafa]" : ""} rounded-md`}
+                className={`flex justify-between p-2 ${
+                  idx % 2 === 0 ? "bg-[#fafafa]" : ""
+                } rounded-md`}
               >
                 <p className="text-xs font-medium text-[#28282899]">
                   {it.itemName}
@@ -379,6 +401,7 @@ export default function DashboardPerformance() {
                 <IoMdDownload /> Exportar
               </Button>
             </div>
+
             {/* Export Modal */}
             <Modal
               isOpen={isExportModalOpen}
@@ -387,14 +410,15 @@ export default function DashboardPerformance() {
             >
               <div>
                 <select
-                  name="select"
+                  value={exportStatus}
+                  onChange={(e) =>
+                    setExportStatus(e.target.value as "ATIVO" | "INATIVO" | "")
+                  }
                   className="px-4 py-3 border border-gray-200 rounded-full"
                 >
-                  <option value="all">Todos</option>
-                  <option value="active" selected>
-                    Ativos
-                  </option>
-                  <option value="inactive">Inativos</option>
+                  <option value="">Todos</option>
+                  <option value="ATIVO">Ativos</option>
+                  <option value="INATIVO">Inativos</option>
                 </select>
               </div>
 

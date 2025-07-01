@@ -46,8 +46,6 @@ export default function OrderRegister() {
       .catch(() => setError("Falha ao carregar itens."));
   }, []);
 
-  // no existing contract in "register" leave existingPath null
-
   // preview stub (won’t show until you upload and save once)
   const previewContract = async () => {
     if (!previewUrl) return;
