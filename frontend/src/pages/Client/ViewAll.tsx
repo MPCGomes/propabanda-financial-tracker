@@ -1,4 +1,3 @@
-// frontend/src/pages/Client/ViewAll.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../../components/Header";
@@ -28,7 +27,6 @@ export default function ViewAll() {
   const [modal, setModal] = useState<null | "order">(null);
   const [statusFilter, setStatusFilter] = useState<ClientStatus | "">("");
 
-  // now passes 4 args (including statusFilter)
   const { clients, loading } = useClients(
     search,
     sortBy,

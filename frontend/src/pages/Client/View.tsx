@@ -21,7 +21,7 @@ const orderOptions = [
   { value: "emissionDate|asc", label: "Mais antigos" },
 ];
 
-export default function View() {
+export default function ClientView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -40,7 +40,7 @@ export default function View() {
     api
       .get(`/api/clients/${id}`)
       .then(({ data }) => setClient(data))
-      .catch(() => {}); // you might want to handle 404 here
+      .catch(() => {});
   }, [id]);
 
   const applyOrder = (val: string) => {
@@ -69,7 +69,6 @@ export default function View() {
 
   return (
     <section className="bg-[#f6f6f6] lg:flex justify-center items-start min-h-screen">
-      {/* Error Modal */}
       <Modal
         isOpen={modal === "error"}
         onClose={() => setModal(null)}
@@ -78,8 +77,6 @@ export default function View() {
         <p className="text-sm">{error}</p>
         <Button onClick={() => setModal(null)}>Fechar</Button>
       </Modal>
-
-      {/* Order Filter Modal */}
       <Modal
         isOpen={modal === "order"}
         onClose={() => setModal(null)}
@@ -101,8 +98,6 @@ export default function View() {
         </div>
         <Button>Aplicar Filtro</Button>
       </Modal>
-
-      {/* Delete Confirmation Modal */}
       <Modal
         isOpen={modal === "delete"}
         onClose={() => setModal(null)}
@@ -127,20 +122,15 @@ export default function View() {
         </div>
       </Modal>
 
-      {/* Sidebar */}
-      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:left-0 z-10 border-gray-200 border-r-1">
+      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:left-0 z-10 border-gray-200 border-r-1">
         <Header clients="active" />
       </div>
-
-      {/* User Header */}
       <UserHeader />
 
-      {/* Main content */}
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-25 lg:pb-22">
         <div className="flex flex-col gap-5 w-full pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link="/clients" />
 
-          {/* Client info card */}
           {client && (
             <div className="flex flex-col p-5 gap-5 bg-white rounded-lg">
               <div className="text-center">
@@ -148,7 +138,6 @@ export default function View() {
                 <p className="text-sm text-[#787878]">
                   {client.documentNumber}
                 </p>
-                {/* ← Status display */}
                 <Info
                   label="Status"
                   value={client.status === "ATIVO" ? "Ativo" : "Inativo"}
@@ -157,7 +146,6 @@ export default function View() {
 
               <hr className="border-[#F0F0F0]" />
 
-              {/* Representative section */}
               <div>
                 <p className="text-sm font-medium">Representante</p>
                 <Info
@@ -174,7 +162,6 @@ export default function View() {
                 />
               </div>
 
-              {/* Address section */}
               <div>
                 <p className="text-sm font-medium">Endereço</p>
                 <Info label="CEP" value={client.addressResponseDTO.zipCode} />
@@ -202,7 +189,6 @@ export default function View() {
             </div>
           )}
 
-          {/* Orders section */}
           <div className="flex flex-col p-5 gap-5 bg-white rounded-lg">
             <p className="text-base font-bold">Produtos</p>
             <div className="flex flex-col gap-5 lg:flex-row">
@@ -249,7 +235,6 @@ export default function View() {
         </div>
       </div>
 
-      {/* Action buttons */}
       <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2 items-end">
         <Link to={`/clients/${id}/edit`}>
           <FloatingButton background="#2696FF">

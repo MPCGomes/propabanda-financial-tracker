@@ -1,10 +1,10 @@
 import { useState, useEffect, FormEvent } from "react";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import Button from "./Button";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ptBR } from "date-fns/locale";
+import InfoGroup from "./InfoGroup";
 
 export type OrderFormPayload = {
   clientId: number;
@@ -22,29 +22,19 @@ export type OrderFormPayload = {
 type ClientOption = { id: number; name: string };
 type ItemOption = { value: number; label: string };
 
-type OrderFormProps = {
+interface Props {
   clients: ClientOption[];
   items: ItemOption[];
-  initial?: {
-    clientId: number;
-    items: number[];
-    value: number;
-    contractStartDate: string;
-    contractEndDate: string;
-    installmentCount: number;
-    installmentDay: number;
-    paidInstallmentsCount: number;
-    discount: number;
-  };
-  onSubmit: (payload: OrderFormPayload) => Promise<void>;
-};
+  initial?: Omit<OrderFormPayload, "emissionDate">;
+  onChange: (payload: OrderFormPayload) => void;
+}
 
 export default function OrderForm({
   clients,
   items,
   initial,
-  onSubmit,
-}: OrderFormProps) {
+  onChange,
+}: Props) {
   const [client, setClient] = useState<ClientOption | null>(null);
   const [selectedItems, setSelectedItems] = useState<ItemOption[]>([]);
   const [valueStr, setValueStr] = useState("");
@@ -55,6 +45,7 @@ export default function OrderForm({
   const [paidInstallments, setPaidInstallments] = useState("");
   const [discountPct, setDiscountPct] = useState("");
 
+  // hydrate from initial
   useEffect(() => {
     if (!initial) return;
     setClient(clients.find((c) => c.id === initial.clientId) ?? null);
@@ -64,34 +55,19 @@ export default function OrderForm({
         .toLocaleString("pt-BR", { minimumFractionDigits: 2 })
         .replace(".", ",")
     );
-    setStartDate(
-      initial.contractStartDate ? new Date(initial.contractStartDate) : null
-    );
-    setEndDate(
-      initial.contractEndDate ? new Date(initial.contractEndDate) : null
-    );
+    setStartDate(new Date(initial.contractStartDate));
+    setEndDate(new Date(initial.contractEndDate));
     setInstallmentCount(String(initial.installmentCount));
     setInstallmentDay(String(initial.installmentDay));
     setPaidInstallments(String(initial.paidInstallmentsCount));
     setDiscountPct(String(initial.discount));
   }, [initial, clients, items]);
 
-  const handleValueChange = (v: string) => {
-    const digits = v.replace(/\D/g, "");
-    const num = parseFloat(digits || "0") / 100;
-    setValueStr(
-      num.toLocaleString("pt-BR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    );
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  // bubble up every change
+  useEffect(() => {
     if (!client || !startDate || !endDate) return;
     const raw = parseFloat(valueStr.replace(/\./g, "").replace(",", ".")) || 0;
-    onSubmit({
+    onChange({
       clientId: client.id,
       items: selectedItems.map((i) => i.value),
       value: raw,
@@ -103,13 +79,49 @@ export default function OrderForm({
       discount: Number(discountPct),
       emissionDate: startDate.toISOString().split("T")[0],
     });
+  }, [
+    client,
+    selectedItems,
+    valueStr,
+    startDate,
+    endDate,
+    installmentCount,
+    installmentDay,
+    paidInstallments,
+    discountPct,
+    onChange,
+  ]);
+
+  // summary calculations
+  const subtotal =
+    parseFloat(valueStr.replace(/\./g, "").replace(",", ".")) || 0;
+  const discountVal = (subtotal * (Number(discountPct) || 0)) / 100;
+  const total = subtotal - discountVal;
+  const instN = Number(installmentCount) || 0;
+  const instValue = instN ? total / instN : 0;
+  const paidValue = instValue * (Number(paidInstallments) || 0);
+  const remainValue = total - paidValue;
+  const fmt = (n: number) =>
+    `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
+  // helper to format currency input
+  const formatInput = (v: string) => {
+    const digits = v.replace(/\D/g, "");
+    const num = parseFloat(digits || "0") / 100;
+    setValueStr(
+      num.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
   };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* client autocomplete */}
+      <form className="space-y-6">
+        {/* Dados do Pedido */}
         <div className="p-5 bg-white rounded-lg flex flex-col gap-3">
+          <p className="text-base font-medium">Dados do Pedido</p>
           <Autocomplete
             options={clients}
             getOptionLabel={(opt) => opt.name}
@@ -121,13 +133,10 @@ export default function OrderForm({
                 label="Cliente"
                 placeholder="Selecione cliente"
                 required
+                fullWidth
               />
             )}
           />
-        </div>
-
-        {/* items multi-select */}
-        <div className="p-5 bg-white rounded-lg flex flex-col gap-3">
           <Autocomplete
             multiple
             options={items}
@@ -139,17 +148,15 @@ export default function OrderForm({
                 {...params}
                 label="Itens"
                 placeholder="Selecione itens"
+                fullWidth
+                required
               />
             )}
           />
-        </div>
-
-        {/* dates and values */}
-        <div className="p-5 bg-white rounded-lg flex flex-col gap-3">
           <TextField
             label="Valor Total (R$)"
             value={valueStr}
-            onChange={(e) => handleValueChange(e.target.value)}
+            onChange={(e) => formatInput(e.target.value)}
             placeholder="Ex: 1.234,56"
             fullWidth
             required
@@ -158,13 +165,13 @@ export default function OrderForm({
             <DatePicker
               label="Início Contratação"
               value={startDate}
-              onChange={(newValue) => setStartDate(newValue)}
+              onChange={(nv) => setStartDate(nv)}
               slotProps={{ textField: { fullWidth: true, required: true } }}
             />
             <DatePicker
               label="Término Contratação"
               value={endDate}
-              onChange={(newValue) => setEndDate(newValue)}
+              onChange={(nv) => setEndDate(nv)}
               slotProps={{ textField: { fullWidth: true, required: true } }}
             />
           </div>
@@ -205,12 +212,24 @@ export default function OrderForm({
           </div>
         </div>
 
-        {/* actions */}
-        <div className="flex justify-end gap-3">
-          <Button variant="outlined" onClick={() => history.back()}>
-            Cancelar
-          </Button>
-          <Button type="submit">Salvar</Button>
+        {/* Resumo */}
+        <div className="p-5 bg-white rounded-lg flex flex-col gap-3">
+          <p className="text-base font-medium">Resumo</p>
+          <InfoGroup
+            items={[
+              { label: "Sub-Total", value: fmt(subtotal) },
+              { label: "Desconto (%)", value: `${discountPct || 0}%` },
+              { label: "Desconto (R$)", value: fmt(discountVal) },
+              { label: "Valor Parcela", value: fmt(instValue) },
+              { label: "Valor Pago", value: fmt(paidValue), color: "#32c058" },
+              {
+                label: "Valor Restante",
+                value: fmt(remainValue),
+                color: "#ee3a4b",
+              },
+              { label: "Total", value: fmt(total) },
+            ]}
+          />
         </div>
       </form>
     </LocalizationProvider>

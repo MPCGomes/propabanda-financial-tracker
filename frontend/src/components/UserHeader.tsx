@@ -4,7 +4,7 @@ import { MdLogout } from "react-icons/md";
 import { FaGear } from "react-icons/fa6";
 import { useShowValues } from "../contexts/ShowValuesContext";
 import { logout, getToken } from "../lib/auth";
-import Modal from "./Modal"; // ajuste o caminho se necessário
+import Modal from "./Modal";
 import InputText from "./InputText";
 import Button from "./Button";
 

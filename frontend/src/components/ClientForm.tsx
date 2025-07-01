@@ -1,33 +1,10 @@
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import InputText from "./InputText";
+import { useState, useEffect, FormEvent } from "react";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 import Button from "./Button";
 import { digitsOnly } from "../utils/validators";
-import { STATUS_OPTIONS, ClientStatus } from "../utils/status";
 import type { FullClientDTO } from "../hooks/useClient";
-
-type ClientFormProps = {
-  initial?: FullClientDTO;
-  onSubmit: (payload: {
-    status: ClientStatus;
-    name: string;
-    documentNumber: string;
-    representativeRequestDTO: {
-      name: string;
-      phone: string;
-      email: string;
-    };
-    addressRequestDTO: {
-      zipCode: string;
-      street: string;
-      number: string;
-      complement: string;
-      reference: string;
-      city: string;
-      state: string;
-      neighbourhood: string;
-    };
-  }) => Promise<void>;
-};
+import { STATUS_OPTIONS, ClientStatus } from "../utils/status";
 
 export type ClientFormPayload = {
   status: ClientStatus;
@@ -50,6 +27,41 @@ export type ClientFormPayload = {
   };
 };
 
+interface ClientFormProps {
+  initial?: FullClientDTO;
+  onSubmit: (payload: ClientFormPayload) => Promise<void>;
+}
+
+const BRAZIL_STATES = [
+  "AC",
+  "AL",
+  "AM",
+  "AP",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MG",
+  "MS",
+  "MT",
+  "PA",
+  "PB",
+  "PE",
+  "PI",
+  "PR",
+  "RJ",
+  "RN",
+  "RO",
+  "RR",
+  "RS",
+  "SC",
+  "SE",
+  "SP",
+  "TO",
+];
+
 export default function ClientForm({ initial, onSubmit }: ClientFormProps) {
   const [status, setStatus] = useState<ClientStatus>("ATIVO");
   const [name, setName] = useState("");
@@ -57,15 +69,16 @@ export default function ClientForm({ initial, onSubmit }: ClientFormProps) {
   const [repName, setRepName] = useState("");
   const [repPhone, setRepPhone] = useState("");
   const [repEmail, setRepEmail] = useState("");
-  const [zip, setZip] = useState("");
+  const [stateUf, setStateUf] = useState("");
+  const [city, setCity] = useState("");
+  const [neighbourhood, setNeighbourhood] = useState("");
   const [street, setStreet] = useState("");
   const [number, setNumber] = useState("");
   const [complement, setComplement] = useState("");
   const [reference, setReference] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [neighbourhood, setNeighbourhood] = useState("");
+  const [zip, setZip] = useState("");
 
+  // hydrate from initial
   useEffect(() => {
     if (!initial) return;
     setStatus(initial.status);
@@ -74,14 +87,14 @@ export default function ClientForm({ initial, onSubmit }: ClientFormProps) {
     setRepName(initial.representativeResponseDTO.name);
     setRepPhone(initial.representativeResponseDTO.phone);
     setRepEmail(initial.representativeResponseDTO.email);
-    setZip(initial.addressResponseDTO.zipCode);
+    setStateUf(initial.addressResponseDTO.state);
+    setCity(initial.addressResponseDTO.city);
+    setNeighbourhood(initial.addressResponseDTO.neighbourhood);
     setStreet(initial.addressResponseDTO.street);
     setNumber(initial.addressResponseDTO.number);
     setComplement(initial.addressResponseDTO.complement);
     setReference(initial.addressResponseDTO.reference);
-    setCity(initial.addressResponseDTO.city);
-    setState(initial.addressResponseDTO.state);
-    setNeighbourhood(initial.addressResponseDTO.neighbourhood);
+    setZip(initial.addressResponseDTO.zipCode);
   }, [initial]);
 
   const handleSubmit = (e: FormEvent) => {
@@ -96,129 +109,167 @@ export default function ClientForm({ initial, onSubmit }: ClientFormProps) {
         email: repEmail,
       },
       addressRequestDTO: {
-        zipCode: digitsOnly(zip),
+        state: stateUf,
+        city,
+        neighbourhood,
         street,
         number,
         complement,
         reference,
-        city,
-        state,
-        neighbourhood,
+        zipCode: digitsOnly(zip),
       },
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* client */}
-      <fieldset className="p-5 bg-white rounded-lg flex flex-col gap-3">
-        <legend className="text-base font-medium">Cliente</legend>
-        <InputText
+      {/* Cliente */}
+      <div className="p-5 bg-white rounded-lg flex flex-col gap-3">
+        <p className="text-base font-medium">Cliente</p>
+        <TextField
           label="Nome"
           value={name}
-          onValueChange={setName}
+          onChange={(e) => setName(e.target.value)}
           placeholder="Ex: Fulano de Tal"
+          fullWidth
+          required
         />
-        <InputText
+        <TextField
           label="CPF/CNPJ"
           value={documentNumber}
-          onValueChange={setDocumentNumber}
+          onChange={(e) => setDocumentNumber(e.target.value)}
           placeholder="Ex: 12345678901"
+          fullWidth
+          required
         />
-        <label className="flex flex-col">
-          Status
-          <select
-            value={status}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-              setStatus(e.target.value as ClientStatus)
-            }
-            className="border rounded p-2"
-          >
-            {STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </fieldset>
+        <TextField
+          label="Status"
+          select
+          value={status}
+          onChange={(e) => setStatus(e.target.value as ClientStatus)}
+          fullWidth
+        >
+          {STATUS_OPTIONS.map((o) => (
+            <MenuItem key={o.value} value={o.value}>
+              {o.label}
+            </MenuItem>
+          ))}
+        </TextField>
+      </div>
 
-      {/* representative */}
-      <fieldset className="p-5 bg-white rounded-lg flex flex-col gap-3">
-        <legend className="text-base font-medium">Representante</legend>
-        <InputText
+      {/* Representante */}
+      <div className="p-5 bg-white rounded-lg flex flex-col gap-3">
+        <p className="text-base font-medium">Representante</p>
+        <TextField
           label="Nome"
           value={repName}
-          onValueChange={setRepName}
+          onChange={(e) => setRepName(e.target.value)}
           placeholder="Ex: Ciclano de Tal"
+          fullWidth
+          required
         />
-        <InputText
+        <TextField
           label="Telefone"
           value={repPhone}
-          onValueChange={setRepPhone}
+          onChange={(e) => setRepPhone(e.target.value)}
           placeholder="Ex: 12345678901"
+          fullWidth
+          required
         />
-        <InputText
+        <TextField
           label="E-mail"
           value={repEmail}
-          onValueChange={setRepEmail}
+          onChange={(e) => setRepEmail(e.target.value)}
           placeholder="Ex: email@email.com"
+          fullWidth
+          required
         />
-      </fieldset>
+      </div>
 
-      {/* address */}
-      <fieldset className="p-5 bg-white rounded-lg flex flex-col gap-3">
-        <legend className="text-base font-medium">Endereço</legend>
-        <InputText
-          label="CEP"
-          value={zip}
-          onValueChange={setZip}
-          placeholder="Ex: 12345678"
-        />
-        <InputText
+      {/* Endereço */}
+      <div className="p-5 bg-white rounded-lg flex flex-col gap-3">
+        <p className="text-base font-medium">Endereço</p>
+        <TextField
+          label="Estado (UF)"
+          select
+          value={stateUf}
+          onChange={(e) => setStateUf(e.target.value)}
+          fullWidth
+          required
+          SelectProps={{
+            MenuProps: {
+              PaperProps: {
+                style: {
+                  maxHeight: 300,
+                  width: 200,
+                },
+              },
+            },
+          }}
+        >
+          {BRAZIL_STATES.map((uf) => (
+            <MenuItem key={uf} value={uf}>
+              {uf}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
           label="Cidade"
           value={city}
-          onValueChange={setCity}
+          onChange={(e) => setCity(e.target.value)}
           placeholder="Ex: Caraguatatuba"
+          fullWidth
+          required
         />
-        <InputText
-          label="Estado"
-          value={state}
-          onValueChange={setState}
-          placeholder="Ex: SP"
-        />
-        <InputText
+        <TextField
           label="Bairro"
           value={neighbourhood}
-          onValueChange={setNeighbourhood}
+          onChange={(e) => setNeighbourhood(e.target.value)}
           placeholder="Ex: Centro"
+          fullWidth
+          required
         />
-        <InputText
+        <TextField
           label="Rua/Avenida"
           value={street}
-          onValueChange={setStreet}
+          onChange={(e) => setStreet(e.target.value)}
           placeholder="Ex: Av. Avenida"
+          fullWidth
+          required
         />
-        <InputText
+        <TextField
           label="Número"
           value={number}
-          onValueChange={setNumber}
+          onChange={(e) => setNumber(e.target.value)}
           placeholder="Ex: 123"
+          fullWidth
+          required
         />
-        <InputText
+        <TextField
           label="Complemento"
           value={complement}
-          onValueChange={setComplement}
+          onChange={(e) => setComplement(e.target.value)}
           placeholder="Ex: Casa"
+          fullWidth
         />
-        <InputText
+        <TextField
           label="Referência"
           value={reference}
-          onValueChange={setReference}
-          placeholder="Ex: Próximo a praça"
+          onChange={(e) => setReference(e.target.value)}
+          placeholder="Ex: Próximo à praça"
+          fullWidth
         />
-      </fieldset>
+        <TextField
+          label="CEP"
+          value={zip}
+          onChange={(e) => setZip(e.target.value)}
+          placeholder="Ex: 12345678"
+          fullWidth
+          required
+        />
+      </div>
 
+      {/* Ações */}
       <div className="flex justify-end gap-3">
         <Button variant="outlined" onClick={() => history.back()}>
           Cancelar
