@@ -203,14 +203,14 @@ export default function OrderEdit() {
       >
         <p className="text-sm text-[#282828]">Produto atualizado com sucesso.</p>
       </AlertModal>
-      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:left-0 z-10 border-gray-200 border-r-1">
         <Header orders="active" />
       </div>
 
       <UserHeader />
 
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-25 lg:pb-22">
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:pl-38 lg:pr-4">
+        <div className="flex flex-col gap-5 px-4 w-full pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link={`/orders/${id}`} />
 
           <SectionCard title="Editar Produto">
