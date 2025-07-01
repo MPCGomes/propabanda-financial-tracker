@@ -1,5 +1,6 @@
 package com.propabanda.finance_tracker.service;
 
+import com.propabanda.finance_tracker.dto.request.ChangePasswordRequestDTO;
 import com.propabanda.finance_tracker.dto.request.UserRequestDTO;
 import com.propabanda.finance_tracker.dto.response.UserResponseDTO;
 import com.propabanda.finance_tracker.model.User;
@@ -39,6 +40,18 @@ public class UserService {
         User user = toUserModel(userRequestDTO);
         user = userRepository.save(user);
         return toUserResponseDTO(user);
+    }
+
+    public void changePassword(Long id, ChangePasswordRequestDTO changePasswordRequestDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!passwordEncoder.matches(changePasswordRequestDTO.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(changePasswordRequestDTO.getNewPassword()));
+        userRepository.save(user);
     }
 
     public void delete(Long id) {

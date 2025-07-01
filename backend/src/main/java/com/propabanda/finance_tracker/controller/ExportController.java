@@ -6,6 +6,7 @@ import com.propabanda.finance_tracker.dto.ItemPerformanceDTO;
 import com.propabanda.finance_tracker.dto.OrderFilterDTO;
 import com.propabanda.finance_tracker.dto.response.ClientResponseDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
+import com.propabanda.finance_tracker.model.ClientStatus;
 import com.propabanda.finance_tracker.service.*;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -36,9 +37,10 @@ public class ExportController {
     public ResponseEntity<?> exportFilteredData(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
-            @RequestParam(required = false) List<Long> itemIds) {
+            @RequestParam(required = false) List<Long> itemIds,
+            @RequestParam(required = false) ClientStatus status)
+    {
         try {
-            // Create filter based on request parameters
             DashboardFilterDTO dashboardFilter = new DashboardFilterDTO();
             OrderFilterDTO orderFilter = new OrderFilterDTO();
 
@@ -55,23 +57,19 @@ public class ExportController {
             }
 
             if (itemIds != null && !itemIds.isEmpty()) {
-                // Convert List<Long> to Set<Long> for dashboardFilter
                 dashboardFilter.setItemIds(new HashSet<>(itemIds));
-                // For orderFilter it's already the right collection type
                 orderFilter.setItemIds(itemIds);
             }
 
-            // Default values for orderFilter for sorting
             orderFilter.setSortBy("emissionDate");
             orderFilter.setDirection("asc");
 
-            // Get filtered data
             List<ClientResponseDTO> clients = clientService.findAll();
             List<OrderResponseDTO> orders = orderService.findAllFiltered(orderFilter);
             DashboardEvolutionDTO dashboard = dashboardService.getEvolution(dashboardFilter);
             List<ItemPerformanceDTO> itemPerformance = dashboardService.getPerformance(dashboardFilter).getItemPerformances();
 
-            byte[] excelData = excelExportService.generateFullReport(clients, orders, dashboard, itemPerformance);
+            byte[] excelData = excelExportService.generateFullReport(clients, orders, dashboard, itemPerformance, status);
             ByteArrayResource resource = new ByteArrayResource(excelData);
 
             return ResponseEntity.ok()

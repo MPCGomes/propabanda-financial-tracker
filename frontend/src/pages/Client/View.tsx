@@ -21,9 +21,10 @@ const orderOptions = [
   { value: "emissionDate|asc", label: "Mais antigos" },
 ];
 
-export default function View() {
+export default function ClientView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
   const [client, setClient] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"emissionDate" | "itemName">(
@@ -36,7 +37,10 @@ export default function View() {
   const { orders, loading } = useOrders(id, search, sortBy, direction);
 
   useEffect(() => {
-    api.get(`/api/clients/${id}`).then(({ data }) => setClient(data));
+    api
+      .get(`/api/clients/${id}`)
+      .then(({ data }) => setClient(data))
+      .catch(() => {});
   }, [id]);
 
   const applyOrder = (val: string) => {
@@ -117,15 +121,16 @@ export default function View() {
           </button>
         </div>
       </Modal>
-      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] rounded-lg flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+
+      <div className="fixed bottom-0 w-full lg:pt-4 bg-[#282828] flex justify-center p-1 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:left-0 z-10 border-gray-200 border-r-1">
         <Header clients="active" />
       </div>
-
       <UserHeader />
 
       <div className="w-full max-w-[1280px] flex lg:flex-row gap-5 pt-25 lg:pb-22">
-        <div className="flex flex-col gap-5 w-full p-4 pb-[100px] lg:pl-38 lg:pr-4">
+        <div className="flex flex-col gap-5 w-full pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link="/clients" />
+
           {client && (
             <div className="flex flex-col p-5 gap-5 bg-white rounded-lg">
               <div className="text-center">
@@ -133,8 +138,14 @@ export default function View() {
                 <p className="text-sm text-[#787878]">
                   {client.documentNumber}
                 </p>
+                <Info
+                  label="Status"
+                  value={client.status === "ATIVO" ? "Ativo" : "Inativo"}
+                />
               </div>
+
               <hr className="border-[#F0F0F0]" />
+
               <div>
                 <p className="text-sm font-medium">Representante</p>
                 <Info
@@ -150,6 +161,7 @@ export default function View() {
                   value={client.representativeResponseDTO.phone}
                 />
               </div>
+
               <div>
                 <p className="text-sm font-medium">Endereço</p>
                 <Info label="CEP" value={client.addressResponseDTO.zipCode} />
@@ -165,6 +177,7 @@ export default function View() {
                 />
                 <Info label="Cidade" value={client.addressResponseDTO.city} />
                 <Info label="Estado" value={client.addressResponseDTO.state} />
+
                 <div className="text-center mt-2">
                   <Button
                     onClick={() => navigate(`/orders/register?clientId=${id}`)}
@@ -175,6 +188,7 @@ export default function View() {
               </div>
             </div>
           )}
+
           <div className="flex flex-col p-5 gap-5 bg-white rounded-lg">
             <p className="text-base font-bold">Produtos</p>
             <div className="flex flex-col gap-5 lg:flex-row">
@@ -195,6 +209,7 @@ export default function View() {
                 />
               </div>
             </div>
+
             {!loading ? (
               orders.map((o) => (
                 <Order
@@ -210,6 +225,7 @@ export default function View() {
             ) : (
               <p className="text-center text-sm">Carregando…</p>
             )}
+
             {!loading && orders.length === 0 && (
               <p className="text-center text-sm text-gray-500 py-6">
                 Nenhum pedido encontrado.
@@ -218,6 +234,7 @@ export default function View() {
           </div>
         </div>
       </div>
+
       <div className="fixed bottom-25 right-4 lg:bottom-10 lg:right-5 flex flex-col gap-2 items-end">
         <Link to={`/clients/${id}/edit`}>
           <FloatingButton background="#2696FF">

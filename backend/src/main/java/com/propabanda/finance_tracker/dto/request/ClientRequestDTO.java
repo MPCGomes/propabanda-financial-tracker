@@ -1,7 +1,10 @@
 package com.propabanda.finance_tracker.dto.request;
 
+import com.propabanda.finance_tracker.model.ClientStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,8 +17,11 @@ public class ClientRequestDTO {
     @Size(max = 100, message = "O nome pode ter no máximo 100 caracteres.")
     private String name;
 
-    @NotBlank(message = "Informe o CPF/CNPJ.")
-    @Size(min = 14, max = 14, message = "O CPF/CNPJ deve conter 14 dígitos (somente números).")
+    @NotBlank(message = "Informe o CPF ou o CNPJ.")
+    @Pattern(
+            regexp = "\\d{11,14}",
+            message = "O CPF ou CNPJ deve conter entre 11 e 14 dígitos numéricos."
+    )
     private String documentNumber;
 
     @Valid
@@ -23,4 +29,7 @@ public class ClientRequestDTO {
 
     @Valid
     private AddressRequestDTO addressRequestDTO;
+
+    @NotNull(message = "Informe o status do cliente.")
+    private ClientStatus status;
 }

@@ -38,7 +38,8 @@ public class OrderService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    public OrderService(OrderRepository orderRepository, ClientRepository clientRepository, ItemRepository itemRepository) {
+    public OrderService(OrderRepository orderRepository, ClientRepository clientRepository,
+            ItemRepository itemRepository) {
         this.orderRepository = orderRepository;
         this.clientRepository = clientRepository;
         this.itemRepository = itemRepository;
@@ -142,8 +143,7 @@ public class OrderService {
 
     public List<OrderResponseDTO> findByClientFiltered(
             Long clientId,
-            ClientOrderFilterDTO clientOrderFilterDTO
-    ) {
+            ClientOrderFilterDTO clientOrderFilterDTO) {
         List<Order> orderList = orderRepository.findAll()
                 .stream()
                 .filter(o -> o.getClient().getId().equals(clientId))
@@ -159,8 +159,9 @@ public class OrderService {
         Comparator<Order> comparator;
         switch (clientOrderFilterDTO.getSortBy()) {
             case "id" -> comparator = Comparator.comparing(Order::getId);
-            case "itemName" -> comparator = Comparator.comparing(order ->
-                    order.getItems().stream().findFirst().map(Item::getName).orElse(""), String.CASE_INSENSITIVE_ORDER);
+            case "itemName" -> comparator = Comparator.comparing(
+                    order -> order.getItems().stream().findFirst().map(Item::getName).orElse(""),
+                    String.CASE_INSENSITIVE_ORDER);
             default -> comparator = Comparator.comparing(Order::getEmissionDate);
         }
 
@@ -186,11 +187,6 @@ public class OrderService {
 
         if (!originalName.toLowerCase().matches(".*\\.(pdf|doc|docx)$")) {
             throw new IllegalArgumentException("Invalid file format");
-        }
-
-        long maxSize = 10 * 1024 * 1024;
-        if (multipartFile.getSize() > maxSize) {
-            throw new IllegalArgumentException("File too large");
         }
 
         String safeName = originalName.replaceAll("[^a-zA-Z0-9.\\-_]", "_");

@@ -59,6 +59,8 @@ public class ClientService {
             throw new IllegalArgumentException("Documento já cadastrado");
         }
 
+        client.setStatus(clientRequestDTO.getStatus());
+
         Representative representative = client.getRepresentative();
         representative.setName(clientRequestDTO.getRepresentativeRequestDTO().getName());
         representative.setEmail(clientRequestDTO.getRepresentativeRequestDTO().getEmail());
@@ -96,6 +98,12 @@ public class ClientService {
                     .toList();
         }
 
+        if (clientFilterDTO.getStatus() != null) {
+            clients = clients.stream()
+                    .filter(c -> c.getStatus() == clientFilterDTO.getStatus())
+                    .toList();
+        }
+
         Comparator<Client> comparator = "createdAt".equalsIgnoreCase(clientFilterDTO.getSortBy())
                 ? Comparator.comparing(Client::getCreatedAt)
                 : Comparator.comparing(Client::getName, String.CASE_INSENSITIVE_ORDER);
@@ -123,8 +131,8 @@ public class ClientService {
         address.setNumber(addressRequestDTO.getNumber());
         address.setComplement(addressRequestDTO.getComplement());
         address.setReference(addressRequestDTO.getReference());
-
         client.setAddress(address);
+
         return client;
     }
 
@@ -132,14 +140,15 @@ public class ClientService {
         Client client = new Client();
         client.setName(clientRequestDTO.getName());
         client.setDocumentNumber(clientRequestDTO.getDocumentNumber());
+        client.setStatus(clientRequestDTO.getStatus());
 
         RepresentativeRequestDTO representativeRequestDTO = clientRequestDTO.getRepresentativeRequestDTO();
         Representative representative = new Representative();
         representative.setName(representativeRequestDTO.getName());
         representative.setEmail(representativeRequestDTO.getEmail());
         representative.setPhone(representativeRequestDTO.getPhone());
-
         client.setRepresentative(representative);
+
         return client;
     }
 
@@ -148,6 +157,11 @@ public class ClientService {
         clientResponseDTO.setId(client.getId());
         clientResponseDTO.setName(client.getName());
         clientResponseDTO.setDocumentNumber(client.getDocumentNumber());
+        clientResponseDTO.setStatus(client.getStatus());
+
+        if (client.getCreatedAt() != null) {
+            clientResponseDTO.setCreatedAt(client.getCreatedAt().toLocalDate());
+        }
 
         RepresentativeResponseDTO representativeResponseDTO = new RepresentativeResponseDTO();
         representativeResponseDTO.setName(client.getRepresentative().getName());
