@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
 import api from "../lib/api";
+import { ClientStatus } from "../utils/status";
 
 export type FullClientDTO = {
   id: number;
   name: string;
   documentNumber: string;
-  representativeResponseDTO: { name: string; email: string; phone: string };
+  status: ClientStatus;
+  representativeResponseDTO: {
+    name: string;
+    email: string;
+    phone: string;
+  };
   addressResponseDTO: {
     zipCode: string;
     street: string;
