@@ -15,9 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -34,14 +31,32 @@ public class AuthController {
 
     @PostMapping
     public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid AuthRequestDTO dto) {
-        User user = userRepository.findByDocumentNumber(dto.getDocumentNumber())
-                .orElseThrow(() -> new UsernameNotFoundException("Credenciais inválidas"));
-        if (!bCryptPasswordEncoder.matches(dto.getPassword(), user.getPassword())) {
+
+        try {
+            User user = userRepository.findByDocumentNumber(dto.getDocumentNumber())
+                    .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials"));
+
+            if (!bCryptPasswordEncoder.matches(dto.getPassword(), user.getPassword())) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(new AuthResponseDTO("Credenciais inválidas"));
+            }
+
+            String token = jwtUtil.generateToken(user);
+
+            return ResponseEntity.ok(new AuthResponseDTO(token));
+
+        } catch (UsernameNotFoundException e) {
+            System.out.println("User not found: " + e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(new AuthResponseDTO("Credenciais inválidas"));
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AuthResponseDTO("Erro interno do servidor"));
         }
-        String token = jwtUtil.generateToken(user);
-        return ResponseEntity.ok(new AuthResponseDTO(token));
     }
 }

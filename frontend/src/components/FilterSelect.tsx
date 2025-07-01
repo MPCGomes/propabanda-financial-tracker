@@ -1,10 +1,10 @@
 import Select from "react-select";
 
-type Option = { value: string; label: string };
+export type Option = { value: string; label: string };
 
 interface FilterSelectProps {
-  options: Option[];
-  placeholder: React.ReactNode;
+  options: readonly Option[];
+  placeholder?: React.ReactNode;
   value?: string;
   onChange?: (value: string) => void;
 }
@@ -19,7 +19,6 @@ export default function FilterSelect({
     control: (base: any, state: any) => {
       const hasValue = state.hasValue;
       const isFocused = state.isFocused;
-
       return {
         ...base,
         backgroundColor: hasValue ? "#ffa32233" : "#d9d9d9",
@@ -32,19 +31,11 @@ export default function FilterSelect({
         cursor: "pointer",
         borderRadius: "50px",
         outline: "none",
-        "&:hover": {
-          border: "none",
-        },
-        ...(isFocused && {
-          border: "none",
-          boxShadow: "none",
-        }),
+        "&:hover": { border: "none" },
+        ...(isFocused && { boxShadow: "none" }),
       };
     },
-    singleValue: (base: any) => ({
-      ...base,
-      color: "#ffa322",
-    }),
+    singleValue: (base: any) => ({ ...base, color: "#ffa322" }),
     menu: (base: any) => ({
       ...base,
       backgroundColor: "#fff",
@@ -52,31 +43,20 @@ export default function FilterSelect({
     }),
     option: (base: any, state: any) => ({
       ...base,
-      backgroundColor: state.isSelected
-        ? "#fafafa"
-        : state.isFocused
-          ? "#fafafa"
-          : "#fff",
+      backgroundColor: state.isSelected || state.isFocused ? "#fafafa" : "#fff",
       color: "#282828",
       cursor: "pointer",
     }),
-    placeholder: (base: any) => ({
-      ...base,
-      color: "#fff",
-    }),
+    placeholder: (base: any) => ({ ...base, color: "#fff" }),
     dropdownIndicator: (base: any, state: any) => {
       const hasValue = state.selectProps.value;
       return {
         ...base,
         color: hasValue ? "#ffa322" : "#fff",
-        "&:hover": {
-          color: hasValue ? "#ffa322" : "#fff",
-        },
+        "&:hover": { color: hasValue ? "#ffa322" : "#fff" },
       };
     },
-    indicatorSeparator: () => ({
-      display: "none",
-    }),
+    indicatorSeparator: () => ({ display: "none" }),
   };
 
   return (

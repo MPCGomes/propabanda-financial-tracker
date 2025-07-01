@@ -10,6 +10,7 @@ import Filter from "../../components/Filter";
 import AlertModal from "../../components/AlertModal";
 import ErrorModal from "../../components/ErrorModal";
 import SectionCard from "../../components/SectionCard";
+import Modal from "../../components/Modal";
 import { useModal } from "../../hooks/useModal";
 import { useShowValues } from "../../contexts/ShowValuesContext";
 
@@ -33,7 +34,7 @@ import {
   Legend,
   TimeScale,
 } from "chart.js";
-import Modal from "../../components/Modal";
+
 Chart.register(
   CategoryScale,
   LinearScale,
@@ -61,6 +62,11 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const firstDayYear = () => iso(new Date(new Date().getFullYear(), 0, 1));
 
 export default function Dashboard() {
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportStatus, setExportStatus] = useState<"" | "ATIVO" | "INATIVO">(
+    ""
+  );
+
   const navigate = useNavigate();
   const { show } = useShowValues();
 
@@ -168,10 +174,14 @@ export default function Dashboard() {
       params.append("startDate", period.start);
       params.append("endDate", period.end);
       selectedItems.forEach((id) => params.append("itemIds", id.toString()));
+      if (exportStatus) {
+        params.append("status", exportStatus);
+      }
 
-      const response = await api.get(`/api/export/report.xlsx?${params}`, {
-        responseType: "blob",
-      });
+      const response = await api.get(
+        `/api/export/report.xlsx?${params.toString()}`,
+        { responseType: "blob" }
+      );
       const url = window.URL.createObjectURL(response.data);
       const a = document.createElement("a");
       a.href = url;
@@ -200,7 +210,7 @@ export default function Dashboard() {
       >
         <p className="text-sm text-[#282828]">{alertMsg}</p>
       </AlertModal>
-      <div className="fixed bottom-0 w-full bg-[#282828] rounded-lg flex justify-center p-1 lg:pt-4 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:rounded-none lg:left-0 z-10 border-gray-200 border-r-1">
+      <div className="fixed bottom-0 w-full bg-[#282828] flex justify-center p-1 lg:pt-4 lg:w-35 lg:flex-col lg:justify-start lg:p-2 lg:top-15 lg:bottom-0 lg:left-0 z-10 border-gray-200 border-r-1">
         <Header dashboard="active" />
       </div>
 
@@ -442,10 +452,42 @@ export default function Dashboard() {
                 <Button variant="outlined" onClick={importModal.open}>
                   <MdFileUpload /> Importar
                 </Button>
-                <Button onClick={handleExport}>
+                <Button onClick={() => setIsExportModalOpen(true)}>
                   <IoMdDownload /> Exportar
                 </Button>
               </div>
+
+              {/* Export Modal */}
+              <Modal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                title="Exportar Relatório"
+              >
+                <div>
+                  <select
+                    value={exportStatus}
+                    onChange={(e) =>
+                      setExportStatus(
+                        e.target.value as "ATIVO" | "INATIVO" | ""
+                      )
+                    }
+                    className="px-4 py-3 border border-gray-200 rounded-full"
+                  >
+                    <option value="">Todos</option>
+                    <option value="ATIVO">Ativos</option>
+                    <option value="INATIVO">Inativos</option>
+                  </select>
+                </div>
+
+                <Button
+                  onClick={async () => {
+                    await handleExport();
+                    setIsExportModalOpen(false);
+                  }}
+                >
+                  Confirmar
+                </Button>
+              </Modal>
             </div>
           </SectionCard>
         </div>
@@ -493,7 +535,9 @@ function Row({
 
   return (
     <div
-      className={`flex items-center justify-between p-2 ${gray ? "bg-[#fafafa]" : ""} ${clickable ? "cursor-pointer" : ""}`}
+      className={`flex items-center justify-between p-2 ${
+        gray ? "bg-[#fafafa]" : ""
+      } ${clickable ? "cursor-pointer" : ""}`}
       onClick={onClick}
     >
       <p className="text-xs font-medium text-[#28282833]">{label}</p>

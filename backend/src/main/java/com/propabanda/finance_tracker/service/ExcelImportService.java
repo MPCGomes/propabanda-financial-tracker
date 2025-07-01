@@ -4,6 +4,7 @@ import com.propabanda.finance_tracker.dto.request.AddressRequestDTO;
 import com.propabanda.finance_tracker.dto.request.ClientRequestDTO;
 import com.propabanda.finance_tracker.dto.request.RepresentativeRequestDTO;
 import com.propabanda.finance_tracker.model.Client;
+import com.propabanda.finance_tracker.model.ClientStatus;
 import com.propabanda.finance_tracker.model.Item;
 import com.propabanda.finance_tracker.model.Order;
 import com.propabanda.finance_tracker.repository.ClientRepository;
@@ -66,6 +67,9 @@ public class ExcelImportService {
         if (clientsSheet == null) throw new RuntimeException("Aba 'Clientes' não encontrada");
         boolean firstRow = true;
         for (Row row : clientsSheet) {
+            int statusCol = row.getLastCellNum() - 1;
+            String statusValue = getCellValue(row.getCell(statusCol));
+
             if (firstRow) {
                 firstRow = false;
                 continue;
@@ -91,6 +95,9 @@ public class ExcelImportService {
             clientRequestDTO.setDocumentNumber(clientDocumentNumber);
             clientRequestDTO.setRepresentativeRequestDTO(representativeRequestDTO);
             clientRequestDTO.setAddressRequestDTO(addressRequestDTO);
+            clientRequestDTO.setStatus(
+                    ClientStatus.valueOf(statusValue.trim().toUpperCase())
+            );
             clientService.save(clientRequestDTO);
         }
     }

@@ -1,4 +1,3 @@
-// src/hooks/useFetch.ts
 import { useState, useEffect, useCallback } from "react";
 import api from "../lib/api";
 import type { AxiosRequestConfig } from "axios";
@@ -21,9 +20,7 @@ export function useFetch<T = unknown>(
       setData(resp.data);
     } catch (err: any) {
       setError(
-        typeof err.response?.data === "string"
-          ? err.response.data
-          : err.message
+        typeof err.response?.data === "string" ? err.response.data : err.message
       );
     } finally {
       setLoading(false);

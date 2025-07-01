@@ -5,6 +5,7 @@ import com.propabanda.finance_tracker.dto.ItemPerformanceDTO;
 import com.propabanda.finance_tracker.dto.response.ClientResponseDTO;
 import com.propabanda.finance_tracker.dto.response.ItemResponseDTO;
 import com.propabanda.finance_tracker.dto.response.OrderResponseDTO;
+import com.propabanda.finance_tracker.model.ClientStatus;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.AreaReference;
@@ -25,10 +26,17 @@ public class ExcelExportService {
             List<ClientResponseDTO> clientList,
             List<OrderResponseDTO> orderList,
             DashboardEvolutionDTO dashboardEvolutionDTO,
-            List<ItemPerformanceDTO> itemPerformanceList
+            List<ItemPerformanceDTO> itemPerformanceList,
+            ClientStatus status
     ) throws IOException {
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             DataFormat df = wb.createDataFormat();
+
+            if (status != null) {
+                clientList = clientList.stream()
+                        .filter(c -> c.getStatus() == status)
+                        .toList();
+            }
 
             // Fonte e estilos comuns
             XSSFFont arial12 = wb.createFont();
@@ -62,7 +70,6 @@ public class ExcelExportService {
             percentStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             percentStyle.setDataFormat(df.getFormat("0.00%"));
 
-            // Geração das planilhas
             createClientsSheet(wb, clientList, headerStyle, textStyle);
             createOrdersSheet(wb, orderList, headerStyle, textStyle, currencyStyle, percentStyle);
             createDashboardSheet(wb, dashboardEvolutionDTO, headerStyle, textStyle, currencyStyle, percentStyle);
@@ -85,7 +92,7 @@ public class ExcelExportService {
         sheet.setDisplayGridlines(false);
         sheet.setDefaultColumnWidth(25);
 
-        String[] cols = {"ID", "Nome", "Documento", "Representante", "Email", "Telefone", "Cidade", "Estado"};
+        String[] cols = {"ID", "Nome", "Documento", "Representante", "Email", "Telefone", "Cidade", "Estado", "Status"};
         XSSFRow header = sheet.createRow(0);
         for (int i = 0; i < cols.length; i++) {
             XSSFCell c = header.createCell(i);
@@ -104,6 +111,8 @@ public class ExcelExportService {
             row.createCell(5).setCellValue(dto.getRepresentativeResponseDTO().getPhone());
             row.createCell(6).setCellValue(dto.getAddressResponseDTO().getCity());
             row.createCell(7).setCellValue(dto.getAddressResponseDTO().getState());
+            row.createCell(8).setCellValue(dto.getStatus().name());
+
             for (int i = 0; i < cols.length; i++) {
                 row.getCell(i).setCellStyle(textStyle);
             }
