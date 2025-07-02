@@ -20,7 +20,8 @@ public class JwtFilter extends GenericFilter {
     private final UserDetailServiceImpl userDetailService;
     private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
-    private static final List<String> EXCLUDED_PATHS = List.of("/api/auth");
+    // Updated to include both possible paths
+    private static final List<String> EXCLUDED_PATHS = List.of("/api/auth", "/auth");
 
     public JwtFilter(JWTUtil jwtUtil, UserDetailServiceImpl userDetailService) {
         this.jwtUtil = jwtUtil;
@@ -37,7 +38,8 @@ public class JwtFilter extends GenericFilter {
 
         logger.info("Processing request path: " + path);
 
-        if (EXCLUDED_PATHS.contains(path)) {
+        // Check if the path should be excluded from JWT filtering
+        if (EXCLUDED_PATHS.stream().anyMatch(path::startsWith)) {
             logger.info("Bypassing JWT filter for path: " + path);
             filterChain.doFilter(servletRequest, servletResponse);
             return;
