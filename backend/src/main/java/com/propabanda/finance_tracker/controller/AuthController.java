@@ -5,6 +5,8 @@ import com.propabanda.finance_tracker.dto.request.AuthRequestDTO;
 import com.propabanda.finance_tracker.dto.response.AuthResponseDTO;
 import com.propabanda.finance_tracker.model.User;
 import com.propabanda.finance_tracker.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     public AuthController(UserRepository userRepository, JWTUtil jwtUtil, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
@@ -31,28 +34,33 @@ public class AuthController {
 
     @PostMapping
     public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid AuthRequestDTO dto) {
+        logger.info("Received login request for documentNumber: " + dto.getDocumentNumber());
 
         try {
             User user = userRepository.findByDocumentNumber(dto.getDocumentNumber())
                     .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials"));
 
+            logger.info("User found: " + user.getDocumentNumber());
+
             if (!bCryptPasswordEncoder.matches(dto.getPassword(), user.getPassword())) {
+                logger.error("Invalid credentials for user: " + dto.getDocumentNumber());
                 return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(new AuthResponseDTO("Credenciais inválidas"));
             }
 
             String token = jwtUtil.generateToken(user);
+            logger.info("Token generated for user: " + user.getDocumentNumber());
 
             return ResponseEntity.ok(new AuthResponseDTO(token));
 
         } catch (UsernameNotFoundException e) {
-            System.out.println("User not found: " + e.getMessage());
+            logger.error("User not found: " + e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(new AuthResponseDTO("Credenciais inválidas"));
         } catch (Exception e) {
-            System.out.println("Unexpected error: " + e.getMessage());
+            logger.error("Unexpected error: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)

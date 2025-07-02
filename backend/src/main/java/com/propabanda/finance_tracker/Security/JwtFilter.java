@@ -1,6 +1,8 @@
 package com.propabanda.finance_tracker.Security;
 
 import com.propabanda.finance_tracker.service.UserDetailServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,9 +18,9 @@ public class JwtFilter extends GenericFilter {
 
     private final JWTUtil jwtUtil;
     private final UserDetailServiceImpl userDetailService;
+    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
-    private static final List<String> EXCLUDED_PATHS = List.of(
-            "/api/auth");
+    private static final List<String> EXCLUDED_PATHS = List.of("/api/auth");
 
     public JwtFilter(JWTUtil jwtUtil, UserDetailServiceImpl userDetailService) {
         this.jwtUtil = jwtUtil;
@@ -33,7 +35,10 @@ public class JwtFilter extends GenericFilter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         String path = request.getRequestURI();
 
+        logger.info("Processing request path: " + path);
+
         if (EXCLUDED_PATHS.contains(path)) {
+            logger.info("Bypassing JWT filter for path: " + path);
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
@@ -42,6 +47,7 @@ public class JwtFilter extends GenericFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.replace("Bearer ", "");
+            logger.info("Found Bearer Token: " + token);
 
             try {
                 if (jwtUtil.isTokenValid(token)) {
@@ -51,8 +57,10 @@ public class JwtFilter extends GenericFilter {
                     var auth = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(auth);
+                    logger.info("Authentication successful for user: " + document);
                 }
             } catch (Exception e) {
+                logger.error("Error processing token: " + e.getMessage());
             }
         }
 

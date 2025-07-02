@@ -1,6 +1,8 @@
 package com.propabanda.finance_tracker.config;
 
 import com.propabanda.finance_tracker.Security.JwtFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,6 +24,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
@@ -34,8 +37,7 @@ public class SecurityConfig {
                 "http://localhost:*",
                 "http://127.0.0.1:*",
                 "https://admpropabanda.com.br",
-                "https://www.admpropabanda.com.br"
-        ));
+                "https://www.admpropabanda.com.br"));
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setAllowCredentials(true);
@@ -47,16 +49,18 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        logger.info("Setting up Spring Security configuration...");
+
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth").permitAll()
-                        .anyRequest().hasRole("ADMIN")
-                )
+                        .anyRequest().hasRole("ADMIN"))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        logger.info("Spring Security setup complete.");
         return http.build();
     }
-
 }
