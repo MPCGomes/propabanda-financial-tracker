@@ -40,7 +40,7 @@ public class JwtFilter extends GenericFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        logger.info("Processing request: {} {}", method, path);
+        logger.info("Processing request path: {}", path);
 
         // Skip JWT processing for OPTIONS requests (CORS preflight)
         if ("OPTIONS".equals(method)) {
@@ -50,8 +50,13 @@ public class JwtFilter extends GenericFilter {
         }
 
         // Check if the path should be excluded from JWT filtering
-        if (EXCLUDED_PATHS.stream().anyMatch(path::startsWith)) {
-            logger.info("Bypassing JWT filter for excluded path: {}", path);
+        boolean isExcludedPath = EXCLUDED_PATHS.stream().anyMatch(excludedPath -> {
+            // Use exact match or startsWith for more flexible matching
+            return path.equals(excludedPath) || path.startsWith(excludedPath);
+        });
+
+        if (isExcludedPath) {
+            logger.info("Bypassing JWT filter for path: {}", path);
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
