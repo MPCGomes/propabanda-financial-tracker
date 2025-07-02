@@ -58,9 +58,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth").permitAll()
-                        .requestMatchers("/api/auth").permitAll() // Allow all methods for auth endpoint
+                        .requestMatchers(HttpMethod.POST, "/auth").permitAll() // Add this line
+                        .requestMatchers("/api/auth").permitAll()
+                        .requestMatchers("/auth").permitAll() // Add this line
                         .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/error").permitAll() // Allow error endpoint
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().hasRole("ADMIN"))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
