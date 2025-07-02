@@ -2,7 +2,7 @@ import axios from "axios";
 import { logout } from "./auth";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8080",
+  baseURL: import.meta.env.VITE_API_URL ?? "/",
 });
 
 api.interceptors.request.use((cfg) => {
@@ -11,7 +11,6 @@ api.interceptors.request.use((cfg) => {
   return cfg;
 });
 
-// forces logout if 401 or 403
 api.interceptors.response.use(
   (r) => r,
   (err) => {

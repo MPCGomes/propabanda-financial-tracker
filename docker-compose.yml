@@ -40,7 +40,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: "https://admpropabanda.com.br"
+        VITE_API_URL: "/"
     restart: unless-stopped
     ports:
       - "8081:80"
