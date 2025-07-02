@@ -7,9 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ChangePasswordRequestDTO {
-    @NotBlank(message = "Informe a senha atual.")
+    @NotBlank(message = "Senha atual é obrigatória")
     private String currentPassword;
 
-    @NotBlank(message = "Informe a nova senha.")
+    @NotBlank(message = "Nova senha é obrigatória")
     private String newPassword;
 }

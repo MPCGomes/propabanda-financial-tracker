@@ -25,8 +25,8 @@ export default function OrderRegister() {
 
   // contract state
   const [file, setFile] = useState<File | null>(null);
-  const [existingPath, setExistingPath] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [existingPath] = useState<string | null>(null);
+  const [previewUrl] = useState<string | null>(null);
 
   // UI state
   const [error, setError] = useState<string | null>(null);
@@ -110,12 +110,12 @@ export default function OrderRegister() {
         <div className="flex flex-col gap-5 px-4 w-full pb-[100px] lg:pl-38 lg:pr-4">
           <GoBack link="/orders" />
 
-          {/* 1) Dados do Pedido */}
+          {/* data */}
           <SectionCard title="Dados do Pedido">
             <OrderForm clients={clients} items={items} onChange={setPayload} />
           </SectionCard>
 
-          {/* 2) Contrato */}
+          {/* contract */}
           <ContractSection
             contractFile={file}
             existingPath={existingPath}
@@ -127,7 +127,7 @@ export default function OrderRegister() {
             onSave={handleSaveAll}
           />
 
-          {/* 3) Ações */}
+          {/* actions */}
           <div className="flex justify-end gap-3">
             <Button variant="outlined" onClick={() => navigate("/orders")}>
               Cancelar
