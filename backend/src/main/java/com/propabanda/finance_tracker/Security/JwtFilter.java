@@ -20,8 +20,11 @@ public class JwtFilter extends GenericFilter {
     private final UserDetailServiceImpl userDetailService;
     private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
-    // Updated to include both possible paths
-    private static final List<String> EXCLUDED_PATHS = List.of("/api/auth", "/auth");
+    // Paths that should bypass JWT authentication
+    private static final List<String> EXCLUDED_PATHS = List.of(
+            "/api/auth",
+            "/actuator/health",
+            "/error");
 
     public JwtFilter(JWTUtil jwtUtil, UserDetailServiceImpl userDetailService) {
         this.jwtUtil = jwtUtil;
@@ -35,12 +38,20 @@ public class JwtFilter extends GenericFilter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         String path = request.getRequestURI();
+        String method = request.getMethod();
 
-        logger.info("Processing request path: " + path);
+        logger.info("Processing request: {} {}", method, path);
+
+        // Skip JWT processing for OPTIONS requests (CORS preflight)
+        if ("OPTIONS".equals(method)) {
+            logger.info("Bypassing JWT filter for OPTIONS request: {}", path);
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
 
         // Check if the path should be excluded from JWT filtering
         if (EXCLUDED_PATHS.stream().anyMatch(path::startsWith)) {
-            logger.info("Bypassing JWT filter for path: " + path);
+            logger.info("Bypassing JWT filter for excluded path: {}", path);
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
@@ -49,7 +60,7 @@ public class JwtFilter extends GenericFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.replace("Bearer ", "");
-            logger.info("Found Bearer Token: " + token);
+            logger.info("Found Bearer Token for path: {}", path);
 
             try {
                 if (jwtUtil.isTokenValid(token)) {
@@ -59,11 +70,15 @@ public class JwtFilter extends GenericFilter {
                     var auth = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(auth);
-                    logger.info("Authentication successful for user: " + document);
+                    logger.info("Authentication successful for user: {}", document);
+                } else {
+                    logger.warn("Invalid JWT token for path: {}", path);
                 }
             } catch (Exception e) {
-                logger.error("Error processing token: " + e.getMessage());
+                logger.error("Error processing token for path {}: {}", path, e.getMessage());
             }
+        } else {
+            logger.warn("No Authorization header found for protected path: {}", path);
         }
 
         filterChain.doFilter(servletRequest, servletResponse);
