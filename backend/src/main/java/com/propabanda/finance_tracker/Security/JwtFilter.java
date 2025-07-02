@@ -22,7 +22,7 @@ public class JwtFilter extends GenericFilter {
 
     // Paths that should bypass JWT authentication
     private static final List<String> EXCLUDED_PATHS = List.of(
-            "/api/auth",
+            "/api/auth", // Make sure this is included
             "/actuator/health",
             "/error");
 
@@ -40,27 +40,14 @@ public class JwtFilter extends GenericFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        logger.info("Processing request path: {}", path);
-
-        // Skip JWT processing for OPTIONS requests (CORS preflight)
-        if ("OPTIONS".equals(method)) {
-            logger.info("Bypassing JWT filter for OPTIONS request: {}", path);
-            filterChain.doFilter(servletRequest, servletResponse);
-            return;
-        }
-
-        // Check if the path should be excluded from JWT filtering
-        boolean isExcludedPath = EXCLUDED_PATHS.stream().anyMatch(excludedPath -> {
-            // Use exact match or startsWith for more flexible matching
-            return path.equals(excludedPath) || path.startsWith(excludedPath);
-        });
-
-        if (isExcludedPath) {
+        // Skip processing for OPTIONS and excluded paths
+        if ("OPTIONS".equals(method) || EXCLUDED_PATHS.stream().anyMatch(path::startsWith)) {
             logger.info("Bypassing JWT filter for path: {}", path);
-            filterChain.doFilter(servletRequest, servletResponse);
+            filterChain.doFilter(servletRequest, servletResponse); // Pass the request further in the chain
             return;
         }
 
+        // JWT token validation (for protected routes)
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -86,6 +73,6 @@ public class JwtFilter extends GenericFilter {
             logger.warn("No Authorization header found for protected path: {}", path);
         }
 
-        filterChain.doFilter(servletRequest, servletResponse);
+        filterChain.doFilter(servletRequest, servletResponse); // Proceed to the next filter
     }
 }
