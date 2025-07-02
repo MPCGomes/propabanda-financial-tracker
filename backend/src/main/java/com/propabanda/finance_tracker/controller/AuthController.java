@@ -15,7 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
 @CrossOrigin(origins = { "https://admpropabanda.com.br", "https://www.admpropabanda.com.br", "http://localhost:*" })
 public class AuthController {
 
