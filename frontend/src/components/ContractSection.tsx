@@ -20,8 +20,6 @@ export default function ContractSection({
   onFileChange,
   onPreview,
   onDownload,
-  onSave,
-  onCancel,
   onDelete,
 }: Props) {
   return (

@@ -26,13 +26,17 @@ public class JWTUtil {
     }
 
     public String generateToken(User user) {
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setSubject(user.getDocumentNumber())
                 .claim("name", user.getName())
+                .claim("userId", user.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+
+        System.out.println("Generated token: " + token);
+        return token;
     }
 
     public String getDocumentFromToken(String token) {
@@ -42,6 +46,36 @@ public class JWTUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public Long getUserIdFromToken(String token) {
+        try {
+            Object userIdClaim = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("userId");
+
+            System.out.println("UserID claim from token: " + userIdClaim);
+            System.out.println("UserID claim type: " + (userIdClaim != null ? userIdClaim.getClass() : "null"));
+
+            if (userIdClaim == null) {
+                return null;
+            }
+
+            // Handle both String and Number types
+            if (userIdClaim instanceof Number) {
+                return ((Number) userIdClaim).longValue();
+            } else if (userIdClaim instanceof String) {
+                return Long.parseLong((String) userIdClaim);
+            }
+
+            return null;
+        } catch (Exception e) {
+            System.out.println("Error extracting userId from token: " + e.getMessage());
+            return null;
+        }
     }
 
     public boolean isTokenValid(String token) {
