@@ -22,7 +22,7 @@ public class JwtFilter extends GenericFilter {
 
     // Paths that should bypass JWT authentication
     private static final List<String> EXCLUDED_PATHS = List.of(
-            "/atuh",
+            "/auth",
             "/api/auth", // Make sure this is included
             "/actuator/health",
             "/error");
