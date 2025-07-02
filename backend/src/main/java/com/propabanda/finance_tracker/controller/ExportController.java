@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/export")
+@RequestMapping("/export")
 public class ExportController {
     private final ClientService clientService;
     private final OrderService orderService;

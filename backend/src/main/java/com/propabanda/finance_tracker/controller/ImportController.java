@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/import")
+@RequestMapping("/import")
 public class ImportController {
 
     private final ExcelImportService excelImportService;
